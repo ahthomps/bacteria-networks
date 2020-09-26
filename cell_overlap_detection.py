@@ -105,7 +105,7 @@ def get_bounding_boxes(image, labels):
 
         width = data[2] - data[0]
         height = data[3] - data[1]
-        center = (data[0] + width \\ 2, data[1] + height \\ 2)
+        center = (data[0] + width // 2, data[1] + height // 2)
 
         yolo_bounding_boxes.append([center[0], center[1], width, height])
         box, box_range = get_box(50, center, width, height)
