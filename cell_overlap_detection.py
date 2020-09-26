@@ -7,9 +7,10 @@ from scipy import ndimage as ndi
 import sys
 import math
 
-def import_image_and_labels(image_name):
-    image = plt.imread(image_name)
-    labels = open("labels/{}.txt".format(image_name[image_name.find("/") + 1:image_name.find(".")]))
+def import_image_and_labels(image_filename, bbox_filename):
+    image = plt.imread(image_filename)
+    # labels = open("labels/{}.txt".format(image_name[image_name.find("/") + 1:image_name.find(".")]))
+    labels = open(bbox_filename)
 
     return image, labels
 
@@ -82,17 +83,32 @@ def get_bounding_boxes(image, labels):
     yolo_bounding_boxes = []
     range_bounding_boxes = []
 
-    x_max = len(image[0])
-    y_max = len(image)
-    scalars = [x_max, y_max, x_max, y_max]
+    # x_max = len(image[0])
+    # y_max = len(image)
+    # scalars = [x_max, y_max, x_max, y_max]
+
+    # line = labels.readline()
+    # while line:
+    #     data = line.split()[1:]
+    #     for i in range(4):
+    #         data[i] = int(float(data[i]) * scalars[i])
+    #     yolo_bounding_boxes.append(data)
+    #     box, box_range = get_box(50, (data[0], data[1]), data[2], data[3])
+    #     bounding_boxes.append(box)
+    #     range_bounding_boxes.append(box_range)
+    #     line = labels.readline()
 
     line = labels.readline()
     while line:
+        # takes data in the form "% x1 y1 x2 y2"
         data = line.split()[1:]
-        for i in range(4):
-            data[i] = int(float(data[i]) * scalars[i])
-        yolo_bounding_boxes.append(data)
-        box, box_range = get_box(50, (data[0], data[1]), data[2], data[3])
+
+        width = data[2] - data[0]
+        height = data[3] - data[1]
+        center = (data[0] + width \\ 2, data[1] + height \\ 2)
+
+        yolo_bounding_boxes.append([center[0], center[1], width, height])
+        box, box_range = get_box(50, center, width, height)
         bounding_boxes.append(box)
         range_bounding_boxes.append(box_range)
         line = labels.readline()
@@ -121,100 +137,6 @@ def process_image(image):
     image_yen = image_yen.astype(np.int8)
 
     return image_yen
-
-# attempt 1: stupidly did range queries instead of linesegment intersection
-# def find_overlapping_bounding_boxes(corners):
-#
-#     overlaps = [[] for _ in range(len(corners))]
-#     points = []
-#     point_to_box = {}
-#     for i in range(len(corners)):
-#         box = corners[i]
-#         for point in box:
-#             points.append(point)
-#             point_to_box[point] = i
-#
-#     kdtree = create_kdtree(points)
-#
-#     for current_box in range(len(corners)):
-#         box = corners[current_box]
-#         query_range = ((box[0][0], box[1][0]), (box[1][1], box[2][1]))
-#         points_in_range = range_query(kdtree, query_range)
-#
-#         for point in points_in_range:
-#             if point not in points:
-#                 continue
-#             box_of_point = point_to_box[point]
-#             if box_of_point == current_box:
-#                 continue
-#             if point not in overlaps[current_box]:
-#                 overlaps[current_box].append(box_of_point)
-#
-#     return overlaps
-
-# attempt 2: line segment intersection was stupid, too complicated
-# def find_overlapping_bounding_boxes(corners):
-#     overlaps = [[] for _ in range(len(corners))]
-#     segments = []
-#     segment_to_box = {}
-#     for i in range(len(corners)):
-#         box = corners[i]
-#         for i in range(4):
-#             segment = (box[i], box[(i + 1) % 4])
-#             segments.append(segment[0])
-#             segments.append(segment[1])
-#             segment_to_box[segment] = i
-#
-#     # print(segments)
-#
-#     intersections = report_intersections(segments)
-#
-#     for segment_pair in intersections:
-#         segment1 = segment_pair[0]
-#         segment2 = segment_pair[1]
-#         if segment1 not in segment_to_box.keys():
-#             segment1 = (segment1[1], segment1[0])
-#         if segment2 not in segment_to_box.keys():
-#             segment2 = (segment2[1], segment2[0])
-#
-#         print(segment_to_box[segment1], segment_to_box[segment2])
-#
-#     return intersections
-
-# attempt 2: nevermind we are brute forcing it...
-# def find_overlapping_bounding_boxes(corners):
-#
-#     interval_to_box = {}
-#     x_intervals = []
-#     y_intervals = []
-#     for i in range(len(corners)):
-#         box = corners[i]
-#         x = (box[0][0], box[1][0])
-#         y = (box[1][1], box[2][1])
-#         x_intervals.append(x)
-#         y_intervals.append(y)
-#         interval_to_box[x] = i
-#         interval_to_box[y] = i
-#
-#     x_IntervalTree = intervaltree.IntervalTree()
-#     for x in x_intervals:
-#         x_IntervalTree.addi(x[0], x[1], x)
-#     y_IntervalTree = intervaltree.IntervalTree()
-#     for y in y_intervals:
-#         y_IntervalTree.addi(y[0], y[1], y)
-#
-#     for x in x_intervals:
-#         x_IntervalTree.removei(x[0], x[1], x)
-#         print(x)
-#         x_overlaps = x_IntervalTree.overlap(x[0], x[1])
-#         print (x_overlaps)
-#         for interval in x_overlaps:
-#             print(interval.data)
-#
-#
-#         x_IntervalTree.addi(x[0], x[1], x)
-#
-#     return
 
 def num_points_in_region(points, region):
     # region in the form ((x1, x2), (y1, y2))
