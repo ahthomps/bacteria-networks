@@ -77,41 +77,43 @@ def get_box(resolution, center, width, height):
 
     return np.concatenate([top, right, bottom, left])[:-1], box_range
 
-def get_bounding_boxes(image, labels):
+def get_bounding_boxes(image, labels=None, yolo_output=None):
 
     bounding_boxes = []
     yolo_bounding_boxes = []
     range_bounding_boxes = []
 
-    # x_max = len(image[0])
-    # y_max = len(image)
-    # scalars = [x_max, y_max, x_max, y_max]
+    if labels is not None:
+        x_max = len(image[0])
+        y_max = len(image)
+        scalars = [x_max, y_max, x_max, y_max]
 
-    # line = labels.readline()
-    # while line:
-    #     data = line.split()[1:]
-    #     for i in range(4):
-    #         data[i] = int(float(data[i]) * scalars[i])
-    #     yolo_bounding_boxes.append(data)
-    #     box, box_range = get_box(50, (data[0], data[1]), data[2], data[3])
-    #     bounding_boxes.append(box)
-    #     range_bounding_boxes.append(box_range)
-    #     line = labels.readline()
-
-    line = labels.readline()
-    while line:
-        # takes data in the form "% x1 y1 x2 y2"
-        data = line.split()[1:]
-
-        width = data[2] - data[0]
-        height = data[3] - data[1]
-        center = (data[0] + width // 2, data[1] + height // 2)
-
-        yolo_bounding_boxes.append([center[0], center[1], width, height])
-        box, box_range = get_box(50, center, width, height)
-        bounding_boxes.append(box)
-        range_bounding_boxes.append(box_range)
         line = labels.readline()
+        while line:
+            data = line.split()[1:]
+            for i in range(4):
+                data[i] = int(float(data[i]) * scalars[i])
+            yolo_bounding_boxes.append(data)
+            box, box_range = get_box(50, (data[0], data[1]), data[2], data[3])
+            bounding_boxes.append(box)
+            range_bounding_boxes.append(box_range)
+            line = labels.readline()
+
+    elif yolo_output is not None:
+        for line in yolo_output.splitlines():
+            if line.startswith("    BBOX:"):
+                line = line[len("    BBOX:"):]
+                # takes data in the form "x1 y1 x2 y2"
+                data = [int(thing) for thing in line.split()]
+
+                width = data[2] - data[0]
+                height = data[3] - data[1]
+                center = (data[0] + width // 2, data[1] + height // 2)
+
+                yolo_bounding_boxes.append([center[0], center[1], width, height])
+                box, box_range = get_box(50, center, width, height)
+                bounding_boxes.append(box)
+                range_bounding_boxes.append(box_range)
 
     return bounding_boxes, yolo_bounding_boxes, range_bounding_boxes
 

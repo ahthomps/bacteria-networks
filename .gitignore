@@ -1,0 +1,7 @@
+__pycache__
+darknet
+predictions.jpg
+obj/*
+libdarknet.a
+libdarknet.so
+backup/*

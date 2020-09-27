@@ -1,16 +1,17 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QMainWindow, QFileDialog, QMessageBox, QInputDialog, QApplication, QDialog
 from PyQt5.uic import loadUi
-from matplotlib.backends.backend_qt5agg import ( NavigationToolbar2QT as NavigationToolbar )
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from cell_overlap_detection import *
 import numpy as np
 import random
 import matplotlib.pyplot as plt
+import subprocess
+
+IMAGE_SIZE = 416
 
 class ProgramManager(QMainWindow):
-
     def __init__(self):
-
         self._image = np.asarray([])
         self._image_binary = np.asarray([])
         self._bounding_boxes = []
@@ -47,6 +48,7 @@ class ProgramManager(QMainWindow):
         self.actionBinary_Image.triggered.connect(self.displayBinary)
 
         # actions in the toolbar RUN
+        self.actionYOLO.triggered.connect(self.runYolo)
         self.actionContour_run.triggered.connect(self.getContour)
 
     def display(self):
@@ -83,6 +85,7 @@ class ProgramManager(QMainWindow):
         self._plot_show_contour = False
 
         self.actionImage.setEnabled(True)
+        self.actionYOLO.setEnabled(False)
         self.actionLabel.setEnabled(False)
         self.actionBinary_Image.setEnabled(False)
         self.actionBounding_Boxes.setEnabled(False)
@@ -99,6 +102,7 @@ class ProgramManager(QMainWindow):
             self._image = plt.imread(self._image_filename)
 
             self.actionLabel.setEnabled(True)
+            self.actionYOLO.setEnabled(True)
             self.actionImage.setEnabled(False)
             self.display()
 
@@ -114,6 +118,7 @@ class ProgramManager(QMainWindow):
             self.actionBounding_Boxes.setEnabled(True)
             self.actionLabel.setEnabled(False)
             self.actionContour_run.setEnabled(True)
+            self.actionYOLO.setEnabled(False)
 
             self.actionBounding_Boxes.setChecked(True)
             self.displayBoundingBoxes()
@@ -145,13 +150,24 @@ class ProgramManager(QMainWindow):
 
         self.display()
 
-    # def gettingContourPopUp(self):
-    #     popup = QMessageBox()
-    #     popup.
+    def runYolo(self):
+        self.actionLabel.setEnabled(False)
+        self.actionYOLO.setEnabled(False)
+
+        output = subprocess.run(["./darknet", "detector", "test", "cells/obj.data", "cells/yolov3-custom.cfg", "backup/yolov3-custom_final.weights",
+                                 self._image_filename, "2>/dev/null"], stdout=subprocess.PIPE)
+
+        self._bounding_boxes, _, _ = get_bounding_boxes(self._image, yolo_output=str(output.stdout, "UTF-8"))
+
+        self.actionBounding_Boxes.setEnabled(True)
+        self.actionContour_run.setEnabled(True)
+        self.actionBounding_Boxes.setChecked(True)
+
+        self.displayBoundingBoxes()
 
 
 
-app = QApplication ([])
-window = ProgramManager ()
-window.show ()
-app.exec_ ()
+app = QApplication([])
+window = ProgramManager()
+window.show()
+app.exec_()
