@@ -1,4 +1,4 @@
-### bacteria-networks
+# bacteria-networks
 
 ## Prerequisites:
 
@@ -16,7 +16,7 @@ Download [this file](https://drive.google.com/file/d/183yWT3OxjhXrpc5FyOgEfT3zVi
 
 Run `python3 run.py`.
 
-# Using YOLO:
+### Using YOLO:
 
 File->Open->Image, then choose an image file.
 
@@ -24,7 +24,7 @@ Run->YOLO
 
 Run->Contour
 
-# Using other bounding boxes:
+### Using other bounding boxes:
 
 File->Open->Image, then choose an image file.
 
