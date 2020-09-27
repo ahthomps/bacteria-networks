@@ -280,9 +280,9 @@ def balloon(binary_image, box_ranges, box_ilss):
 
     return snakes
 
-def get_contours(image, labels):
+def get_contours(image, yolo_bounding_boxes, box_ranges):
 
-    bounding_boxes, yolo_bounding_boxes, box_ranges = get_bounding_boxes(image, labels)
+    # bounding_boxes, yolo_bounding_boxes, box_ranges = get_bounding_boxes(image, labels)
     image_binary = process_image(image)
     overlaps = find_overlapping_bounding_boxes(box_ranges)
     box_ilss = find_balloon_starts(image_binary, yolo_bounding_boxes, box_ranges, overlaps)
