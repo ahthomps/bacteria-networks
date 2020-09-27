@@ -8,8 +8,6 @@ import random
 import matplotlib.pyplot as plt
 import subprocess
 
-IMAGE_SIZE = 416
-
 class ProgramManager(QMainWindow):
     def __init__(self):
         self._image = np.asarray([])
