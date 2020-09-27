@@ -8,13 +8,13 @@ python3, make, gcc. Probably some python packages; we'll get back to you about t
 
 Clone this repository.
 
-Run `make clean && make`.
+Run `make`.
 
 Make a directory named `backup` in the root of the repository.
 
 Download [this file](https://drive.google.com/file/d/183yWT3OxjhXrpc5FyOgEfT3zViBdQMPO/view?usp=sharing), and stick it in `backup`.
 
-run `python3 run.py`.
+Run `python3 run.py`.
 
 # Using YOLO:
 
