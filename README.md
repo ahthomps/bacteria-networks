@@ -1,8 +1,8 @@
 # bacteria-networks
 
-## Prerequisites:
+## Dependencies:
 
-python3, make, gcc. Probably some python packages; we'll get back to you about that.
+python3, make, gcc, pyqt5, matplotlib 
 
 ## Installation instructions:
 
