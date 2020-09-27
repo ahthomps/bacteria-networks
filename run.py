@@ -15,6 +15,8 @@ class ProgramManager(QMainWindow):
         self._image = np.asarray([])
         self._image_binary = np.asarray([])
         self._bounding_boxes = []
+        self._yolo_bbox = []
+        self._bbox_ranges = []
         self._contours = []
 
         self._image_filename = ""
@@ -112,7 +114,7 @@ class ProgramManager(QMainWindow):
             print("using label {}".format(filename))
             self._label_filename = filename
             self._label_ofile = open(self._label_filename)
-            self._bounding_boxes, _, _ = get_bounding_boxes(self._image, self._label_ofile)
+            self._bounding_boxes, self._yolo_bbox, self._bbox_ranges = get_bounding_boxes(self._image, self._label_ofile)
             self._label_ofile = open(self._label_filename)
 
             self.actionBounding_Boxes.setEnabled(True)
@@ -137,7 +139,7 @@ class ProgramManager(QMainWindow):
 
     def getContour(self):
         print("getting contours....")
-        self._image_binary, self._contours = get_contours(self._image, self._label_ofile)
+        self._image_binary, self._contours = get_contours(self._image, self._yolo_bbox, self._bbox_ranges)
         print("found contours!")
         self.actionContour_view.setChecked(True)
         self.actionBounding_Boxes.setChecked(True)
@@ -157,7 +159,7 @@ class ProgramManager(QMainWindow):
         output = subprocess.run(["./darknet", "detector", "test", "cells/obj.data", "cells/yolov3-custom.cfg", "backup/yolov3-custom_final.weights",
                                  self._image_filename, "2>/dev/null"], stdout=subprocess.PIPE)
 
-        self._bounding_boxes, _, _ = get_bounding_boxes(self._image, yolo_output=str(output.stdout, "UTF-8"))
+        self._bounding_boxes, self._yolo_bbox, self._bbox_ranges = get_bounding_boxes(self._image, yolo_output=str(output.stdout, "UTF-8"))
 
         self.actionBounding_Boxes.setEnabled(True)
         self.actionContour_run.setEnabled(True)
