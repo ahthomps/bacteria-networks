@@ -155,7 +155,7 @@ class ProgramManager(QMainWindow):
         self.actionYOLO.setEnabled(False)
 
         output = subprocess.run(["./darknet", "detector", "test", "cells/obj.data", "cells/yolov3-custom.cfg", "backup/yolov3-custom_final.weights",
-                                 self._image_filename, "2>/dev/null"], stdout=subprocess.PIPE)
+                                 self._image_filename], stdout=subprocess.PIPE)
 
         self._bounding_boxes, _, _ = get_bounding_boxes(self._image, yolo_output=str(output.stdout, "UTF-8"))
 
