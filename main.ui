@@ -80,6 +80,7 @@
     <property name="title">
      <string>Run</string>
     </property>
+    <addaction name="actionYOLO"/>
     <addaction name="actionContour_run"/>
    </widget>
    <addaction name="menuFile"/>
@@ -146,6 +147,11 @@
   <action name="actionClear">
    <property name="text">
     <string>Clear</string>
+   </property>
+  </action>
+  <action name="actionYOLO">
+   <property name="text">
+    <string>YOLO</string>
    </property>
   </action>
  </widget>
