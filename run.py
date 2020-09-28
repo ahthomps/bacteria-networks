@@ -8,13 +8,13 @@ import random
 import matplotlib.pyplot as plt
 import subprocess
 
-IMAGE_SIZE = 416
-
 class ProgramManager(QMainWindow):
     def __init__(self):
         self._image = np.asarray([])
         self._image_binary = np.asarray([])
         self._bounding_boxes = []
+        self._yolo_bbox = []
+        self._bbox_ranges = []
         self._contours = []
 
         self._image_filename = ""
@@ -62,7 +62,7 @@ class ProgramManager(QMainWindow):
             for box in self._bounding_boxes:
                 self.MplWidget.canvas.axes.plot(box[:, 0], box[:, 1], '--b', lw=3)
         if self._plot_show_contour:
-            colors = ['b', 'g', 'r']
+            colors = ['red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet']
             count = 0
             for contour in self._contours:
                 self.MplWidget.canvas.axes.contour(contour, [0.75], colors=colors[count % len(colors)])
@@ -112,7 +112,7 @@ class ProgramManager(QMainWindow):
             print("using label {}".format(filename))
             self._label_filename = filename
             self._label_ofile = open(self._label_filename)
-            self._bounding_boxes, _, _ = get_bounding_boxes(self._image, self._label_ofile)
+            self._bounding_boxes, self._yolo_bbox, self._bbox_ranges = get_bounding_boxes(self._image, self._label_ofile)
             self._label_ofile = open(self._label_filename)
 
             self.actionBounding_Boxes.setEnabled(True)
@@ -137,27 +137,32 @@ class ProgramManager(QMainWindow):
 
     def getContour(self):
         print("getting contours....")
-        self._image_binary, self._contours = get_contours(self._image, self._label_ofile)
+        self._image_binary, self._contours = get_contours(self._image, self._yolo_bbox, self._bbox_ranges)
         print("found contours!")
         self.actionContour_view.setChecked(True)
         self.actionBounding_Boxes.setChecked(True)
         self._plot_show_contour = True
-        self._plot_show_bounding_boxes = True
+        self._plot_show_bounding_boxes = False
+        self.actionBounding_Boxes.setChecked(False)
 
         self.actionContour_run.setEnabled(False)
         self.actionContour_view.setEnabled(True)
         self.actionBinary_Image.setEnabled(True)
 
+
+
         self.display()
 
     def runYolo(self):
+        print("Running YOLO...")
         self.actionLabel.setEnabled(False)
         self.actionYOLO.setEnabled(False)
 
         output = subprocess.run(["./darknet", "detector", "test", "cells/obj.data", "cells/yolov3-custom.cfg", "backup/yolov3-custom_final.weights",
-                                 self._image_filename, "2>/dev/null"], stdout=subprocess.PIPE)
+                                 self._image_filename], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+        print("Done! :)")
 
-        self._bounding_boxes, _, _ = get_bounding_boxes(self._image, yolo_output=str(output.stdout, "UTF-8"))
+        self._bounding_boxes, self._yolo_bbox, self._bbox_ranges = get_bounding_boxes(self._image, yolo_output=str(output.stdout, "UTF-8"))
 
         self.actionBounding_Boxes.setEnabled(True)
         self.actionContour_run.setEnabled(True)

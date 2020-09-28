@@ -117,12 +117,12 @@ def get_bounding_boxes(image, labels=None, yolo_output=None):
 
     return bounding_boxes, yolo_bounding_boxes, range_bounding_boxes
 
-def erode_and_dialate(image, erode, dialate):
+def erode_and_dilate(image, erode, dilate):
     image_open = image
 
     for _ in range(erode):
         image_open = morphology.erosion(image_open)
-    for _ in range(dialate):
+    for _ in range(dilate):
         image_open = morphology.dilation(image_open)
 
     return image_open
@@ -133,9 +133,9 @@ def process_image(image):
     thresh_yen = filters.threshold_yen(deepcopy(image_gray))
     image_yen = image_gray > thresh_yen
     # another way to "fill holes", works better than the method
-    image_yen = erode_and_dialate(image_yen, 0, 4)
-    image_yen = erode_and_dialate(image_yen, 4, 0)
-    image_yen = erode_and_dialate(image_yen, 10, 10)
+    image_yen = erode_and_dilate(image_yen, 0, 4)
+    image_yen = erode_and_dilate(image_yen, 4, 0)
+    image_yen = erode_and_dilate(image_yen, 7, 7)
     image_yen = image_yen.astype(np.int8)
 
     return image_yen
@@ -148,10 +148,9 @@ def num_points_in_region(points, region):
     counter = 0
 
     for point in points:
-        x = point[0]
-        y = point[1]
+        x, y = point
         if ((x_interval[0] <= x <= x_interval[1]) and
-             (y_interval[0] <= y <= y_interval[1])):
+            (y_interval[0] <= y <= y_interval[1])):
             counter += 1
 
     return counter
@@ -208,7 +207,7 @@ def find_ils(image_working, box_center, box_range, axis):
     for direction in [-1, 1]:
         while interval[0] <= current <= interval[1]:
             if not axis:
-                if image_working[current - 5:current + 5, fixed - 5:fixed + 5].all():
+                if image_working[current - 3:current + 3, fixed - 3:fixed + 3].all():
                     ils[current - 3:current + 3, fixed - 3:fixed + 3] = 1
                     return ils
                 elif image_working[current - 5:current + 5, fixed - 5:fixed + 5].any():
@@ -216,7 +215,7 @@ def find_ils(image_working, box_center, box_range, axis):
                 else:
                     current += 5 * direction
             else:
-                if image_working[fixed - 5:fixed + 5, current - 5:current + 5].all():
+                if image_working[fixed - 3:fixed + 3, current - 3:current + 3].all():
                     ils[current - 3:current + 3, fixed - 3:fixed + 3] = 1
                     return ils
                 elif image_working[fixed - 5:fixed + 5, current - 5:current + 5].any():
@@ -280,9 +279,9 @@ def balloon(binary_image, box_ranges, box_ilss):
 
     return snakes
 
-def get_contours(image, labels):
+def get_contours(image, yolo_bounding_boxes, box_ranges):
 
-    bounding_boxes, yolo_bounding_boxes, box_ranges = get_bounding_boxes(image, labels)
+    # bounding_boxes, yolo_bounding_boxes, box_ranges = get_bounding_boxes(image, labels)
     image_binary = process_image(image)
     overlaps = find_overlapping_bounding_boxes(box_ranges)
     box_ilss = find_balloon_starts(image_binary, yolo_bounding_boxes, box_ranges, overlaps)
