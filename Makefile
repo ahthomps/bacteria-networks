@@ -1,4 +1,4 @@
-GPU=0 
+GPU=0 # Change to 1 for CUDA
 CUDNN=0
 OPENCV=0
 OPENMP=0
@@ -48,9 +48,11 @@ COMMON+= `pkg-config --cflags opencv 2>/dev/null || pkg-config --cflags opencv4`
 endif
 
 ifeq ($(GPU), 1) 
-COMMON+= -DGPU -I/opt/cuda-10.1/targets/x86_64-linux/include/ # I changed this path -Ben
+# COMMON+= -DGPU -I/opt/cuda-10.1/targets/x86_64-linux/include/ # For Ben's computer only
+COMMON+= -DGPU -I/usr/local/cuda-11.1/targets/x86_64-linux/include/
 CFLAGS+= -DGPU
-LDFLAGS+= -L/opt/cuda-10.1/lib64/stubs -lcuda -L/opt/cuda-10.1/lib64 -lcudart -lcublas -lcurand # I changed this path too -Ben
+# LDFLAGS+= -L/opt/cuda-10.1/lib64/stubs -lcuda -L/opt/cuda-10.1/lib64 -lcudart -lcublas -lcurand # For Ben's computer only
+LDFLAGS+= -L/usr/local/cuda-11.1/lib64/stubs -lcuda -L/usr/local/cuda-11.1/lib64 -lcudart -lcublas -lcurand
 endif
 
 ifeq ($(CUDNN), 1) 
