@@ -113,7 +113,8 @@ class ProgramManager(QMainWindow):
         self.actionBounding_Boxes.setEnabled(False)
         self.actionContour_view.setEnabled(False)
 
-        self._crops = {}
+        # This stores all the YOLO output for each crop
+        self._crop_boxes = {}
 
         self.display()
 
@@ -159,6 +160,7 @@ class ProgramManager(QMainWindow):
         self._image_dir = directory
         self.actionImage.setEnabled(False)
         self.actionImage_Directory.setEnabled(False)
+        self.actionCrop.setEnabled(True)
 
     def display_bounding_boxes(self):
         self._plot_show_bounding_boxes = self.actionBounding_Boxes.isChecked()
@@ -188,10 +190,7 @@ class ProgramManager(QMainWindow):
 
         self.display()
 
-    def run_yolo_on_image(filename):
-
-
-    def yolo(self):
+    def run_yolo(self):
         print("Running YOLO...")
         # Single image
         if self._image_filename != "":
@@ -216,7 +215,13 @@ class ProgramManager(QMainWindow):
                 output = subprocess.run(["./darknet", "detector", "test", "cells/obj.data", "cells/yolov3-custom.cfg", "backup/yolov3-custom_final.weights",
                                          filename], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
 
-        print("Done!" :)
+                image = plt.imread(f"{self._crop_dir}/{filename}")
+                self._crop_boxes[filename] = get_bounding_boxes(image, yolo_output=str(output.stdout, "UTF-8"))
+                print(f"Processed {self._crop_dir}/{filename}.")
+
+        else:
+            print("Didn't run YOLO for some reason.")
+        print("Done!")
 
     def crop(self):
         if self._image_filename is None and self._image_dir == "":
@@ -236,8 +241,11 @@ class ProgramManager(QMainWindow):
 
         # Crop each image, and save all the crops in self._crop_dir
         for filename in input_images:
-            for crop in make_crops(Image.open(filename), filename[:filename.rfind(".")]):
-                crop.save(directory=directory)
+            for crop in make_crops(Image.open(f"{directory}/{filename}"), filename[:filename.rfind(".")]):
+                crop.save(directory=self._crop_dir)
+
+        self.actionYOLO.setEnabled(True)
+        print("Done!")
 
 
 app = QApplication([])
