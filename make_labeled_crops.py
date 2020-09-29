@@ -1,4 +1,5 @@
-# This script takes an image and associated yolo labels, then crops the image into 416x416 tiles with 50% vertical and horizontal overlap, preserving the labels.
+# This script takes an image and associated yolo labels, then crops the image into 416x416 tiles
+# with 50% vertical and horizontal overlap, preserving the labels.
 
 import sys
 from PIL import Image
@@ -13,9 +14,6 @@ class Box:
         self.y1 = y1
         self.x2 = x2
         self.y2 = y2
-
-    def get_corners(self):
-        return (self.x1, self.y1), (self.x1,self.y2), (self.x2, self.y1), (self.x2, self.y2)
 
     def width(self):
         return self.x2 - self.x1
@@ -40,6 +38,7 @@ class Tile(Box):
         self.bounding_boxes = []
 
         # This will be used as a unique identifier for this crop.
+        # This will have to change when we implement batch processing.
         self.filename = f"{self.x1}_{self.y1}"
 
     def add_bounding_box(self, box):
