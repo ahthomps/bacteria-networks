@@ -89,14 +89,8 @@ class BoundingBox(Box):
 
     def overlaps(self, box):
         assert self.in_px
-        l1 = self.x1, self.y1
-        r1 = self.x2, self.y2
-        l2 = box.x1, box.y1
-        r2 = box.x2, box.y2
 
-        if self.x1 > box.x2 or box.x1 > self.x2 or self.y1 > box.y2 or box.y1 > self.y2:
-            return False
-        return True
+        return self.x1 < box.x2 and box.x1 < self.x2 and self.y1 < box.y2 and box.y1 < self.y2
 
         
 def parse_yolo_input(label_file):
