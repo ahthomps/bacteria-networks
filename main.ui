@@ -54,6 +54,7 @@
      <property name="title">
       <string>Open</string>
      </property>
+     <addaction name="actionImage_Directory"/>
      <addaction name="actionImage"/>
      <addaction name="actionLabel"/>
     </widget>
@@ -82,6 +83,7 @@
     </property>
     <addaction name="actionYOLO"/>
     <addaction name="actionContour_run"/>
+    <addaction name="actionCrop"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -152,6 +154,16 @@
   <action name="actionYOLO">
    <property name="text">
     <string>YOLO</string>
+   </property>
+  </action>
+  <action name="actionImage_Directory">
+   <property name="text">
+    <string>Image Directory</string>
+   </property>
+  </action>
+  <action name="actionCrop">
+   <property name="text">
+    <string>Crop</string>
    </property>
   </action>
  </widget>

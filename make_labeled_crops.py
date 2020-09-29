@@ -8,6 +8,7 @@ from os import listdir
 
 TILE_OVERLAP = 2 # 2 -> 50% overlap, 3 -> 33% overlap, etc.
 TILE_SIZE = 416
+IMAGE_EXTENSIONS = (".tiff", ".tif", ".png", ".jpg", ".jpeg", ".gif")
 
 class Box:
     def __init__(self, x1, y1, x2, y2):
@@ -57,10 +58,12 @@ class Tile(Box):
         """ Saves this tile as a cropped image and an associated label file.
             Note: self.bounding_boxes must all be in relative for YOLO to like the label output. """
         self.crop.save(f"{directory}/{self.filename}.jpg", "JPEG", subsampling=0, quality=100)
-        ofile = open(f"{directory}/{self.filename}.txt", "w")
-        for box in self.bounding_boxes:
-            ofile.write(f"{box.classification} {box.center()[0]} {box.center()[1]} {box.width()} {box.height()}\n")
-        ofile.close()
+        
+        if self.bounding_boxes != []:
+            ofile = open(f"{directory}/{self.filename}.txt", "w")
+            for box in self.bounding_boxes:
+                ofile.write(f"{box.classification} {box.center()[0]} {box.center()[1]} {box.width()} {box.height()}\n")
+            ofile.close()
 
 
 class BoundingBox(Box):
@@ -110,10 +113,22 @@ def parse_yolo_input(label_file):
 
     return bounding_boxes
 
-def main(input_dir, output_dir):
-    files = listdir(input_dir)
-    for filename in files:
-        if any(filename.lower().endswith(ext) for ext in (".tiff", ".tif", ".png", ".jpg", ".jpeg", ".gif")):
+def make_crops(img, filename):
+    tiles = []
+    for r in range(0, img.height, TILE_SIZE // TILE_OVERLAP):
+        for c in range(0, img.width, TILE_SIZE // TILE_OVERLAP):
+            x1, y1, x2, y2 = (r, c, r + TILE_SIZE, c + TILE_SIZE)
+            tiles.append(Tile(img.crop((x1, y1, x2, y2)), x1, y1, x2, y2, filename))
+
+    return tiles
+
+
+def make_labeled_crops(input_dir, output_dir):
+    """ input_dir:  Directory containing uncropped images and associated labels
+        output_dir: Directory in which we will dump all the crops and their labels. """
+
+    for filename in listdir(input_dir):
+        if any(filename.lower().endswith(ext) for ext in IMAGE_EXTENSIONS):
             # The filename of the image
             image_filename = f"{input_dir}/{filename}"
 
@@ -128,7 +143,7 @@ def main(input_dir, output_dir):
             label_filename = f"{input_dir}/{filename}.txt"
 
             # Open the files
-            im = Image.open(image_filename)
+            img = Image.open(image_filename)
             labels = open(label_filename)
             
             # Make the BoundingBox objects
@@ -136,18 +151,16 @@ def main(input_dir, output_dir):
 
             # Convert them to px
             for box in bounding_boxes:
-                box.to_px(im.width, im.height)
+                box.to_px(img.width, img.height)
 
-            # Tile the image, and convert the bounding boxes to fit the tiles.
-            tiles = []
-            for r in range(0, im.height, TILE_SIZE // TILE_OVERLAP):
-                for c in range(0, im.width, TILE_SIZE // TILE_OVERLAP):
-                    x1, y1, x2, y2 = (r, c, r + TILE_SIZE, c + TILE_SIZE)
-                    tile = Tile(im.crop((x1, y1, x2, y2)), x1, y1, x2, y2, filename)
-                    for box in bounding_boxes:
-                        if box.overlaps(tile):
-                            tile.add_bounding_box(box)
-                    tiles.append(tile)
+            # Tile the image
+            tiles = make_crops(img, filename)
+
+            # Convert the bounding boxes to fit the tiles.
+            for tile in tiles:
+                for box in bounding_boxes:
+                    if box.overlaps(tile):
+                        tile.add_bounding_box(box)
 
             # Save the tiles and their bounding boxes
             for tile in tiles:
@@ -160,4 +173,4 @@ if __name__ == "__main__":
         print("USAGE: python3 parse_yolo_file.py <input_directory> <output_directory>", file=sys.stderr)
         sys.exit(1)
 
-    main(*sys.argv[1:])
+    make_labeled_crops(*sys.argv[1:])
