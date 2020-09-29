@@ -55,6 +55,8 @@ class Tile(Box):
             box.to_relative(TILE_SIZE, TILE_SIZE)
 
     def save(self, directory="."):
+        """ Saves this tile as a cropped image and an associated label file.
+            Note: self.bounding_boxes must all be in relative for YOLO to like the label output. """
         self.crop.save(f"{directory}/{self.filename}.jpg", "JPEG", subsampling=0, quality=100)
         ofile = open(f"{directory}/{self.filename}.txt", "w")
         for box in self.bounding_boxes:
