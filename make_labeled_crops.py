@@ -89,15 +89,7 @@ def parse_yolo_input(label_file, img):
 
     return bounding_boxes
 
-def main():
-    if len(sys.argv) != 4:
-        print("USAGE: python3 parse_yolo_file.py <image_file> <label_file> <output_directory>", file=sys.stderr)
-        sys.exit(1)
-
-    image_filename = argv[1]
-    label_filename = argv[2]
-    output_dir = argv[3]
-
+def main(iamge_filename, label_filename, output_dir):
     im = Image.open(image_filename)
     labels = open(label_filename)
     
@@ -124,7 +116,11 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) != 4:
+        print("USAGE: python3 parse_yolo_file.py <image_file> <label_file> <output_directory>", file=sys.stderr)
+        sys.exit(1)
+
+    main(*argv[1:])
 
 # TO DO:
 # Batch processing
