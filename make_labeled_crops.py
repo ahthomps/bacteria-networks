@@ -14,6 +14,19 @@ class Box:
         self.x2 = x2
         self.y2 = y2
 
+    def get_corners(self):
+        return (self.x1, self.y1), (self.x1,self.y2), (self.x2, self.y1), (self.x2, self.y2)
+
+    def width(self):
+        return self.x2 - self.x1
+
+    def height(self):
+        return self.y2 - self.y1
+
+    def center(self):
+        return self.x1 + self.width() / 2, self.y1 + self.height() / 2
+
+
 class Tile(Box):
     def __init__(self, crop, x1, y1, x2, y2):
         """ crop:           The cropped PIL Image object.
@@ -45,20 +58,21 @@ class Tile(Box):
         self.crop.save(f"{directory}/{self.filename}.jpg", "JPEG", subsampling=0, quality=100)
         ofile = open(f"{directory}/{self.filename}.txt", "w")
         for box in self.bounding_boxes:
-            ofile.write(f"{box.classification} {box.x1} {box.y1} {box.x2} {box.y2}\n")
+            ofile.write(f"{box.classification} {box.center()[0]} {box.center()[1]} {box.width()} {box.height()}\n")
         ofile.close()
 
 
-
 class BoundingBox(Box):
-    def __init__(self, classification, x1, y1, x2, y2):
+    def __init__(self, classification, x, y, width, height):
         """ classification: A number representing a YOLO classification
-            x1, y1, x2, y2: Floats between 0 and 1 representing a relative position. """
-        super().__init__(x1, y1, x2, y2)
+            x, y:           Floats between 0 and 1 representing the relative position of this box's center.
+            width, height:  Floats representing the relative dimensions of this box. """
+        super().__init__(x - width / 2, y - height / 2, x + width / 2, y + height / 2)
         self.classification = int(classification)
         self.in_px = False
 
     def to_px(self, width, height):
+        assert not self.in_px
         self.x1 *= width
         self.x2 *= width
         self.y1 *= height
@@ -66,6 +80,7 @@ class BoundingBox(Box):
         self.in_px = True
 
     def to_relative(self, width, height):
+        assert self.in_px
         self.x1 /= width
         self.x2 /= width
         self.y1 /= height
@@ -74,11 +89,16 @@ class BoundingBox(Box):
 
     def overlaps(self, box):
         assert self.in_px
-        return any(box.x1 < x < box.x2 and box.y1 < y < box.y2 \
-           for (x,y) in [(self.x1,self.y1), (self.x1,self.y2), (self.x2,self.y1), (self.x2,self.y2)])
+        l1 = self.x1, self.y1
+        r1 = self.x2, self.y2
+        l2 = box.x1, box.y1
+        r2 = box.x2, box.y2
+
+        if self.x1 > box.x2 or box.x1 > self.x2 or self.y1 > box.y2 or box.y1 > self.y2:
+            return False
+        return True
+
         
-
-
 def parse_yolo_input(label_file):
     """ Reads from a yolo training file and returns a list of BoundingBox objects.
         Also takes the labels' image so we can convert from relative to px. """
