@@ -25,14 +25,14 @@ class Tile(Box):
         self.bounding_boxes = []
 
         # This will be used as a unique identifier for this crop.
-        self.filename = f"{self.x1}_{self.x2}"
+        self.filename = f"{self.x1}_{self.y1}"
 
     def add_bounding_box(self, box):
         box = deepcopy(box)
         box.x1 = max(box.x1, self.x1) - self.x1
         box.y1 = max(box.y1, self.y1) - self.y1
-        box.x2 = min(box.x2, self.x2) - self.x2
-        box.y2 = min(box.y2, self.y2) - self.y2
+        box.x2 = min(box.x2, self.x2) - self.x1
+        box.y2 = min(box.y2, self.y2) - self.y1
         self.bounding_boxes.append(box)
 
     def to_relative_bounding_boxes(self):
@@ -53,7 +53,7 @@ class BoundingBox(Box):
         """ classification: A number representing a YOLO classification
             x1, y1, x2, y2: Floats between 0 and 1 representing a relative position. """
         super().__init__(x1, y1, x2, y2)
-        self.classification = classification
+        self.classification = int(classification)
         self.in_px = False
 
     def to_px(self, width, height):
@@ -104,8 +104,8 @@ def main(image_filename, label_filename, output_dir):
         box.to_px(im.width, im.height)
 
     tiles = []
-    for r in range(0, im.width, TILE_SIZE // TILE_OVERLAP):
-        for c in range(0, im.height, TILE_SIZE // TILE_OVERLAP):
+    for r in range(0, im.height, TILE_SIZE // TILE_OVERLAP):
+        for c in range(0, im.width, TILE_SIZE // TILE_OVERLAP):
             x1, y1, x2, y2 = (r, c, r + TILE_SIZE, c + TILE_SIZE)
             tile = Tile(im.crop((x1, y1, x2, y2)), x1, y1, x2, y2)
             for box in bounding_boxes:
