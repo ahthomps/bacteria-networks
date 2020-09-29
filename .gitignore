@@ -5,3 +5,4 @@ obj/*
 libdarknet.a
 libdarknet.so
 backup/*
+results/*

@@ -14,7 +14,7 @@ ARCH= -gencode arch=compute_30,code=sm_30 \
 # This is what I use, uncomment if you know your arch and want to specify
 # ARCH= -gencode arch=compute_52,code=compute_52
 
-VPATH=./src/:./yolo_examples
+VPATH=./src/:./.yolo_examples
 SLIB=libdarknet.so
 ALIB=libdarknet.a
 EXEC=darknet
