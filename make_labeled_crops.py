@@ -4,6 +4,7 @@
 import sys
 from PIL import Image
 from copy import deepcopy
+from os import listdir
 
 TILE_OVERLAP = 2 # 2 -> 50% overlap, 3 -> 33% overlap, etc.
 TILE_SIZE = 416
@@ -26,7 +27,7 @@ class Box:
 
 
 class Tile(Box):
-    def __init__(self, crop, x1, y1, x2, y2):
+    def __init__(self, crop, x1, y1, x2, y2, filename):
         """ crop:           The cropped PIL Image object.
             x1, y1, x2, y2: The position of this tile in the larger image. """
         super().__init__(x1, y1, x2, y2)
@@ -38,8 +39,7 @@ class Tile(Box):
         self.bounding_boxes = []
 
         # This will be used as a unique identifier for this crop.
-        # This will have to change when we implement batch processing.
-        self.filename = f"{self.x1}_{self.y1}"
+        self.filename = f"{filename}_{self.x1}_{self.y1}"
 
     def add_bounding_box(self, box):
         box = deepcopy(box)
@@ -91,7 +91,8 @@ class BoundingBox(Box):
     def overlaps(self, box):
         assert self.in_px
 
-        return self.x1 < box.x2 and box.x1 < self.x2 and self.y1 < box.y2 and box.y1 < self.y2
+        return int(self.x1) < int(box.x2) and int(box.x1) < int(self.x2) \
+           and int(self.y1) < int(box.y2) and int(box.y1) < int(self.y2)
 
         
 def parse_yolo_input(label_file):
@@ -109,39 +110,54 @@ def parse_yolo_input(label_file):
 
     return bounding_boxes
 
-def main(image_filename, label_filename, output_dir):
-    im = Image.open(image_filename)
-    labels = open(label_filename)
-    
-    # Make the BoundingBox objects
-    bounding_boxes = parse_yolo_input(labels)
+def main(input_dir, output_dir):
+    files = listdir(input_dir)
+    for filename in files:
+        if any(filename.lower().endswith(ext) for ext in (".tiff", ".tif", ".png", ".jpg", ".jpeg", ".gif")):
+            # The filename of the image
+            image_filename = f"{input_dir}/{filename}"
 
-    # Convert them to px
-    for box in bounding_boxes:
-        box.to_px(im.width, im.height)
+            # The filename of the image without an extension
+            filename = filename[:filename.rfind(".")]
 
-    tiles = []
-    for r in range(0, im.height, TILE_SIZE // TILE_OVERLAP):
-        for c in range(0, im.width, TILE_SIZE // TILE_OVERLAP):
-            x1, y1, x2, y2 = (r, c, r + TILE_SIZE, c + TILE_SIZE)
-            tile = Tile(im.crop((x1, y1, x2, y2)), x1, y1, x2, y2)
+            # Ignore images with no label files
+            if f"{filename}.txt" not in files:
+                continue
+
+            # The filename of the label file
+            label_filename = f"{input_dir}/{filename}.txt"
+
+            # Open the files
+            im = Image.open(image_filename)
+            labels = open(label_filename)
+            
+            # Make the BoundingBox objects
+            bounding_boxes = parse_yolo_input(labels)
+
+            # Convert them to px
             for box in bounding_boxes:
-                if box.overlaps(tile):
-                    tile.add_bounding_box(box)
-            tiles.append(tile)
+                box.to_px(im.width, im.height)
 
-    for tile in tiles:
-        tile.to_relative_bounding_boxes()
-        tile.save(output_dir)
+            # Tile the image, and convert the bounding boxes to fit the tiles.
+            tiles = []
+            for r in range(0, im.height, TILE_SIZE // TILE_OVERLAP):
+                for c in range(0, im.width, TILE_SIZE // TILE_OVERLAP):
+                    x1, y1, x2, y2 = (r, c, r + TILE_SIZE, c + TILE_SIZE)
+                    tile = Tile(im.crop((x1, y1, x2, y2)), x1, y1, x2, y2, filename)
+                    for box in bounding_boxes:
+                        if box.overlaps(tile):
+                            tile.add_bounding_box(box)
+                    tiles.append(tile)
+
+            # Save the tiles and their bounding boxes
+            for tile in tiles:
+                tile.to_relative_bounding_boxes()
+                tile.save(output_dir)
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 4:
-        print("USAGE: python3 parse_yolo_file.py <image_file> <label_file> <output_directory>", file=sys.stderr)
+    if len(sys.argv) != 3:
+        print("USAGE: python3 parse_yolo_file.py <input_directory> <output_directory>", file=sys.stderr)
         sys.exit(1)
 
     main(*sys.argv[1:])
-
-# TO DO:
-# Batch processing
-# Cropping of bottom (maybe not even necessary...)
