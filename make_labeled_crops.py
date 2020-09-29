@@ -36,6 +36,14 @@ class Tile(Box):
         for box in boxes:
             box.to_relative()
 
+    def save(directory=".", filename=f"{x1}_{y1}"):
+        crop.save(f"{directory}/{x1}_{y1}.jpg", "JPEG", subsampling=0, quality=100)
+        ofile = open(f"{directory}/{filename}.txt", "w")
+        for box in self.bounding_boxes:
+            ofile.write(f"{box.classification} {box.x1} {box.y1} {box.x2} {box.y2}\n")
+        ofile.close()
+
+
 
 class BoundingBox(Box):
     def __init__(self, classification, x1, y1, x2, y2):
@@ -111,8 +119,13 @@ def main():
             tiles.append(tile)
 
     for tile in tiles:
+        tile.to_relative_bounding_boxes()
 
 
 
 if __name__ == "__main__":
     main()
+
+# TO DO:
+# Batch processing
+# Cropping of bottom (maybe not even necessary...)
