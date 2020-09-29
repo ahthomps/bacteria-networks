@@ -1,3 +1,5 @@
+# This script takes an image and associated yolo labels, then crops the image into 416x416 tiles with 50% vertical and horizontal overlap, preserving the labels.
+
 import sys
 from PIL import Image
 from copy import deepcopy
