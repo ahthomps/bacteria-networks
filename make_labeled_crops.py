@@ -36,8 +36,8 @@ class Tile(Box):
         for box in boxes:
             box.to_relative()
 
-    def save(directory=".", filename=f"{x1}_{y1}"):
-        crop.save(f"{directory}/{x1}_{y1}.jpg", "JPEG", subsampling=0, quality=100)
+    def save(directory=".", filename=f"{self.x1}_{self.y1}"):
+        crop.save(f"{directory}/{filename}.jpg", "JPEG", subsampling=0, quality=100)
         ofile = open(f"{directory}/{filename}.txt", "w")
         for box in self.bounding_boxes:
             ofile.write(f"{box.classification} {box.x1} {box.y1} {box.x2} {box.y2}\n")
