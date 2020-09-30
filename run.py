@@ -197,7 +197,7 @@ class ProgramManager(QMainWindow):
             self.actionLabel.setEnabled(False)
             self.actionYOLO.setEnabled(False)
 
-            output = subprocess.run(["./darknet", "detector", "test", "cells/obj.data", "cells/yolov3-custom.cfg", "backup/yolov3-custom_final.weights",
+            output = subprocess.run(["./darknet", "detector", "test", "cells/obj.data", "cells/test.cfg", "backup/yolov3-custom_final.weights",
                                      self._image_filename], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
 
             self._bounding_boxes, self._yolo_bbox, self._bbox_ranges = get_bounding_boxes(self._image, yolo_output=str(output.stdout, "UTF-8"))
@@ -212,7 +212,7 @@ class ProgramManager(QMainWindow):
         elif self._crop_dir:
             self.actionYOLO.setEnabled(False)
             for filename in filter(lambda s: any(s.lower().endswith(ext) for ext in IMAGE_EXTENSIONS), os.listdir(self._crop_dir)):
-                output = subprocess.run(["./darknet", "detector", "test", "cells/obj.data", "cells/yolov3-custom.cfg", "backup/yolov3-custom_final.weights",
+                output = subprocess.run(["./darknet", "detector", "test", "cells/obj.data", "cells/test.cfg", "backup/yolov3-custom_final.weights",
                                          filename], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
 
                 image = plt.imread(f"{self._crop_dir}/{filename}")
