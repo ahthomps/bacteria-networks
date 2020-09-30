@@ -126,8 +126,8 @@ def make_crops(img, filename):
 def make_labeled_crops(input_dir, output_dir):
     """ input_dir:  Directory containing uncropped images and associated labels
         output_dir: Directory in which we will dump all the crops and their labels. """
-
-    for filename in listdir(input_dir):
+    files = listdir(input_dir)
+    for filename in files:
         if any(filename.lower().endswith(ext) for ext in IMAGE_EXTENSIONS):
             # The filename of the image
             image_filename = f"{input_dir}/{filename}"
