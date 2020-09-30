@@ -218,6 +218,7 @@ class ProgramManager(QMainWindow):
                 image = plt.imread(f"{self._crop_dir}/{filename}")
                 self._crop_boxes[filename] = get_bounding_boxes(image, yolo_output=str(output.stdout, "UTF-8"))
                 print(f"Processed {self._crop_dir}/{filename}.")
+                print(self._crop_boxes[filename])
 
         else:
             print("Didn't run YOLO for some reason.")
