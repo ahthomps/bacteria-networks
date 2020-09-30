@@ -1,18 +1,17 @@
-GPU=0 # Change to 1 for CUDA
+GPU=0
 CUDNN=0
 OPENCV=0
 OPENMP=0
 DEBUG=0
 
-ARCH= -gencode arch=compute_30,code=sm_30 \
-      -gencode arch=compute_35,code=sm_35 \
-      -gencode arch=compute_50,code=[sm_50,compute_50] \
-      -gencode arch=compute_52,code=[sm_52,compute_52]
+# ARCH= -gencode arch=compute_35,code=sm_35 \
+#       -gencode arch=compute_50,code=[sm_50,compute_50] \
+#       -gencode arch=compute_52,code=[sm_52,compute_52]
 #      -gencode arch=compute_20,code=[sm_20,sm_21] \ This one is deprecated?
 # compute_30 is also deprecated, but if you use cuda 10.1 or lower then you're fine. It still runs out of vram on my 760, though. -Ben
 
-# This is what I use, uncomment if you know your arch and want to specify
-# ARCH= -gencode arch=compute_52,code=compute_52
+# This is for Ben's computer; substitute for what you need.
+ARCH= -gencode arch=compute_30,code=sm_30
 
 VPATH=./src/:./.yolo_examples
 SLIB=libdarknet.so
@@ -48,11 +47,15 @@ COMMON+= `pkg-config --cflags opencv 2>/dev/null || pkg-config --cflags opencv4`
 endif
 
 ifeq ($(GPU), 1) 
-# COMMON+= -DGPU -I/opt/cuda-10.1/targets/x86_64-linux/include/ # For Ben's computer only
-COMMON+= -DGPU -I/usr/local/cuda-11.1/targets/x86_64-linux/include/
+# For Ben's computer:
+# COMMON+= -DGPU -I/opt/cuda-10.1/targets/x86_64-linux/include/
+# For the HPC:
+# COMMON+= -DGPU -I/usr/local/cuda-11.1/targets/x86_64-linux/include/
 CFLAGS+= -DGPU
-# LDFLAGS+= -L/opt/cuda-10.1/lib64/stubs -lcuda -L/opt/cuda-10.1/lib64 -lcudart -lcublas -lcurand # For Ben's computer only
-LDFLAGS+= -L/usr/local/cuda-11.1/lib64/stubs -lcuda -L/usr/local/cuda-11.1/lib64 -lcudart -lcublas -lcurand
+# For Ben's computer:
+# LDFLAGS+= -L/opt/cuda-10.1/lib64/stubs -lcuda -L/opt/cuda-10.1/lib64 -lcudart -lcublas -lcurand
+# For the HPC:
+# LDFLAGS+= -L/usr/local/cuda-11.1/lib64/stubs -lcuda -L/usr/local/cuda-11.1/lib64 -lcudart -lcublas -lcurand
 endif
 
 ifeq ($(CUDNN), 1) 
