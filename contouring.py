@@ -127,7 +127,7 @@ def contour(image_binary, bounding_boxes):
         ils = initial_level_sets[i]
         # computes the number of iterations for the contour method to grow --
         # based on the size of the diagonal of the bounding box multiplied by a scalar
-        iterations = int(math.sqrt(box.width() ** 2 + box.height() ** 2) // 2.5)
+        iterations = int(math.sqrt(box.width() ** 2 + box.height() ** 2) / 2.5)
         # finds the contour and stores them
         contours.append(segmentation.morphological_geodesic_active_contour(image_binary, iterations, init_level_set=ils, smoothing=1, balloon=1))
 
