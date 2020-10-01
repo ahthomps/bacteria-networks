@@ -3,7 +3,8 @@ from PyQt5.QtWidgets import QMainWindow, QFileDialog, QMessageBox, QInputDialog,
 from PyQt5.uic import loadUi
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 
-from cell_overlap_detection import *
+from contouring import *
+from classes import *
 from make_labeled_crops import make_crops
 from PIL import Image
 
@@ -22,6 +23,7 @@ class ProgramManager(QMainWindow):
         self._bounding_boxes = []
         self._yolo_bbox = []
         self._bbox_ranges = []
+        self._bboxes = []
         self._contours = []
 
         self._image_filename = ""
@@ -66,6 +68,7 @@ class ProgramManager(QMainWindow):
         self.actionCrop.triggered.connect(self.crop)
 
     def display(self):
+        colors = ['red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet']
         self.MplWidget.canvas.axes.cla()
         self.MplWidget.canvas.axes.axis('off')
         if not self._plot_show_binary and self._image_filename:
@@ -73,10 +76,15 @@ class ProgramManager(QMainWindow):
         elif self._plot_show_binary:
             self.MplWidget.canvas.axes.imshow(self._image_binary, cmap=plt.cm.gray)
         if self._plot_show_bounding_boxes:
-            for box in self._bounding_boxes:
-                self.MplWidget.canvas.axes.plot(box[:, 0], box[:, 1], '--b', lw=3)
+            # for box in self._bounding_boxes:
+            #     self.MplWidget.canvas.axes.plot(box[:, 0], box[:, 1], '--b', lw=3)
+            for box in self._bboxes:
+                self.MplWidget.canvas.axes.plot([box.x1, box.x2], [box.y1, box.y1], color='blue', linestyle='dashed', marker='o')
+                self.MplWidget.canvas.axes.plot([box.x1, box.x2], [box.y2, box.y2], color='blue', linestyle='dashed', marker='o')
+                self.MplWidget.canvas.axes.plot([box.x1, box.x1], [box.y1, box.y2], color='blue', linestyle='dashed', marker='o')
+                self.MplWidget.canvas.axes.plot([box.x2, box.x2], [box.y1, box.y2], color='blue', linestyle='dashed', marker='o')
+
         if self._plot_show_contour:
-            colors = ['red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet']
             count = 0
             for contour in self._contours:
                 self.MplWidget.canvas.axes.contour(contour, [0.75], colors=colors[count % len(colors)])
@@ -89,6 +97,7 @@ class ProgramManager(QMainWindow):
         self._image_binary = np.asarray([])
         self._bounding_boxes = []
         self._contours = []
+        self._bboxes = []
 
         self._image_filename = ""
         self._label_filename = ""
@@ -137,11 +146,13 @@ class ProgramManager(QMainWindow):
         filename, _ = QFileDialog.getOpenFileName(None, "Select label", "", "Label Files (*.txt)")
         if not filename:
             return
-        
+
         print("using label {}".format(filename))
         self._label_filename = filename
         self._label_ofile = open(self._label_filename)
-        self._bounding_boxes, self._yolo_bbox, self._bbox_ranges = get_bounding_boxes(self._image, self._label_ofile)
+        self._bboxes = parse_yolo_input(self._label_ofile)
+        for box in self._bboxes:
+            box.to_px(len(self._image[0]), len(self._image))
         self._label_ofile = open(self._label_filename)
 
         self.actionBounding_Boxes.setEnabled(True)
@@ -176,7 +187,8 @@ class ProgramManager(QMainWindow):
 
     def get_contour(self):
         print("getting contours....")
-        self._image_binary, self._contours = get_contours(self._image, self._yolo_bbox, self._bbox_ranges)
+        self._image_binary = process_image(self._image)
+        self._contours = contour(self._image_binary, self._bboxes)
         print("found contours!")
         self.actionContour_view.setChecked(True)
         self.actionBounding_Boxes.setChecked(True)
@@ -200,7 +212,8 @@ class ProgramManager(QMainWindow):
             output = subprocess.run(["./darknet", "detector", "test", "cells/obj.data", "cells/test.cfg", "backup/yolov3-custom_final.weights",
                                      self._image_filename], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
 
-            self._bounding_boxes, self._yolo_bbox, self._bbox_ranges = get_bounding_boxes(self._image, yolo_output=str(output.stdout, "UTF-8"))
+            # self._bounding_boxes, self._yolo_bbox, self._bbox_ranges = get_bounding_boxes(self._image, yolo_output=str(output.stdout, "UTF-8"))
+            self._bboxes = parse_yolo_output(str(output.stdout, "UTF-8"))
 
             self.actionBounding_Boxes.setEnabled(True)
             self.actionContour_run.setEnabled(True)
@@ -216,7 +229,8 @@ class ProgramManager(QMainWindow):
                                          filename], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
 
                 image = plt.imread(f"{self._crop_dir}/{filename}")
-                self._crop_boxes[filename] = get_bounding_boxes(image, yolo_output=str(output.stdout, "UTF-8"))
+                # self._crop_boxes[filename] = get_bounding_boxes(image, yolo_output=str(output.stdout, "UTF-8"))
+                self._crop_boxes[filename] = parse_yolo_output(str(output.stdout, "UTF-8"))
                 print(f"Processed {self._crop_dir}/{filename}.")
                 print(self._crop_boxes[filename])
 
