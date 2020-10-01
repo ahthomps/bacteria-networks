@@ -27,15 +27,15 @@ def process_image(image, threshold=None, openings=None, initial_dilations=None):
     image_gray = color.rgb2gray(image)
 
     # creates binary image
-    if not threshold:
+    if threshold is None:
         # finds threshold using Yen technique
         threshold = filters.threshold_yen(deepcopy(image_gray))
     image_binary = image_gray > threshold
 
-    if not openings:
+    if openings is None:
         # default number of openings
         openings = 7
-    if not initial_dilations:
+    if initial_dilations is None:
         # default number of inital dilations
         initial_dilations = 4
 
@@ -83,12 +83,13 @@ def get_bbox_overlaps(bounding_boxes):
 def find_balloon_ils(image, bounding_boxes):
     """ Takes the binary image and the bounding_boxes to find some set in the middle
         of cells to start ballooning. Returns a list of these initial level sets."""
-    image_working = deepcopy(image)
+    
     initial_level_sets = []
     # find overlaps of bboxes
     overlaps = get_bbox_overlaps(bounding_boxes)
 
     for i in range(len(bounding_boxes)):
+        image_working = deepcopy(image)
         box = bounding_boxes[i]
 
         # removes all other cells so only bright spots are cell in question
@@ -104,17 +105,12 @@ def find_balloon_ils(image, bounding_boxes):
         # sorts the regions, largest area to smallest
         regions.sort(key=lambda x: x.area, reverse=True)
         # take the region with largest area and find its center
-        y, x = regions[0].centroid                 # subimage ils bbox
-        y = int(y)
-        x = int(x)
+        y, x = map(int, regions[0].centroid) # subimage ils bbox
 
         # create a 2x2 ils in the center of the largest region (map back to original image size)
         ils = np.zeros(image.shape, dtype=np.int8)
         ils[box.y1 + y - 1:box.y1 + y + 1, box.x1 + x - 1:box.x2 + x + 1] = 1
         initial_level_sets.append(ils)
-
-        # replaces subtracted cells
-        image_working = deepcopy(image)
 
     return initial_level_sets
 
