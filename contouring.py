@@ -109,7 +109,7 @@ def find_balloon_ils(image, bounding_boxes):
 
         # create a 2x2 ils in the center of the largest region (map back to original image size)
         ils = np.zeros(image.shape, dtype=np.int8)
-        ils[box.y1 + y - 1:box.y1 + y + 1, box.x1 + x - 1:box.x2 + x + 1] = 1
+        ils[box.y1 + y - 1:box.y1 + y + 1, box.x1 + x - 1:box.x1 + x + 1] = 1
         initial_level_sets.append(ils)
 
     return initial_level_sets
