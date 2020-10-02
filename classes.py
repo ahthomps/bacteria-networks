@@ -1,7 +1,4 @@
-import sys
-from PIL import Image
 from copy import deepcopy
-from os import listdir
 import numpy as np
 
 class Box:
@@ -21,26 +18,31 @@ class Box:
         return self.x1 + self.width() / 2, self.y1 + self.height() / 2
 
     def corners(self):
-        return [(self.x1, self.y1), (self.x2, self.y1), (self.x2, self.y2), (self.x1, self.y2)]
+        return (self.x1, self.y1), (self.x2, self.y1), (self.x2, self.y2), (self.x1, self.y2)
 
-    def overlaps(self, box):
+    def contains_point(self, pt):
+        x, y = pt
+        return self.x1 <= x <= self.x2 and self.y1 <= y <= self.y2
+
+    def corners_contained_in(self, box):
+        """ Returns the number of this Box's corners that are contained in box. """
         overlapped_corners = 0
-        for (x, y) in self.corners():
-            if (box.x1 <= x <= box.x2) and (box.y1 <= y <= box.y2):
+        for x, y in self.corners():
+            if box.x1 <= x <= box.x2 and box.y1 <= y <= box.y2:
                 overlapped_corners += 1
         return overlapped_corners
 
     def subimage(self, image):
-        # returns the subset of the image within the bounding box as an np.array
+        """ returns the subset of the image within the bounding box as an np.array """
         return np.asarray(image[self.y1:self.y2 + 1, self.x1:self.x2 + 1])
 
 
 class Tile(Box):
-    def __init__(self, crop, x1, y1, x2, y2, filename):
-        """ crop:           The cropped PIL Image object.
+    def __init__(self, img, x1, y1, x2, y2, filename):
+        """ img:           The cropped PIL Image object.
             x1, y1, x2, y2: The position of this tile in the larger image. """
         super().__init__(x1, y1, x2, y2)
-        self.crop = crop
+        self.img = img
 
         # This will store all the (potentially partial) bounding boxes that overlap this tile.
         # Their coordinates are relative to this tile.
@@ -51,6 +53,7 @@ class Tile(Box):
         self.filename = f"{filename}_{self.x1}_{self.y1}"
 
     def add_bounding_box(self, box):
+        """ box: A bounding box with coordinates relative to the untiled image. """
         box = deepcopy(box)
         box.x1 = max(box.x1, self.x1) - self.x1
         box.y1 = max(box.y1, self.y1) - self.y1
@@ -60,14 +63,15 @@ class Tile(Box):
 
     def to_relative_bounding_boxes(self):
         for box in self.bounding_boxes:
-            box.to_relative(TILE_SIZE, TILE_SIZE)
+            box.to_relative(self.width(), self.height())
 
     def save(self, directory="."):
         """ Saves this tile as a cropped image and an associated label file.
-            Note: self.bounding_boxes must all be in relative coords for YOLO to like the label output. """
-        self.crop.save(f"{directory}/{self.filename}.jpg", "JPEG", subsampling=0, quality=100)
+            Note: This will convert bounding boxes to relative, because that's hwo YOLO likes it. """
+        self.img.save(f"{directory}/{self.filename}.jpg", "JPEG", subsampling=0, quality=100)
 
         if self.bounding_boxes != []:
+            self.to_relative_bounding_boxes()
             ofile = open(f"{directory}/{self.filename}.txt", "w")
             for box in self.bounding_boxes:
                 ofile.write(f"{box.classification} {box.center()[0]} {box.center()[1]} {box.width()} {box.height()}\n")
@@ -99,19 +103,19 @@ class BoundingBox(Box):
         self.y2 /= height
         self.in_px = False
 
-    # def overlaps(self, box):
-    #     assert self.in_px
-    #     assert box.in_px
-    #
-    #     return int(self.x1) < int(box.x2) and int(box.x1) < int(self.x2) \
-    #        and int(self.y1) < int(box.y2) and int(box.y1) < int(self.y2)
+    def overlaps(self, box):
+        assert self.in_px
+    
+        # The reason I int here is to remove the possibility of 0-width overlaps.
+        return int(self.x1) < int(box.x2) and int(box.x1) < int(self.x2) \
+           and int(self.y1) < int(box.y2) and int(box.y1) < int(self.y2)
 
 def parse_yolo_input(label_file):
     """ Reads from a yolo training file and returns a list of BoundingBox objects.
         Also takes the labels' image so we can convert from relative to px. """
     bounding_boxes = []
     for line in label_file.readlines():
-        # Ignore comments
+        # Treat #s as comments
         if "#" in line:
             line = line[:line.index("#")]
         if line.split() == []:

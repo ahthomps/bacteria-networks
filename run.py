@@ -5,7 +5,7 @@ from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as Navigatio
 
 from contouring import *
 from classes import *
-from make_labeled_crops import make_crops
+from make_labeled_crops import make_tiles
 from PIL import Image
 
 import numpy as np
@@ -256,8 +256,8 @@ class ProgramManager(QMainWindow):
 
         # Crop each image, and save all the crops in self._crop_dir
         for filename in input_images:
-            for crop in make_crops(Image.open(f"{directory}/{filename}"), filename[:filename.rfind(".")]):
-                crop.save(directory=self._crop_dir)
+            for tile in make_tiles(Image.open(f"{directory}/{filename}"), filename[:filename.rfind(".")]):
+                tile.save(directory=self._crop_dir)
 
         self.actionYOLO.setEnabled(True)
         print("Done!")

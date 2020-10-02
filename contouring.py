@@ -63,9 +63,9 @@ def get_bbox_overlaps(bounding_boxes):
             #       because when looking for balloon start I don't want to
             #       subtract all of box1 (what I'm looking for)
 
-            # A.overlaps(B) finds the number of corners of A that are in B
-            points_in_box2 = box1.overlaps(box2)
-            points_in_box1 = box2.overlaps(box1)
+            # A.corners_contained_in(B) returns the number of corners of A that are in B
+            points_in_box2 = box1.corners_contained_in(box2)
+            points_in_box1 = box2.corners_contained_in(box1)
             # if Box1 is completely inside Box2, only add Box1 as overlap of Box2 --
             # don't add Box2 to Box1 because when subtracting overlapping boxes this would make all of Box1 black
             if points_in_box2 == 4:
