@@ -266,7 +266,8 @@ class ProgramManager(QMainWindow):
         print("Made at most", len(os.listdir(self._crop_dir)), "crops.")
 
     def reunify(self):
-        reunify_tiles(self._tiles)
+        full_tile = reunify_tiles(self._tiles)
+        full_tile.save()
 
 app = QApplication([])
 window = ProgramManager()

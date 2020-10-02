@@ -103,7 +103,7 @@ def reunify_tiles(tiles, output_dir="."):
                 new_bbox.y2 += tile.y1
                 full_tile.add_bounding_box(new_bbox)
 
-    full_tile.save(output_dir)
+    return full_tile
 
 
 if __name__ == "__main__":
@@ -113,5 +113,4 @@ if __name__ == "__main__":
 
     input_dir, output_dir = sys.argv[1:]
     tiles = make_labeled_tiles(input_dir)
-    save_tiles(tiles, output_dir) # Comment me and uncomment below if you want to see reuinification
-    # reunify_tiles(tiles, output_dir)
+    save_tiles(tiles, output_dir)
