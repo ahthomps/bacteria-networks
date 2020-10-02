@@ -84,6 +84,7 @@
     <addaction name="actionYOLO"/>
     <addaction name="actionContour_run"/>
     <addaction name="actionCrop"/>
+    <addaction name="actionReunify"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -164,6 +165,11 @@
   <action name="actionCrop">
    <property name="text">
     <string>Crop</string>
+   </property>
+  </action>
+  <action name="actionReunify">
+   <property name="text">
+    <string>Reunify</string>
    </property>
   </action>
  </widget>

@@ -1,5 +1,6 @@
 from copy import deepcopy
 import numpy as np
+import sys
 
 class Box:
     def __init__(self, x1, y1, x2, y2):
@@ -67,7 +68,7 @@ class Tile(Box):
 
     def save(self, directory="."):
         """ Saves this tile as a cropped image and an associated label file.
-            Note: This will convert bounding boxes to relative, because that's hwo YOLO likes it. """
+            Note: This will convert bounding boxes to relative, because that's how YOLO likes it. """
         self.img.save(f"{directory}/{self.filename}.jpg", "JPEG", subsampling=0, quality=100)
 
         if self.bounding_boxes != []:
@@ -88,7 +89,10 @@ class BoundingBox(Box):
         self.in_px = False
 
     def to_px(self, width, height):
-        assert not self.in_px
+        if self.in_px:
+            print("WARNING: BoundingBox already in px.", file=sys.stderr)
+            return
+
         self.x1 = int(self.x1 * width)
         self.x2 = int(self.x2 * width)
         self.y1 = int(self.y1 * height)
@@ -96,7 +100,10 @@ class BoundingBox(Box):
         self.in_px = True
 
     def to_relative(self, width, height):
-        assert self.in_px
+        if not self.in_px:
+            print("WARNING: BoundingBox already in relative.", file=sys.stderr)
+            return
+
         self.x1 /= width
         self.x2 /= width
         self.y1 /= height
@@ -126,7 +133,7 @@ def parse_yolo_input(label_file):
     return bounding_boxes
 
 def parse_yolo_output(yolo_output):
-    """ Takes std::error from yolo process and returns a list of Box objects."""
+    """ Takes a string of stdout from running yolo and returns a list of Box objects."""
     bounding_boxes = []
     for line in yolo_output.splitlines():
         if line.startswith("    BBOX:"):
