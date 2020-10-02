@@ -83,7 +83,7 @@ def reunify_tiles(tiles, output_dir="."):
 
     full_image = rebuild_original_image(tiles)
 
-    full_tile = Tile(full_image, 0, 0, full_width, full_height, "full_image")
+    full_tile = Tile(full_image, 0, 0, full_image.shape()[0], full_image.shape()[1], "full_image")
     # This is not really a tile per se, but I want to use Tile's methods.
 
     # i.e. if TILE_OVERLAP = 2, the confidence_region is 1/4, 1/4, 3/4, 3/4 (proportions of TILE_SIZE)
