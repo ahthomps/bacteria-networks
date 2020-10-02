@@ -64,7 +64,8 @@ class Tile(Box):
 
     def to_relative_bounding_boxes(self):
         for box in self.bounding_boxes:
-            box.to_relative(self.width(), self.height())
+            if isinstance(box, BoundingBox):
+                box.to_relative(self.width(), self.height())
 
     def save(self, directory="."):
         """ Saves this tile as a cropped image and an associated label file.
@@ -78,6 +79,11 @@ class Tile(Box):
                 ofile.write(f"{box.classification} {box.center()[0]} {box.center()[1]} {box.width()} {box.height()}\n")
             ofile.close()
 
+    def to_relative(self, width, height):
+        self.x1 /= width
+        self.x2 /= width
+        self.y1 /= height
+        self.y2 /= height
 
 class BoundingBox(Box):
     def __init__(self, classification, x, y, width, height):
@@ -104,10 +110,7 @@ class BoundingBox(Box):
             print("WARNING: BoundingBox already in relative.", file=sys.stderr)
             return
 
-        self.x1 /= width
-        self.x2 /= width
-        self.y1 /= height
-        self.y2 /= height
+        super().to_relative(width, height)
         self.in_px = False
 
     def overlaps(self, box):
