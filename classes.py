@@ -37,6 +37,11 @@ class Box:
         """ returns the subset of the image within the bounding box as an np.array """
         return np.asarray(image[self.y1:self.y2 + 1, self.x1:self.x2 + 1])
 
+    def to_relative(self, width, height):
+        self.x1 /= width
+        self.x2 /= width
+        self.y1 /= height
+        self.y2 /= height
 
 class Tile(Box):
     def __init__(self, img, x1, y1, x2, y2, filename):
@@ -64,8 +69,7 @@ class Tile(Box):
 
     def to_relative_bounding_boxes(self):
         for box in self.bounding_boxes:
-            if isinstance(box, BoundingBox):
-                box.to_relative(self.width(), self.height())
+            box.to_relative(self.width(), self.height())
 
     def save(self, directory="."):
         """ Saves this tile as a cropped image and an associated label file.
@@ -76,14 +80,9 @@ class Tile(Box):
             self.to_relative_bounding_boxes()
             ofile = open(f"{directory}/{self.filename}.txt", "w")
             for box in self.bounding_boxes:
-                ofile.write(f"{box.classification} {box.center()[0]} {box.center()[1]} {box.width()} {box.height()}\n")
+                classification = box.classification if isinstance(box, BoundingBox) else 0
+                ofile.write(f"{classification} {box.center()[0]} {box.center()[1]} {box.width()} {box.height()}\n")
             ofile.close()
-
-    def to_relative(self, width, height):
-        self.x1 /= width
-        self.x2 /= width
-        self.y1 /= height
-        self.y2 /= height
 
 class BoundingBox(Box):
     def __init__(self, classification, x, y, width, height):
