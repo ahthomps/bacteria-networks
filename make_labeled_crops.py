@@ -78,7 +78,7 @@ def rebuild_original_image(tiles):
 
     return full_image
 
-def reunify_tiles(tiles, output_dir):
+def reunify_tiles(tiles, output_dir="."):
     """ Takes all the tiles in tiles, and returns a new Tile object representing the untiled image. """
 
     full_image = rebuild_original_image(tiles)
