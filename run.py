@@ -5,7 +5,7 @@ from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as Navigatio
 
 from contouring import *
 from classes import *
-from make_labeled_crops import make_tiles
+from make_labeled_crops import *
 from PIL import Image
 
 import numpy as np
@@ -14,30 +14,27 @@ import matplotlib.pyplot as plt
 import subprocess
 import os
 
-IMAGE_EXTENSIONS = (".tiff", ".tif", ".png", ".jpg", ".jpeg", ".gif")
-
 class ProgramManager(QMainWindow):
     def __init__(self):
         self._image = np.asarray([])
-        self._image_binary = np.asarray([])
-        self._bounding_boxes = []
-        self._yolo_bbox = []
-        self._bbox_ranges = []
+        self._binary_image = np.asarray([])
         self._bboxes = []
         self._contours = []
 
         self._image_filename = ""
         self._label_filename = ""
         self._image_dir = ""
-        self._crop_dir = ""
         self._label_ofile = None
+
+        self._crop_dir = ""
+        self._tiles = []
 
         self._plot_show_binary = False
         self._plot_show_bounding_boxes = False
         self._plot_show_contour = False
 
-        # Maps filenames of crops to their bounding box data structures
-        self._crops = {}
+        # Maps crop names to bounding box lists
+        self._crop_boxes = {}
 
         QMainWindow.__init__(self)
         loadUi("main.ui", self)
@@ -53,6 +50,7 @@ class ProgramManager(QMainWindow):
         self.actionImage.triggered.connect(self.get_image)
         self.actionLabel.triggered.connect(self.get_label)
         self.actionImage_Directory.triggered.connect(self.get_image_directory)
+        self.actionReunify.triggered.connect(self.reunify)
 
         # actions in the toolbar EDIT
         self.actionClear.triggered.connect(self.reset_data)
@@ -74,10 +72,8 @@ class ProgramManager(QMainWindow):
         if not self._plot_show_binary and self._image_filename:
             self.MplWidget.canvas.axes.imshow(self._image, cmap=plt.cm.gray)
         elif self._plot_show_binary:
-            self.MplWidget.canvas.axes.imshow(self._image_binary, cmap=plt.cm.gray)
+            self.MplWidget.canvas.axes.imshow(self._binary_image, cmap=plt.cm.gray)
         if self._plot_show_bounding_boxes:
-            # for box in self._bounding_boxes:
-            #     self.MplWidget.canvas.axes.plot(box[:, 0], box[:, 1], '--b', lw=3)
             for box in self._bboxes:
                 self.MplWidget.canvas.axes.plot([box.x1, box.x2], [box.y1, box.y1], color='blue', linestyle='dashed', marker='o')
                 self.MplWidget.canvas.axes.plot([box.x1, box.x2], [box.y2, box.y2], color='blue', linestyle='dashed', marker='o')
@@ -94,8 +90,7 @@ class ProgramManager(QMainWindow):
 
     def reset_data(self):
         self._image = np.asarray([])
-        self._image_binary = np.asarray([])
-        self._bounding_boxes = []
+        self._binary_image = np.asarray([])
         self._contours = []
         self._bboxes = []
 
@@ -108,6 +103,9 @@ class ProgramManager(QMainWindow):
         self._plot_show_binary = False
         self._plot_show_bounding_boxes = False
         self._plot_show_contour = False
+
+        # This will need to change. I'm doing this for testing only
+        self.actionReunify.setEnabled(True)
 
         self.actionImage.setEnabled(True)
         self.actionImage_Directory.setEnabled(True)
@@ -122,8 +120,8 @@ class ProgramManager(QMainWindow):
         self.actionBounding_Boxes.setEnabled(False)
         self.actionContour_view.setEnabled(False)
 
-        # This stores all the YOLO output for each crop
         self._crop_boxes = {}
+        self._tiles = []
 
         self.display()
 
@@ -135,6 +133,10 @@ class ProgramManager(QMainWindow):
         print("using image {}".format(filename))
         self._image_filename = filename
         self._image = plt.imread(self._image_filename)
+
+        # Maybe we should 0 pad if the image is too small, but I can do that later
+        if self._image.shape[0] > TILE_SIZE or self._image.shape[1] > TILE_SIZE:
+            self.actionCrop.setEnabled(True)
 
         self.actionLabel.setEnabled(True)
         self.actionYOLO.setEnabled(True)
@@ -186,9 +188,9 @@ class ProgramManager(QMainWindow):
         self.display()
 
     def get_contour(self):
-        print("getting contours....")
-        self._image_binary = process_image(self._image)
-        self._contours = contour(self._image_binary, self._bboxes)
+        print("getting contours...")
+        self._binary_image = process_image(self._image)
+        self._contours = contour(self._binary_image, self._bboxes)
         print("found contours!")
         self.actionContour_view.setChecked(True)
         self.actionBounding_Boxes.setChecked(True)
@@ -203,16 +205,31 @@ class ProgramManager(QMainWindow):
         self.display()
 
     def run_yolo(self):
+        # There's major copy-pasted code in this function. Should probably be cleaned up.
         print("Running YOLO...")
+
+        # Batch of crops
+        if self._crop_dir != "":
+            self.actionYOLO.setEnabled(False)
+            for filename in filter(lambda s: any(s.lower().endswith(ext) for ext in IMAGE_EXTENSIONS), os.listdir(self._crop_dir)):
+                filename_no_ext = filename[:filename.rfind(".")]
+                x1, y1 = map(int, filename_no_ext.split("_")[-2:])
+
+                output = subprocess.run(["./darknet", "detector", "test", "cells/obj.data", "cells/test.cfg", "backup/yolov3-custom_final.weights",
+                                         f"{self._crop_dir}/{filename}"], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+
+                tile = Tile(Image.open(f"{self._crop_dir}/{filename}"), x1, y1, x1 + TILE_SIZE, y1 + TILE_SIZE, filename_no_ext)
+                tile.bounding_boxes = parse_yolo_output(str(output.stdout, "UTF-8"))
+                self._tiles.append(tile)
+
+                print(f"Processed {self._crop_dir}/{filename}.")
         # Single image
-        if self._image_filename != "":
+        elif self._image_filename != "":
             self.actionLabel.setEnabled(False)
             self.actionYOLO.setEnabled(False)
 
             output = subprocess.run(["./darknet", "detector", "test", "cells/obj.data", "cells/test.cfg", "backup/yolov3-custom_final.weights",
                                      self._image_filename], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
-
-            # self._bounding_boxes, self._yolo_bbox, self._bbox_ranges = get_bounding_boxes(self._image, yolo_output=str(output.stdout, "UTF-8"))
             self._bboxes = parse_yolo_output(str(output.stdout, "UTF-8"))
 
             self.actionBounding_Boxes.setEnabled(True)
@@ -220,36 +237,21 @@ class ProgramManager(QMainWindow):
             self.actionBounding_Boxes.setChecked(True)
 
             self.display_bounding_boxes()
-
-        # Batch of crops
-        elif self._crop_dir:
-            self.actionYOLO.setEnabled(False)
-            for filename in filter(lambda s: any(s.lower().endswith(ext) for ext in IMAGE_EXTENSIONS), os.listdir(self._crop_dir)):
-                output = subprocess.run(["./darknet", "detector", "test", "cells/obj.data", "cells/test.cfg", "backup/yolov3-custom_final.weights",
-                                         filename], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
-
-                image = plt.imread(f"{self._crop_dir}/{filename}")
-                # self._crop_boxes[filename] = get_bounding_boxes(image, yolo_output=str(output.stdout, "UTF-8"))
-                self._crop_boxes[filename] = parse_yolo_output(str(output.stdout, "UTF-8"))
-                print(f"Processed {self._crop_dir}/{filename}.")
-                print(self._crop_boxes[filename])
-
         else:
             print("Didn't run YOLO for some reason.")
         print("Done!")
 
     def crop(self):
-        if self._image_filename is None and self._image_dir == "":
-            return
+        assert self._image_filename is not None or self._image_dir != ""
 
         # Make the crops directory
-        directory = self._image_dir or "."
+        directory = self._image_dir or self._image_filename[:self._image_filename.rfind("/")]
         self._crop_dir = f"{directory}/crops"
         os.makedirs(self._crop_dir, exist_ok=True)
 
         # Get a list of all the image files we're going to crop
         if self._image_filename:
-            input_images = [self._image_filename]
+            input_images = [self._image_filename[self._image_filename.rfind("/") + 1:]]
         else:
             input_images = filter(lambda s: any(s.lower().endswith(ext) for ext in IMAGE_EXTENSIONS),
                                   os.listdir(self._image_dir))
@@ -260,8 +262,11 @@ class ProgramManager(QMainWindow):
                 tile.save(directory=self._crop_dir)
 
         self.actionYOLO.setEnabled(True)
-        print("Done!")
+        self.actionCrop.setEnabled(False)
+        print("Made at most", len(os.listdir(self._crop_dir)), "crops.")
 
+    def reunify(self):
+        reunify_tiles(self._tiles)
 
 app = QApplication([])
 window = ProgramManager()

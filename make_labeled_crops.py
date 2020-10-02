@@ -1,6 +1,3 @@
-# This script takes an image and associated yolo bounding boxes, then crops the image into 416x416 tiles
-# with 50% vertical and horizontal overlap, preserving the bounding boxes.
-
 import sys
 from PIL import Image
 from copy import deepcopy
@@ -70,9 +67,7 @@ def save_tiles(tiles, output_dir):
     for tile in tiles:
         tile.save(output_dir)
 
-def reunify_tiles(tiles, output_dir):
-    """ Takes all the tiles in tiles, and returns a new Tile object representing the untiled image. """
-
+def rebuild_original_image(tiles):
     full_height = max(tiles, key=lambda tile: tile.y2).y2
     full_width = max(tiles, key=lambda tile: tile.x2).x2
 
@@ -81,9 +76,17 @@ def reunify_tiles(tiles, output_dir):
     for tile in tiles:
         full_image.paste(tile.img, box=(tile.x1, tile.y1, tile.x2, tile.y2))
 
+    return full_image
+
+def reunify_tiles(tiles, output_dir):
+    """ Takes all the tiles in tiles, and returns a new Tile object representing the untiled image. """
+
+    full_image = rebuild_original_image(tiles)
+
     full_tile = Tile(full_image, 0, 0, full_width, full_height, "full_image")
     # This is not really a tile per se, but I want to use Tile's methods.
 
+    # i.e. if TILE_OVERLAP = 2, the confidence_region is 1/4, 1/4, 3/4, 3/4 (proportions of TILE_SIZE)
     confidence_region = Box(TILE_SIZE // (2 * TILE_OVERLAP),
                             TILE_SIZE // (2 * TILE_OVERLAP),
                             ((2 * TILE_OVERLAP - 1) * TILE_SIZE) // (2 * TILE_OVERLAP),

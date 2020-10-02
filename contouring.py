@@ -30,7 +30,7 @@ def process_image(image, threshold=None, openings=None, initial_dilations=None):
     if threshold is None:
         # finds threshold using Yen technique
         threshold = filters.threshold_yen(deepcopy(image_gray))
-    image_binary = image_gray > threshold
+    binary_image = image_gray > threshold
 
     if openings is None:
         # default number of openings
@@ -40,13 +40,13 @@ def process_image(image, threshold=None, openings=None, initial_dilations=None):
         initial_dilations = 4
 
     # filling any in the cells -- seems to work better than the fill_holes method
-    image_binary = erode_and_dilate(image_binary, 0, initial_dilations)
-    image_binary = erode_and_dilate(image_binary, initial_dilations, 0)
+    binary_image = erode_and_dilate(binary_image, 0, initial_dilations)
+    binary_image = erode_and_dilate(binary_image, initial_dilations, 0)
 
     # performs opening to reduce noise around cells
-    image_binary = erode_and_dilate(image_binary, openings, openings)
+    binary_image = erode_and_dilate(binary_image, openings, openings)
 
-    return image_binary.astype(np.int8)
+    return binary_image.astype(np.int8)
 
 def get_bbox_overlaps(bounding_boxes):
     """ Takes a list of Box objects and returns a list of the overlaps of each
@@ -114,13 +114,13 @@ def find_balloon_ils(image, bounding_boxes):
 
     return initial_level_sets
 
-def contour(image_binary, bounding_boxes):
+def contour(binary_image, bounding_boxes):
     """ Takes a binary image and corresponding bounding boxes and returns a list of
         cell contours, [np.array]"""
     contours = []
     # finds areas inside cells to start ballooning
-    initial_level_sets = find_balloon_ils(image_binary, bounding_boxes)
-    image_binary = util.img_as_float(image_binary)
+    initial_level_sets = find_balloon_ils(binary_image, bounding_boxes)
+    binary_image = util.img_as_float(binary_image)
 
     for i in range(len(bounding_boxes)):
         box = bounding_boxes[i]
@@ -129,6 +129,6 @@ def contour(image_binary, bounding_boxes):
         # based on the size of the diagonal of the bounding box multiplied by a scalar
         iterations = int(math.sqrt(box.width() ** 2 + box.height() ** 2) / 2.5)
         # finds the contour and stores them
-        contours.append(segmentation.morphological_geodesic_active_contour(image_binary, iterations, init_level_set=ils, smoothing=1, balloon=1))
+        contours.append(segmentation.morphological_geodesic_active_contour(binary_image, iterations, init_level_set=ils, smoothing=1, balloon=1))
 
     return contours
