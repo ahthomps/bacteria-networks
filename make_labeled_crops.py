@@ -1,5 +1,5 @@
-# This script takes an image and associated yolo labels, then crops the image into 416x416 tiles
-# with 50% vertical and horizontal overlap, preserving the labels.
+# This script takes an image and associated yolo bounding boxes, then crops the image into 416x416 tiles
+# with 50% vertical and horizontal overlap, preserving the bounding boxes.
 
 import sys
 from PIL import Image
@@ -11,7 +11,9 @@ TILE_OVERLAP = 2 # 2 -> 50% overlap, 3 -> 33% overlap, etc.
 TILE_SIZE = 416
 IMAGE_EXTENSIONS = (".tiff", ".tif", ".png", ".jpg", ".jpeg", ".gif")
 
-def make_crops(img, filename):
+def make_tiles(img, filename):
+    """ img: A PIL.Image to be tiled.
+        filename: A filename, usually the filename of img without its extension. """
     tiles = []
     for r in range(0, img.height, TILE_SIZE // TILE_OVERLAP):
         for c in range(0, img.width, TILE_SIZE // TILE_OVERLAP):
@@ -21,9 +23,10 @@ def make_crops(img, filename):
     return tiles
 
 
-def make_labeled_crops(input_dir, output_dir):
-    """ input_dir:  Directory containing uncropped images and associated labels
-        output_dir: Directory in which we will dump all the crops and their labels. """
+def make_labeled_tiles(input_dir):
+    """ input_dir:  Directory containing uncropped images and associated labels.
+        Returns Tile objects representing CROP_SIZE x CROP_SIZE crops of each image in input_dir
+        that has an associated label file. Each of these Tiles has the appropriate labels. """
     files = listdir(input_dir)
     for filename in files:
         if any(filename.lower().endswith(ext) for ext in IMAGE_EXTENSIONS):
@@ -52,7 +55,7 @@ def make_labeled_crops(input_dir, output_dir):
                 box.to_px(img.width, img.height)
 
             # Tile the image
-            tiles = make_crops(img, filename)
+            tiles = make_tiles(img, filename)
 
             # Convert the bounding boxes to fit the tiles.
             for tile in tiles:
@@ -60,15 +63,52 @@ def make_labeled_crops(input_dir, output_dir):
                     if box.overlaps(tile):
                         tile.add_bounding_box(box)
 
-            # Save the tiles and their bounding boxes
-            for tile in tiles:
-                tile.to_relative_bounding_boxes()
-                tile.save(output_dir)
+            return tiles
+
+def save_tiles(tiles, output_dir):
+    """ tiles: A list of Tile objects. """
+    for tile in tiles:
+        tile.save(output_dir)
+
+def reunify_tiles(tiles, output_dir):
+    """ Takes all the tiles in tiles, and returns a new Tile object representing the untiled image. """
+
+    full_height = max(tiles, key=lambda tile: tile.y2).y2
+    full_width = max(tiles, key=lambda tile: tile.x2).x2
+
+    # Rebuild the original image
+    full_image = Image.new(mode="L", size=(full_width, full_height)) # mode "L" is for 8-bit greyscale
+    for tile in tiles:
+        full_image.paste(tile.img, box=(tile.x1, tile.y1, tile.x2, tile.y2))
+
+    full_tile = Tile(full_image, 0, 0, full_width, full_height, "full_image")
+    # This is not really a tile per se, but I want to use Tile's methods.
+
+    confidence_region = Box(TILE_SIZE // (2 * TILE_OVERLAP),
+                            TILE_SIZE // (2 * TILE_OVERLAP),
+                            ((2 * TILE_OVERLAP - 1) * TILE_SIZE) // (2 * TILE_OVERLAP),
+                            ((2 * TILE_OVERLAP - 1) * TILE_SIZE) // (2 * TILE_OVERLAP))
+    for tile in tiles:
+        for bounding_box in tile.bounding_boxes:
+            # If the center of the bounding box is in the confidence region of this tile
+            if confidence_region.contains_point(bounding_box.center()):
+                # Then we add the bounding box to the big image
+                new_bbox = deepcopy(bounding_box)
+                new_bbox.x1 += tile.x1
+                new_bbox.x2 += tile.x1
+                new_bbox.y1 += tile.y1
+                new_bbox.y2 += tile.y1
+                full_tile.add_bounding_box(new_bbox)
+
+    full_tile.save(output_dir)
 
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
-        print("USAGE: python3 parse_yolo_file.py <input_directory> <output_directory>", file=sys.stderr)
+        print("USAGE: python3 make_labeled_crops.py <input_directory> <output_directory>", file=sys.stderr)
         sys.exit(1)
 
-    make_labeled_crops(*sys.argv[1:])
+    input_dir, output_dir = sys.argv[1:]
+    tiles = make_labeled_tiles(input_dir)
+    save_tiles(tiles, output_dir) # Comment me and uncomment below if you want to see reuinification
+    # reunify_tiles(tiles, output_dir)
