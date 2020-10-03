@@ -62,6 +62,7 @@ class ProgramManager(QMainWindow):
 
         # actions in the toolbar RUN
         self.actionYOLO.triggered.connect(self.run_yolo)
+        self.actionProcess_Image.triggered.connect(self.get_processed_image)
         self.actionContour_run.triggered.connect(self.get_contour)
         self.actionCrop.triggered.connect(self.crop)
 
@@ -113,6 +114,7 @@ class ProgramManager(QMainWindow):
         self.actionLabel.setEnabled(False)
 
         self.actionYOLO.setEnabled(False)
+        self.actionProcess_Image.setEnabled(False)
         self.actionCrop.setEnabled(False)
         self.actionContour_run.setEnabled(False)
 
@@ -187,9 +189,23 @@ class ProgramManager(QMainWindow):
         self._plot_show_binary = self.actionBinary_Image.isChecked()
         self.display()
 
+    def get_processed_image(self):
+        print("processing image...")
+        self._binary_image = process_image(self._image)
+        print("image processed!")
+        self.actionProcess_Image.setEnabled(False)
+        self.actionBinary_Image.setEnabled(True)
+        self.actionBinary_Image.setChecked(True)
+        self.actionBounding_Boxes.setChecked(False)
+        self.actionContour_run.setEnabled(True)
+
+        self._plot_show_binary = True
+        self._plot_show_bounding_boxes = False
+
+        self.display()
+
     def get_contour(self):
         print("getting contours...")
-        self._binary_image = process_image(self._image)
         self._contours = contour(self._binary_image, self._bboxes)
         print("found contours!")
         self.actionContour_view.setChecked(True)
@@ -233,7 +249,7 @@ class ProgramManager(QMainWindow):
             self._bboxes = parse_yolo_output(str(output.stdout, "UTF-8"))
 
             self.actionBounding_Boxes.setEnabled(True)
-            self.actionContour_run.setEnabled(True)
+            self.actionProcess_Image.setEnabled(True)
             self.actionBounding_Boxes.setChecked(True)
 
             self.display_bounding_boxes()
