@@ -82,6 +82,7 @@
      <string>Run</string>
     </property>
     <addaction name="actionYOLO"/>
+    <addaction name="actionProcess_Image"/>
     <addaction name="actionContour_run"/>
     <addaction name="actionCrop"/>
     <addaction name="actionReunify"/>
@@ -170,6 +171,11 @@
   <action name="actionReunify">
    <property name="text">
     <string>Reunify</string>
+   </property>
+  </action>
+  <action name="actionProcess_Image">
+   <property name="text">
+    <string>Process Image</string>
    </property>
   </action>
  </widget>
