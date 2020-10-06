@@ -83,7 +83,7 @@ def get_bbox_overlaps(bounding_boxes):
 def find_balloon_ils(image, bounding_boxes):
     """ Takes the binary image and the bounding_boxes to find some set in the middle
         of cells to start ballooning. Returns a list of these initial level sets."""
-    
+
     initial_level_sets = []
     # find overlaps of bboxes
     overlaps = get_bbox_overlaps(bounding_boxes)
@@ -132,3 +132,28 @@ def contour(binary_image, bounding_boxes):
         contours.append(segmentation.morphological_geodesic_active_contour(binary_image, iterations, init_level_set=ils, smoothing=1, balloon=1))
 
     return contours
+
+def cell_overlaps(contours):
+    # create adjacency list for the networks
+    adjacency_list =[[] for _ in range(len(contours))]
+
+    # brute force overlap detection
+    for i in range(len(contours)):
+        contour1 = contours[i]
+        for j in range(i + 1, len(contours)):
+            contour2 = contours[j]
+
+            # if the intersections of the np arrays has 1s then they overlap
+            if np.logical_and(contour1, contour2, dtype=np.int8).any():
+                print("overlap:", i, j)
+                adjacency_list[i].append(j)
+                adjacency_list[j].append(i)
+
+            # if not dialate each contour and try again?
+            else:
+                dialated_contour1 = morphology.dilation(contour1)
+                if np.logical_and(dialated_contour1, contour2, dtype=np.int8).any():
+                    print("overlap:", i, j)
+                    adjacency_list[i].append(j)
+                    adjacency_list[j].append(i)
+    return
