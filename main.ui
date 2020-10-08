@@ -84,6 +84,7 @@
     <addaction name="actionYOLO"/>
     <addaction name="actionProcess_Image"/>
     <addaction name="actionContour_run"/>
+    <addaction name="actionEdge_Detection"/>
     <addaction name="actionCrop"/>
     <addaction name="actionReunify"/>
    </widget>
@@ -176,6 +177,11 @@
   <action name="actionProcess_Image">
    <property name="text">
     <string>Process Image</string>
+   </property>
+  </action>
+  <action name="actionEdge_Detection">
+   <property name="text">
+    <string>Edge Detection</string>
    </property>
   </action>
  </widget>

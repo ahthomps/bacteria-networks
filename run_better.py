@@ -6,6 +6,7 @@ from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as Navigatio
 from contouring import *
 from classes import *
 from make_labeled_crops import *
+from edge_detection import cell_overlaps
 from PIL import Image
 
 import numpy as np
@@ -15,7 +16,23 @@ import subprocess
 import os
 
 class ProgramManager():
-    def __init__(self):
+    def __init__(self, display):
+        self._display = display
+
+        self._image = np.asarray([])
+        self._binary_image = np.asarray([])
+        self._bboxes = []
+        self._cells = []
+        self._contours = []
+        self._tiles = []
+        self._crop_boxes = {}
+
+        self._image_filename = ""
+        self._label_filename = ""
+        self._image_dir = ""
+        self._crop_dir = ""
+
+    def clear(self):
         self._image = np.asarray([])
         self._binary_image = np.asarray([])
         self._bboxes = []
@@ -28,22 +45,9 @@ class ProgramManager():
         self._image_dir = ""
         self._crop_dir = ""
 
-    def clear(self, display):
-        self._image = np.asarray([])
-        self._binary_image = np.asarray([])
-        self._bboxes = []
-        self._contours = []
-        self._tiles = []
-        self._crop_boxes = {}
+        self._display.clear()
 
-        self._image_filename = ""
-        self._label_filename = ""
-        self._image_dir = ""
-        self._crop_dir = ""
-
-        display.clear()
-
-    def get_image(self, display):
+    def get_image(self):
         filename, _ = QFileDialog.getOpenFileName(None, "Select image", "", "Image Files (*.png *.jpg *.jpeg *.bmp *.tif)")
         if not filename:
             return
@@ -54,19 +58,19 @@ class ProgramManager():
 
         # Maybe we should 0 pad if the image is too small, but I can do that later
         if self._image.shape[0] > TILE_SIZE or self._image.shape[1] > TILE_SIZE:
-            display.image_success(crop=True)
-        display.image_success()
-        display.add_image(self._image)
+            self._display.image_success(crop=True)
+        self._display.image_success()
+        self._display.add_image(self._image)
 
-    def get_image_directory(self, display):
+    def get_image_directory(self):
         directory = QFileDialog.getExistingDirectory(None, 'Select an image directory', '.', QFileDialog.ShowDirsOnly)
         if not directory:
             return
 
         self._image_dir = directory
-        display.image_success()
+        self._display.image_success()
 
-    def get_label(self, display):
+    def get_label(self):
         filename, _ = QFileDialog.getOpenFileName(None, "Select label", "", "Label Files (*.txt)")
         if not filename:
             return
@@ -78,10 +82,10 @@ class ProgramManager():
         for box in self._bboxes:
             box.to_px(len(self._image[0]), len(self._image))
 
-        display.bbox_success()
-        display.add_bboxes(self._bboxes)
+        self._display.bbox_success()
+        self._display.add_bboxes(self._bboxes)
 
-    def run_yolo(self, display):
+    def run_yolo(self):
         # There's major copy-pasted code in this function. Should probably be cleaned up.
         print("Running YOLO...")
         # Batch of crops
@@ -103,30 +107,29 @@ class ProgramManager():
             output = subprocess.run(["./darknet", "detector", "test", "cells/obj.data", "cells/test.cfg", "backup/yolov3-custom_final.weights",
                                      self._image_filename], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
             self._bboxes = parse_yolo_output(str(output.stdout, "UTF-8"))
-            display.bbox_success()
-            display.add_bboxes(self._bboxes)
+            self._display.bbox_success()
+            self._display.add_bboxes(self._bboxes)
         else:
             print("Didn't run YOLO for some reason.")
         print("Done!")
 
-    def get_processed_image(self, display):
+    def get_processed_image(self):
         print("progessing image...")
         self._binary_image = process_image(self._image)
         print("found processed image!")
-        display.processed_image_success()
-        self.toggle_display(display, 'binary')
+        self._display.processed_image_success()
+        self.toggle_display('binary')
 
-    def get_contour(self, display):
+    def get_contour(self):
         print("getting contours...")
         self._contours = contour(self._binary_image, self._bboxes)
         print("found contours!")
-        cell_overlaps(self._contours)
-        display.contour_success()
-        display.delete('bbox')
-        display.add_contours(self._contours)
-        self.toggle_display(display, 'binary')
+        self._display.contour_success()
+        self._display.delete('bbox')
+        self._display.add_contours(self._contours)
+        self.toggle_display('binary')
 
-    def crop(self, display):
+    def crop(self):
         assert self._image_filename is not None or self._image_dir != ""
 
         # Make the crops directory
@@ -146,30 +149,38 @@ class ProgramManager():
             for tile in make_tiles(Image.open(f"{directory}/{filename}"), filename[:filename.rfind(".")]):
                 tile.save(directory=self._crop_dir)
 
-        display.crop_success()
+        self._display.crop_success()
         print("Made at most", len(os.listdir(self._crop_dir)), "crops.")
 
-    def reunify(self, display):
+    def reunify(self):
         full_tile = reunify_tiles(self._tiles)
         full_tile.save()
-        display.reunify_success()
+        self._display.reunify_success()
 
-    def toggle_display(self, display, action):
+    def get_edges(self):
+        self._cells = initialize_cell_objects(self._binary_image, self._bboxes, self._contours)
+        cell_overlaps(self._cells)
+        for cell in self._cells:
+            print(cell._adj_list)
+        self._display.add_edges(self._cells)
+
+
+    def toggle_display(self, action):
         if action == 'bbox':
-            if display.actionBounding_Boxes.isChecked():
-                display.add_bboxes(self._bboxes)
+            if self._display.actionBounding_Boxes.isChecked():
+                self._display.add_bboxes(self._bboxes)
             else:
-                display.delete(action)
+                self._display.delete(action)
         elif action == 'contour':
-            if display.actionContour_view.isChecked():
-                display.add_contours(self._contours)
+            if self._display.actionContour_view.isChecked():
+                self._display.add_contours(self._contours)
             else:
-                display.delete(action)
+                self._display.delete(action)
         elif action == 'binary':
-            if display.actionBinary_Image.isChecked():
-                display.add_image(self._binary_image)
+            if self._display.actionBinary_Image.isChecked():
+                self._display.add_image(self._binary_image)
             else:
-                display.add_image(self._image)
+                self._display.add_image(self._image)
 
 class DisplayManager(QMainWindow):
     def __init__(self):
@@ -180,26 +191,27 @@ class DisplayManager(QMainWindow):
         self.addToolBar(NavigationToolbar(self.MplWidget.canvas, self))
 
         # set up ProgramManager
-        self._program_manager = ProgramManager()
+        self._program_manager = ProgramManager(self)
         self.add_actions()
         self.initialize_enablements()
 
     def add_actions(self):
-        self.actionClear.triggered.connect(lambda : self._program_manager.clear(self))
+        self.actionClear.triggered.connect(self._program_manager.clear)
 
-        self.actionImage.triggered.connect(lambda : self._program_manager.get_image(self))
-        self.actionImage_Directory.triggered.connect(lambda : self._program_manager.get_image_directory(self))
-        self.actionLabel.triggered.connect(lambda : self._program_manager.get_label(self))
-        self.actionYOLO.triggered.connect(lambda : self._program_manager.run_yolo(self))
-        self.actionProcess_Image.triggered.connect(lambda : self._program_manager.get_processed_image(self))
-        self.actionContour_run.triggered.connect(lambda : self._program_manager.get_contour(self))
+        self.actionImage.triggered.connect(self._program_manager.get_image)
+        self.actionImage_Directory.triggered.connect(self._program_manager.get_image_directory)
+        self.actionLabel.triggered.connect(self._program_manager.get_label)
+        self.actionYOLO.triggered.connect(self._program_manager.run_yolo)
+        self.actionProcess_Image.triggered.connect(self._program_manager.get_processed_image)
+        self.actionContour_run.triggered.connect(self._program_manager.get_contour)
+        self.actionEdge_Detection.triggered.connect(self._program_manager.get_edges)
 
-        self.actionCrop.triggered.connect(lambda : self._program_manager.crop(self))
-        self.actionReunify.triggered.connect(lambda : self._program_manager.reunify(self))
+        self.actionCrop.triggered.connect(self._program_manager.crop)
+        self.actionReunify.triggered.connect(self._program_manager.reunify)
 
-        self.actionBinary_Image.triggered.connect(lambda : self._program_manager.toggle_display(self, 'binary'))
-        self.actionBounding_Boxes.triggered.connect(lambda : self._program_manager.toggle_display(self, 'bbox'))
-        self.actionContour_view.triggered.connect(lambda : self._program_manager.toggle_display(self, 'contour'))
+        self.actionBinary_Image.triggered.connect(lambda : self._program_manager.toggle_display('binary'))
+        self.actionBounding_Boxes.triggered.connect(lambda : self._program_manager.toggle_display('bbox'))
+        self.actionContour_view.triggered.connect(lambda : self._program_manager.toggle_display('contour'))
 
     def initialize_enablements(self):
         self.actionSave.setEnabled(False)
@@ -214,6 +226,7 @@ class DisplayManager(QMainWindow):
         self.actionYOLO.setEnabled(False)
         self.actionProcess_Image.setEnabled(False)
         self.actionContour_run.setEnabled(False)
+        self.actionEdge_Detection.setEnabled(False)
 
         self.actionCrop.setEnabled(False)
         self.actionReunify.setEnabled(False)
@@ -256,6 +269,17 @@ class DisplayManager(QMainWindow):
             for line_collection in contour_set.collections:
                 line_collection.set_gid('contour')
         self.MplWidget.canvas.draw()
+
+    def add_edges(self, cells):
+        for i in range(len(cells)):
+            cell = cells[i]
+            (x1, y1) = cell._cell_center
+            for edge in cell._adj_list:
+                if edge >= i:
+                    (x2, y2) = cells[edge]._cell_center
+                    self.MplWidget.canvas.axes.plot([x1, x2], [y1, y2], color='red', marker='o', gid='edge')
+        self.MplWidget.canvas.draw()
+
 
     def delete(self, plot_item):
         # attributes: bbox, contour\
@@ -304,6 +328,13 @@ class DisplayManager(QMainWindow):
         self.actionBounding_Boxes.setChecked(False)
         # uncheck binary image (want to see original)
         self.actionBinary_Image.setChecked(False)
+        # enable edge detection
+        self.actionEdge_Detection.setEnabled(True)
+
+    def edge_detection_success(self):
+        # disable edge detection
+        self.actionEdge_Detection.setEnabled(False)
+        # enable edges viewing
 
     def crop_success(self):
         # disable cropping

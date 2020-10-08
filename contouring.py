@@ -6,7 +6,6 @@ from skimage.viewer import ImageViewer
 from scipy import ndimage as ndi
 import sys
 import math
-from classes import *
 
 def erode_and_dilate(image, erode, dilate):
     """ Performs erosions and dialations on an image and returns processed
@@ -39,7 +38,7 @@ def process_image(image, threshold=None, openings=None, initial_dilations=None):
         # default number of inital dilations
         initial_dilations = 4
 
-    # filling any in the cells -- seems to work better than the fill_holes method
+    # filling any holes in the cells -- seems to work better than the fill_holes method
     binary_image = erode_and_dilate(binary_image, 0, initial_dilations)
     binary_image = erode_and_dilate(binary_image, initial_dilations, 0)
 
@@ -132,28 +131,3 @@ def contour(binary_image, bounding_boxes):
         contours.append(segmentation.morphological_geodesic_active_contour(binary_image, iterations, init_level_set=ils, smoothing=1, balloon=1))
 
     return contours
-
-def cell_overlaps(contours):
-    # create adjacency list for the networks
-    adjacency_list =[[] for _ in range(len(contours))]
-
-    # brute force overlap detection
-    for i in range(len(contours)):
-        contour1 = contours[i]
-        for j in range(i + 1, len(contours)):
-            contour2 = contours[j]
-
-            # if the intersections of the np arrays has 1s then they overlap
-            if np.logical_and(contour1, contour2, dtype=np.int8).any():
-                print("overlap:", i, j)
-                adjacency_list[i].append(j)
-                adjacency_list[j].append(i)
-
-            # if not dialate each contour and try again?
-            else:
-                dialated_contour1 = morphology.dilation(contour1)
-                if np.logical_and(dialated_contour1, contour2, dtype=np.int8).any():
-                    print("overlap:", i, j)
-                    adjacency_list[i].append(j)
-                    adjacency_list[j].append(i)
-    return
