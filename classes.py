@@ -1,6 +1,37 @@
 from copy import deepcopy
 import numpy as np
 import sys
+from skimage import measure
+from contouring import get_bbox_overlaps
+
+class Cell:
+    def __init__(self, bbox, contour, classification='cell'):
+        self._bbox = bbox
+        self._contour = contour
+        self._classification = classification
+        self._cell_center = (0, 0)
+        # list of the INDICES adjacent cells in the cells list
+        self._adj_list = []
+
+    def get_cell_center(self, binary_image, overlaps):
+        """adapted code from contouring.py, finds some point in a cell"""
+        image_working = deepcopy(binary_image)
+        # removes all other cells so only bright spots are cell in question
+        for overlap_box in overlaps:
+            image_working[overlap_box.y1:overlap_box.y2 + 1, overlap_box.x1:overlap_box.x2 + 1] = 0
+
+        # creates an np.array image of just the current bbox
+        subimage = self._bbox.subimage(image_working)
+        # finds connected bright regions (foreground)
+        labels_mask = measure.label(subimage, connectivity=2)
+        # determines quantitative properties of each region of brightness
+        regions = measure.regionprops(labels_mask)
+        # sorts the regions, largest area to smallest
+        regions.sort(key=lambda x: x.area, reverse=True)
+        # take the region with largest area and find its center
+        y, x = map(int, regions[0].centroid) # subimage ils bbox
+        # find cell center in original image
+        self._cell_center = (self._bbox.x1 + x, self._bbox.y1 + y)
 
 class Box:
     def __init__(self, x1, y1, x2, y2):
@@ -114,7 +145,7 @@ class BoundingBox(Box):
 
     def overlaps(self, box):
         assert self.in_px
-    
+
         # The reason I int here is to remove the possibility of 0-width overlaps.
         return int(self.x1) < int(box.x2) and int(box.x1) < int(self.x2) \
            and int(self.y1) < int(box.y2) and int(box.y1) < int(self.y2)
@@ -143,3 +174,11 @@ def parse_yolo_output(yolo_output):
             bounding_boxes.append(Box(*map(int, line.split())))
 
     return bounding_boxes
+
+def initialize_cell_objects(binary_image, bounding_boxes, contours):
+    overlaps = get_bbox_overlaps(bounding_boxes)
+    cells = []
+    for i in range(len(bounding_boxes)):
+        cells.append(Cell(bounding_boxes[i], contours[i]))
+        cells[-1].get_cell_center(binary_image, overlaps[i])
+    return cells
