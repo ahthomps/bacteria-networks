@@ -1,78 +1,96 @@
-from PyQt5.QtWidgets import (QApplication, QWidget, QVBoxLayout, QSlider, QLCDNumber, QLabel)
+from PyQt5.QtWidgets import (QApplication, QWidget, QVBoxLayout, QSlider, QLCDNumber, QLabel, QPushButton)
 import sys
 from PyQt5.QtCore import Qt
 
 class SliderWidget(QWidget):
 
-    def __init__(self):
-        QWidget.__init__(self)
+    def __init__(self, mgr, parent = None):
+        QWidget.__init__(self, parent)
         
-        self.resize(600,600)
+        #self.resize(600,600)
         self.setWindowTitle('Fine Tune Image Settings')
         
-        self.num_erosions = 4
+        self.num_openings = 7
         self.num_dilations = 4
-        self.binary_threshhold = 50
+        self.binary_threshold = 50
+
+        self.prgmmgr = mgr
         
-        self.l1 = QLabel("# Erosions")
+        self.l1 = QLabel("# Openings")
         self.l1.setAlignment(Qt.AlignCenter)
-        self.erosionsLCD = QLCDNumber()
+        self.openingsLCD = QLCDNumber()
         self.s1 = QSlider(Qt.Horizontal)
-        self.s1.valueChanged.connect(self.updateErosions)
         self.s1.setMinimum(0)
         self.s1.setMaximum(20)
         self.s1.setTickPosition(QSlider.TicksBelow)
-        self.s1.setValue(self.num_erosions)
+        self.s1.setValue(self.num_openings)
+        self.s1.valueChanged.connect(self.updateOpenings)
         
         self.l2 = QLabel("# Dialations")
         self.l2.setAlignment(Qt.AlignCenter)
         self.dialationsLCD = QLCDNumber()
         self.s2 = QSlider(Qt.Horizontal)
-        self.s2.valueChanged.connect(self.updateDialations)
         self.s2.setMinimum(0)
         self.s2.setMaximum(20)
         self.s2.setTickPosition(QSlider.TicksBelow)
         self.s2.setValue(self.num_dilations)
+        self.s2.valueChanged.connect(self.updateDialations)
 
-        self.l3 = QLabel("Binary Threshhold")
+        self.l3 = QLabel("Binary threshold")
         self.l3.setAlignment(Qt.AlignCenter)
-        self.threshholdLCD = QLCDNumber()
+        self.thresholdLCD = QLCDNumber()
         self.s3 = QSlider(Qt.Horizontal)
-        self.s3.valueChanged.connect(self.updateThreshhold)
         self.s3.setMinimum(0)
         self.s3.setMaximum(100)
-        self.s3.setValue(self.binary_threshhold)
+        self.s3.setValue(self.binary_threshold)
+        self.s3.valueChanged.connect(self.updatethreshold)
 
-        layout = QVBoxLayout()
+        self.b1 = QPushButton("Update Processing")
+        self.b1.clicked.connect(self.reprocess)
 
-        layout.addWidget(self.l1)
-        layout.addWidget(self.erosionsLCD)
-        layout.addWidget(self.s1)
+        self.layout = QVBoxLayout()
 
-        layout.addWidget(self.l2)
-        layout.addWidget(self.dialationsLCD)
-        layout.addWidget(self.s2)
+        self.layout.addWidget(self.l1)
+        self.layout.addWidget(self.openingsLCD)
+        self.layout.addWidget(self.s1)
 
-        layout.addWidget(self.l3)
-        layout.addWidget(self.threshholdLCD)
-        layout.addWidget(self.s3)
+        self.layout.addWidget(self.l2)
+        self.layout.addWidget(self.dialationsLCD)
+        self.layout.addWidget(self.s2)
 
-        self.setLayout(layout)
+        self.layout.addWidget(self.l3)
+        self.layout.addWidget(self.thresholdLCD)
+        self.layout.addWidget(self.s3)
 
-    def updateErosions(self, event):
-        self.erosionsLCD.display(event)
+        self.layout.addWidget(self.b1)
+
+        
+
+        #self.setLayout(self.layout)
+
+    def updateOpenings(self, event):
+        self.openingsLCD.display(event)
+        self.prgmmgr.set_openings(event)
+        self.prgmmgr.updateBinary()
 
     def updateDialations(self, event):
         self.dialationsLCD.display(event)
+        self.prgmmgr.set_dialations(event)
+        self.prgmmgr.updateBinary()
 
-    def updateThreshhold(self, event):
-        self.threshholdLCD.display(event/100)
+    def updatethreshold(self, event):
+        self.thresholdLCD.display(event/100)
+        self.prgmmgr.set_threshold(event/100)
+        self.prgmmgr.updateBinary()
+
+    def reprocess(self, event):
+        self.prgmmgr.updateBinary()
 
 
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
+# if __name__ == '__main__':
+#     app = QApplication(sys.argv)
     
-    demo = SliderWidget()
-    demo.show()
+#     demo = SliderWidget()
+#     demo.show()
 
-    sys.exit(app.exec_())
+#     sys.exit(app.exec_())

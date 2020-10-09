@@ -6,6 +6,7 @@ from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as Navigatio
 from contouring import *
 from classes import *
 from make_labeled_crops import *
+from sliderwidget import *
 from PIL import Image
 
 import numpy as np
@@ -14,8 +15,9 @@ import matplotlib.pyplot as plt
 import subprocess
 import os
 
+
 class ProgramManager():
-    def __init__(self):
+    def __init__(self, displaymgr):
         self._image = np.asarray([])
         self._binary_image = np.asarray([])
         self._bboxes = []
@@ -27,6 +29,12 @@ class ProgramManager():
         self._label_filename = ""
         self._image_dir = ""
         self._crop_dir = ""
+
+        self.dispmgr = displaymgr
+        
+        self.threshold = None
+        self.openings = 7
+        self.initial_dialations = 4
 
     def clear(self, display):
         self._image = np.asarray([])
@@ -111,7 +119,7 @@ class ProgramManager():
 
     def get_processed_image(self, display):
         print("progessing image...")
-        self._binary_image = process_image(self._image)
+        self._binary_image = process_image(self._image, self.threshold, self.openings, self.initial_dialations)
         print("found processed image!")
         display.processed_image_success()
         self.toggle_display(display, 'binary')
@@ -170,6 +178,23 @@ class ProgramManager():
                 display.add_image(self._binary_image)
             else:
                 display.add_image(self._image)
+        elif action == 'customProcessing':
+            display.show_custom_processing()
+
+    def set_openings(self, num):
+        self.openings = num
+
+    def set_dialations(self, num):
+        self.initial_dialations = num
+
+    def set_threshold(self, num):
+        self.threshold = num
+
+    def updateBinary(self):
+        print('updating')
+        self._binary_image = process_image(self._image, self.threshold, self.openings, self.initial_dialations)
+        self.dispmgr.actionBinary_Image.setChecked(True)
+        self.toggle_display(self.dispmgr, 'binary')
 
 class DisplayManager(QMainWindow):
     def __init__(self):
@@ -180,12 +205,13 @@ class DisplayManager(QMainWindow):
         self.addToolBar(NavigationToolbar(self.MplWidget.canvas, self))
 
         # set up ProgramManager
-        self._program_manager = ProgramManager()
+        self._program_manager = ProgramManager(self)
         self.add_actions()
         self.initialize_enablements()
 
     def add_actions(self):
         self.actionClear.triggered.connect(lambda : self._program_manager.clear(self))
+        self.actionCustom_Processing.triggered.connect(lambda : self._program_manager.toggle_display(self, 'customProcessing'))
 
         self.actionImage.triggered.connect(lambda : self._program_manager.get_image(self))
         self.actionImage_Directory.triggered.connect(lambda : self._program_manager.get_image_directory(self))
@@ -209,6 +235,7 @@ class DisplayManager(QMainWindow):
         self.actionImage.setEnabled(True)
         # self.actionImage_Directory.setEnabled(True)
         self.actionImage_Directory.setEnabled(False)
+        self.actionCustom_Processing.setEnabled(True)
 
         self.actionLabel.setEnabled(False)
         self.actionYOLO.setEnabled(False)
@@ -224,6 +251,11 @@ class DisplayManager(QMainWindow):
         self.actionBinary_Image.setChecked(False)
         self.actionContour_view.setEnabled(False)
         self.actionContour_view.setChecked(False)
+        
+    def show_custom_processing(self):
+        self.sliders = SliderWidget(mgr=self._program_manager)
+        self.sliders.setLayout(self.sliders.layout)
+        self.sliders.show()
 
     def clear(self):
         self.MplWidget.canvas.axes.cla()
