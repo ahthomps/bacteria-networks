@@ -3,7 +3,6 @@ import numpy as np
 from copy import deepcopy
 from skimage import morphology, filters, exposure, segmentation, restoration, color, util, measure
 from skimage.viewer import ImageViewer
-from scipy import ndimage as ndi
 import sys
 import math
 

@@ -16,7 +16,6 @@
   <property name="autoFillBackground">
    <bool>false</bool>
   </property>
-  <!-- Image Viewer -->
   <widget class="QWidget" name="centralwidget">
    <widget class="MplWidget" name="MplWidget" native="true">
     <property name="geometry">
@@ -36,9 +35,8 @@
     <property name="toolTip">
      <string comment="standard node"/>
     </property>
-   </widget> 
-   <!-- Slider Widget -->
-   <widget class="SliderWidget" name="SliderWidget" native="false">
+   </widget>
+   <widget class="SliderWidget" name="SliderWidget" native="true">
     <property name="geometry">
      <rect>
       <x>140</x>
@@ -53,9 +51,8 @@
       <height>150</height>
      </size>
     </property>
-   </widget> 
-  </widget> 
-  <!-- Menu Bar (file, edit, view, run) -->
+   </widget>
+  </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
@@ -69,13 +66,10 @@
     <property name="title">
      <string>File</string>
     </property>
-    <!-- File Actions -->
     <widget class="QMenu" name="menuOpen">
      <property name="title">
       <string>Open</string>
      </property>
-     <!-- File -> Open Actions -->
-     <addaction name="actionImage_Directory"/>
      <addaction name="actionImage"/>
      <addaction name="actionLabel"/>
     </widget>
@@ -88,7 +82,6 @@
     <property name="title">
      <string>Edit</string>
     </property>
-    <!-- Edit Actions -->
     <addaction name="actionClear"/>
     <addaction name="actionCustom_Processing"/>
    </widget>
@@ -96,7 +89,6 @@
     <property name="title">
      <string>View</string>
     </property>
-    <!-- View Actions -->
     <addaction name="actionBinary_Image"/>
     <addaction name="actionBounding_Boxes"/>
     <addaction name="actionContour_view"/>
@@ -105,7 +97,6 @@
     <property name="title">
      <string>Run</string>
     </property>
-    <!-- Run Actions -->
     <addaction name="actionYOLO"/>
     <addaction name="actionProcess_Image"/>
     <addaction name="actionContour_run"/>
@@ -113,7 +104,6 @@
     <addaction name="actionCrop"/>
     <addaction name="actionReunify"/>
    </widget>
-   <!-- Highest Level Actions -->
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
    <addaction name="menuView"/>
