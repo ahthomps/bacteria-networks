@@ -35,7 +35,7 @@ class ProgramManager:
         
         self.threshold = None
         self.openings = 7
-        self.initial_dialations = 4
+        self.initial_dilations = 4
 
     def clear(self):
         self._image = np.asarray([])
@@ -111,7 +111,7 @@ class ProgramManager:
 
     def get_processed_image(self):
         print("progessing image...")
-        self._binary_image = process_image(self._image, self.threshold, self.openings, self.initial_dialations)
+        self._binary_image = process_image(self._image, self.threshold, self.openings, self.initial_dilations)
         print("found processed image!")
         self._display.processed_image_success()
         self.toggle_display('binary')
@@ -179,15 +179,15 @@ class ProgramManager:
     def set_openings(self, num):
         self.openings = num
 
-    def set_dialations(self, num):
-        self.initial_dialations = num
+    def set_dilations(self, num):
+        self.initial_dilations = num
 
     def set_threshold(self, num):
         self.threshold = num
 
-    def updateBinary(self):
+    def update_binary(self):
         print('updating')
-        self._binary_image = process_image(self._image, self.threshold, self.openings, self.initial_dialations)
+        self._binary_image = process_image(self._image, self.threshold, self.openings, self.initial_dilations)
         self._display.actionBinary_Image.setChecked(True)
         self.toggle_display('binary')
 
