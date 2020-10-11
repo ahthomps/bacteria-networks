@@ -12,8 +12,8 @@ def make_tiles(img, filename):
     """ img: A PIL.Image to be tiled.
         filename: A filename, usually the filename of img without its extension. """
     tiles = []
-    for r in range(0, img.height, TILE_SIZE // TILE_OVERLAP):
-        for c in range(0, img.width, TILE_SIZE // TILE_OVERLAP):
+    for r in range(0, img.height, 1 - TILE_SIZE // TILE_OVERLAP):
+        for c in range(0, img.width, 1 - TILE_SIZE // TILE_OVERLAP):
             x1, y1, x2, y2 = (r, c, r + TILE_SIZE, c + TILE_SIZE)
             tiles.append(Tile(img.crop((x1, y1, x2, y2)), x1, y1, x2, y2, filename))
 
