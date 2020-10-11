@@ -172,7 +172,7 @@
   </action>
   <action name="actionCustom_Processing">
    <property name="text">
-    <string>Custom Image Processing Options</string>
+    <string>Image Processing Options</string>
    </property>
   </action>
   <action name="actionYOLO">
