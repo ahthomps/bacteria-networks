@@ -6,7 +6,7 @@ from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as Navigatio
 from contouring import *
 from classes import *
 from make_labeled_crops import *
-from sliderwidget import *
+from sliderwidget import SliderWidget
 from edge_detection import cell_overlaps
 from PIL import Image
 
@@ -37,7 +37,7 @@ class ProgramManager:
         self.openings = 7
         self.initial_dialations = 4
 
-    def clear(self, display):
+    def clear(self):
         self._image = np.asarray([])
         self._binary_image = np.asarray([])
         self._bboxes = []

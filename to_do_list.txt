@@ -1,7 +1,9 @@
 Function:
-    Make it possible to view all the crops in the GUI at once.
+    Tiled crops in the GUI
+    Reunification in the GUI
+    Fix crash when trying to launch image options and no image is loaded
 
-Style:
+Form:
     Add docstrings to functions
     Add headers to files
     remove old/redundant code
