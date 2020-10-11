@@ -5,9 +5,10 @@ from skimage import morphology, filters, exposure, segmentation, restoration, co
 from skimage.viewer import ImageViewer
 import sys
 import math
+from sliderwidget import DEFAULT_OPENINGS, DEFAULT_DILATIONS
 
 def erode_and_dilate(image, erode, dilate):
-    """ Performs erosions and dialations on an image and returns processed
+    """ Performs erosions and dilations on an image and returns processed
         image."""
     image_open = image
     for _ in range(erode):
@@ -17,7 +18,7 @@ def erode_and_dilate(image, erode, dilate):
 
     return image_open
 
-def process_image(image, threshold=None, openings=None, initial_dilations=None):
+def process_image(image, threshold=None, openings=DEFAULT_OPENINGS, initial_dilations=DEFAULT_DILATIONS):
     """ Takes original image (np.array) and option of numbers for threshold and
         number of openings. Returns an binary image (np.array type np.int8)"""
 
@@ -28,14 +29,8 @@ def process_image(image, threshold=None, openings=None, initial_dilations=None):
     if threshold is None:
         # finds threshold using Yen technique
         threshold = filters.threshold_yen(deepcopy(image_gray))
-    binary_image = image_gray > threshold
 
-    if openings is None:
-        # default number of openings
-        openings = 7
-    if initial_dilations is None:
-        # default number of inital dilations
-        initial_dilations = 4
+    binary_image = image_gray > threshold
 
     # filling any holes in the cells -- seems to work better than the fill_holes method
     binary_image = erode_and_dilate(binary_image, 0, initial_dilations)

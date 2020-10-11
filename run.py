@@ -16,7 +16,6 @@ import matplotlib.pyplot as plt
 import subprocess
 import os
 
-
 class ProgramManager:
     def __init__(self, display):
         self._display = display
