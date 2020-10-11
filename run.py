@@ -106,7 +106,7 @@ class ProgramManager:
             self._display.bbox_success()
             self._display.add_bboxes(self._bboxes)
         else:
-            print("Didn't run YOLO for some reason.")
+            raise Exception("Didn't run YOLO for some reason.")
         print("Done!")
 
     def get_processed_image(self):
