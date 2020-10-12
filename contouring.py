@@ -1,11 +1,26 @@
+""" contouring.py
+    Here we define the function for image processing, the QtWidget to manually process the image,
+    and methods to contour the cells.
+"""
 import matplotlib.pyplot as plt
 import numpy as np
 from copy import deepcopy
-from skimage import morphology, filters, exposure, segmentation, restoration, color, util, measure
-from skimage.viewer import ImageViewer
-import sys
-import math
-from sliderwidget import DEFAULT_OPENINGS, DEFAULT_DILATIONS
+from skimage import morphology, filters, segmentation, restoration, color, util, measure
+from math import sqrt
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QSlider, QLCDNumber, QLabel, QPushButton
+from PyQt5.QtCore import Qt
+
+MIN_OPENINGS = 0
+MAX_OPENINGS = 20
+DEFAULT_OPENINGS = 7
+
+MIN_DILATIONS = 0
+MAX_DILATIONS = 20
+DEFAULT_DILATIONS = 4
+
+MIN_THRESHOLD = 0
+MAX_THRESHOLD = 100
+DEFAULT_THRESHOLD = 50
 
 def erode_and_dilate(image, erode, dilate):
     """ Performs erosions and dilations on an image and returns processed
@@ -18,9 +33,9 @@ def erode_and_dilate(image, erode, dilate):
 
     return image_open
 
-def process_image(image, threshold=None, openings=DEFAULT_OPENINGS, initial_dilations=DEFAULT_DILATIONS):
+def process_image(image, openings=DEFAULT_OPENINGS, initial_dilations=DEFAULT_DILATIONS, threshold=None):
     """ Takes original image (np.array) and option of numbers for threshold and
-        number of openings. Returns an binary image (np.array type np.int8)"""
+        number of openings. Returns an binary image (np.array type np.uint8) and the binary threshold. """
 
     # converts from RBG to grayscale image
     image_gray = color.rgb2gray(image)
@@ -39,7 +54,7 @@ def process_image(image, threshold=None, openings=DEFAULT_OPENINGS, initial_dila
     # performs opening to reduce noise around cells
     binary_image = erode_and_dilate(binary_image, openings, openings)
 
-    return binary_image.astype(np.int8)
+    return binary_image.astype(np.uint8), threshold
 
 def get_bbox_overlaps(bounding_boxes):
     """ Takes a list of Box objects and returns a list of the overlaps of each
@@ -101,7 +116,7 @@ def find_balloon_ils(image, bounding_boxes):
         y, x = map(int, regions[0].centroid) # subimage ils bbox
 
         # create a 2x2 ils in the center of the largest region (map back to original image size)
-        ils = np.zeros(image.shape, dtype=np.int8)
+        ils = np.zeros(image.shape, dtype=np.uint8)
         ils[box.y1 + y - 1:box.y1 + y + 1, box.x1 + x - 1:box.x1 + x + 1] = 1
         initial_level_sets.append(ils)
 
@@ -120,8 +135,88 @@ def contour(binary_image, bounding_boxes):
         ils = initial_level_sets[i]
         # computes the number of iterations for the contour method to grow --
         # based on the size of the diagonal of the bounding box multiplied by a scalar
-        iterations = int(math.sqrt(box.width() ** 2 + box.height() ** 2) / 2.5)
+        iterations = int(sqrt(box.width() ** 2 + box.height() ** 2) / 2.5)
         # finds the contour and stores them
         contours.append(segmentation.morphological_geodesic_active_contour(binary_image, iterations, init_level_set=ils, smoothing=1, balloon=1))
 
     return contours
+
+class SliderWidget(QWidget):
+    """ Sliders are used for user-interactive image processing. The binary image
+    that's created by default is normally quite good, but this allows for tweaking"""
+    def __init__(self, parent=None, mgr=None):
+        QWidget.__init__(self, parent)
+        self.setWindowTitle('Image Processing Options')
+
+        if parent is not None:
+            return
+
+        self.prgmmgr = mgr
+
+        self.layout = QVBoxLayout()
+
+        # Initialize Openings Slider
+        make_centered_label(self.layout, "Openings")
+        self.openingsLCD = QLCDNumber()
+        self.layout.addWidget(self.openingsLCD)
+        make_slider(self.update_openings, self.layout, MIN_OPENINGS, MAX_OPENINGS, self.prgmmgr.openings)
+
+        # Initialize Dilations Slider
+        make_centered_label(self.layout, "Dilations")
+        self.dilationsLCD = QLCDNumber()
+        self.layout.addWidget(self.dilationsLCD)
+        make_slider(self.update_dilations, self.layout, MIN_DILATIONS, MAX_DILATIONS, self.prgmmgr.dilations)
+
+        # Initialize Threshold Slider
+        make_centered_label(self.layout, "Binary threshold")
+        self.thresholdLCD = QLCDNumber()
+        self.layout.addWidget(self.thresholdLCD)
+        make_slider(self.update_threshold, self.layout, MIN_THRESHOLD, MAX_THRESHOLD, self.prgmmgr.threshold * 100)
+
+        # Save New Image Processing Options
+        b1 = QPushButton("Restore Defaults")
+        b1.clicked.connect(self.restore_defaults)
+        self.layout.addWidget(b1)
+
+    def update_openings(self, event):
+        """ Responds to changes of the opening slider """
+        self.openingsLCD.display(event)
+        self.prgmmgr.openings = event
+        self.prgmmgr.get_processed_image()
+
+    def update_dilations(self, event):
+        """ Responds to changes of the dilations slider """
+        self.dilationsLCD.display(event)
+        self.prgmmgr.dilations = event
+        self.prgmmgr.get_processed_image()
+
+    def update_threshold(self, event):
+        """ Responds to changes of the threshold slider """
+        self.thresholdLCD.display(event / 100)
+        self.prgmmgr.threshold = event / 100
+        self.prgmmgr.get_processed_image()
+
+    def restore_defaults(self, event):
+        """ This is a hack and should be fixed. """
+        self.update_dilations(DEFAULT_DILATIONS)
+        self.update_openings(DEFAULT_OPENINGS)
+        self.prgmmgr.threshold = None
+        self.prgmmgr.get_processed_image()
+        self.update_threshold(self.prgmmgr.threshold * 100)
+
+
+def make_slider(action, layout, minn, maxx, default):
+    slider = QSlider(Qt.Horizontal)
+    slider.setMinimum(minn)
+    slider.setMaximum(maxx)
+    slider.setTickPosition(QSlider.TicksBelow)
+    slider.valueChanged.connect(action)
+    slider.setValue(default)
+
+    layout.addWidget(slider)
+
+def make_centered_label(layout, text):
+    label = QLabel(text)
+    label.setAlignment(Qt.AlignCenter)
+
+    layout.addWidget(label)

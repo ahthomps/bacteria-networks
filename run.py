@@ -3,18 +3,18 @@ from PyQt5.QtWidgets import QMainWindow, QFileDialog, QMessageBox, QInputDialog,
 from PyQt5.uic import loadUi
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 
-from contouring import *
-from classes import *
-from make_labeled_crops import *
-from sliderwidget import SliderWidget
-from edge_detection import cell_overlaps
 from PIL import Image
-
 import numpy as np
 import random
 import matplotlib.pyplot as plt
 import subprocess
 import os
+
+from contouring import *
+from classes import *
+from make_labeled_crops import *
+from edge_detection import cell_overlaps
+
 
 class ProgramManager:
     def __init__(self, display):
@@ -22,27 +22,26 @@ class ProgramManager:
 
         self._image = np.asarray([])
         self._binary_image = np.asarray([])
-        self._bboxes = []
         self._cells = []
-        self._contours = []
         self._tiles = []
-        self._crop_boxes = {}
+
+        self.openings = DEFAULT_OPENINGS
+        self.dilations = DEFAULT_DILATIONS
+        self.threshold = None # This is a hack and should be changed.
 
         self._image_filename = ""
         self._label_filename = ""
         self._crop_dir = ""
-        
-        self.threshold = None
-        self.openings = 7
-        self.initial_dilations = 4
 
     def clear(self):
         self._image = np.asarray([])
         self._binary_image = np.asarray([])
-        self._bboxes = []
-        self._contours = []
+        self._cells = []
         self._tiles = []
-        self._crop_boxes = {}
+
+        self.openings = DEFAULT_OPENINGS
+        self.dilations = DEFAULT_DILATIONS
+        self.threshold = None # This is a hack and should be changed.
 
         self._image_filename = ""
         self._label_filename = ""
@@ -93,7 +92,7 @@ class ProgramManager:
                                          f"{self._crop_dir}/{filename}"], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
 
                 tile = Tile(Image.open(f"{self._crop_dir}/{filename}"), x1, y1, x1 + TILE_SIZE, y1 + TILE_SIZE, filename_no_ext)
-                tile.bounding_boxes = parse_yolo_output(str(output.stdout, "UTF-8"))
+                tile.cells = parse_yolo_output(str(output.stdout, "UTF-8"))
                 self._tiles.append(tile)
 
                 print(f"Processed {self._crop_dir}/{filename}.")
@@ -110,7 +109,7 @@ class ProgramManager:
 
     def get_processed_image(self):
         print("progessing image...")
-        self._binary_image = process_image(self._image, self.threshold, self.openings, self.initial_dilations)
+        self._binary_image, self.threshold = process_image(self._image, self.openings, self.dilations, self.threshold)
         print("found processed image!")
         self._display.processed_image_success()
         self.toggle_display('binary')
@@ -175,21 +174,6 @@ class ProgramManager:
         elif action == 'customProcessing':
             self._display.show_custom_processing()
 
-    def set_openings(self, num):
-        self.openings = num
-
-    def set_dilations(self, num):
-        self.initial_dilations = num
-
-    def set_threshold(self, num):
-        self.threshold = num
-
-    def update_binary(self):
-        print('updating')
-        self._binary_image = process_image(self._image, self.threshold, self.openings, self.initial_dilations)
-        self._display.actionBinary_Image.setChecked(True)
-        self.toggle_display('binary')
-
 class DisplayManager(QMainWindow):
     def __init__(self):
         # set up UI window
@@ -229,7 +213,7 @@ class DisplayManager(QMainWindow):
         self.actionImage.setEnabled(True)
         # self.actionImage_Directory.setEnabled(True)
         self.actionImage_Directory.setEnabled(False)
-        self.actionCustom_Processing.setEnabled(True)
+        self.actionCustom_Processing.setEnabled(False)
 
         self.actionLabel.setEnabled(False)
         self.actionYOLO.setEnabled(False)
@@ -246,7 +230,7 @@ class DisplayManager(QMainWindow):
         self.actionBinary_Image.setChecked(False)
         self.actionContour_view.setEnabled(False)
         self.actionContour_view.setChecked(False)
-        
+
     def show_custom_processing(self):
         self.sliders = SliderWidget(mgr=self._program_manager)
         self.sliders.setLayout(self.sliders.layout)
@@ -274,8 +258,7 @@ class DisplayManager(QMainWindow):
 
     def add_contours(self, contours):
         colors = ['red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet']
-        if not self.actionContour_view.isChecked():
-            self.actionContour_view.setChecked(True)
+        self.actionContour_view.setChecked(True)
         count = 0
         for contour in contours:
             contour_set = self.MplWidget.canvas.axes.contour(contour, [0.75], colors=colors[count % len(colors)])
@@ -332,6 +315,8 @@ class DisplayManager(QMainWindow):
         self.actionBinary_Image.setChecked(True)
         # enable contouring
         self.actionContour_run.setEnabled(True)
+        # enable image processing options
+        self.actionCustom_Processing.setEnabled(True)
 
     def contour_success(self):
         # disable contouring
