@@ -33,10 +33,6 @@ class SliderWidget(QWidget):
     def __init__(self, mgr, parent=None):
         QWidget.__init__(self, parent)
         self.setWindowTitle('Image Processing Options')
-        
-        self.num_openings = DEFAULT_OPENINGS
-        self.num_dilations = DEFAULT_DILATIONS
-        self.binary_threshold = DEFAULT_BIN_THRESH
 
         self.prgmmgr = mgr
 
@@ -45,21 +41,21 @@ class SliderWidget(QWidget):
         make_centered_label(self.layout, "Openings")
         self.openingsLCD = QLCDNumber()
         self.layout.addWidget(self.openingsLCD)
-        make_slider(lambda e: self.update_openings(e), self.layout, MIN_OPENINGS, MAX_OPENINGS, DEFAULT_OPENINGS)
+        make_slider(self.update_openings, self.layout, MIN_OPENINGS, MAX_OPENINGS, DEFAULT_OPENINGS)
 
         make_centered_label(self.layout, "Dilations")
         self.dilationsLCD = QLCDNumber()
         self.layout.addWidget(self.dilationsLCD)
-        self.s2 = make_slider(lambda e: self.update_dilations(e), self.layout, MIN_DILATIONS, MAX_DILATIONS, DEFAULT_DILATIONS)
+        make_slider(self.update_dilations, self.layout, MIN_DILATIONS, MAX_DILATIONS, DEFAULT_DILATIONS)
 
         make_centered_label(self.layout, "Binary threshold")
         self.thresholdLCD = QLCDNumber()
         self.layout.addWidget(self.thresholdLCD)
-        self.s3 = make_slider(lambda e: self.update_threshold(e), self.layout, MIN_BIN_THRESH, MAX_BIN_THRESH, DEFAULT_BIN_THRESH)
+        make_slider(self.update_threshold, self.layout, MIN_BIN_THRESH, MAX_BIN_THRESH, DEFAULT_BIN_THRESH)
 
-        self.b1 = QPushButton("Update Processing")
-        self.b1.clicked.connect(self.reprocess)
-        self.layout.addWidget(self.b1)
+        b1 = QPushButton("Update Processing")
+        b1.clicked.connect(self.reprocess)
+        self.layout.addWidget(b1)
 
     def update_openings(self, event):
         self.openingsLCD.display(event)
@@ -77,4 +73,4 @@ class SliderWidget(QWidget):
         self.prgmmgr.update_binary()
 
     def reprocess(self, event):
-        self.prgmmgr.updateBinary()
+        self.prgmmgr.update_binary()
