@@ -2,9 +2,8 @@ Function:
     Tiled crops in the GUI
     Reunification in the GUI
     Fix crash when trying to launch image options and no image is loaded
+    Separate the creation of training data from the rest of the application
 
 Form:
-    Add docstrings to functions
-    Add headers to files
-    remove old/redundant code
-    make camelCase/snake_case uniform where possible
+    Add docstrings to run.py and make_labeled_crops.py
+    add headers

@@ -1,3 +1,8 @@
+""" make_labeled_crops.py
+    Here, we define some functions for dealing with Tiles. This will probably get merged into something else as the project grows.
+"""
+
+
 import sys
 from PIL import Image
 from copy import deepcopy
@@ -104,6 +109,33 @@ def reunify_tiles(tiles, output_dir="."):
                 full_tile.add_bounding_box(new_bbox)
 
     return full_tile
+
+def parse_yolo_input(label_file):
+    """ Reads from a yolo training file and returns a list of BoundingBox objects.
+        Also takes the labels' image so we can convert from relative to px. """
+    cells = []
+    for line in label_file.readlines():
+        # Treat #s as comments
+        if "#" in line:
+            line = line[:line.index("#")]
+        if line.split() == []:
+            continue
+
+        classification, x, y, width, height = map(float, line.split())
+        cells.append(Cell(x - width / 2, y - height / 2, x + width / 2, y + height / 2, classification))
+
+    return bounding_boxes
+
+def parse_yolo_output(yolo_output):
+    """ Takes a string (probably stdout from running yolo) and returns a list of Cell objects."""
+    cells = []
+    classification = None
+    for line in yolo_output.splitlines():
+        if line.startswith("    BBOX:"):
+            line = line[len("    BBOX:"):]
+            cells.append(Cell(*map(int, line.split())))
+
+    return cells
 
 
 if __name__ == "__main__":

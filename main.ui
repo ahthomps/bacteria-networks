@@ -216,7 +216,7 @@
   <customwidget>
    <class>SliderWidget</class>
    <extends>QWidget</extends>
-   <header>sliderwidget.h</header>
+   <header>contouring.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
