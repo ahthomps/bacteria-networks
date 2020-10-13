@@ -25,6 +25,11 @@ class MplWidget(QWidget):
         self.bbox_gid = 'bbox'
         self.contour_gid = 'contour'
 
+    def clear_canvas(self):
+        self.canvas.axes.cla()
+        self.canvas.axes.axis('off')
+        self.canvas.draw()
+
     def draw_image(self, image):
         self.canvas.axes.imshow(image, cmap='gray')
         self.canvas.draw()
@@ -37,7 +42,7 @@ class MplWidget(QWidget):
             self.canvas.axes.plot([cell.x2, cell.x2], [cell.y1, cell.y2], color='blue', linestyle='dashed', marker='o', gid=self.bbox_gid)
         self.canvas.draw()
 
-    def draw_contours(self, cells):
+    def draw_cell_contours(self, cells):
         colors = ['red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet']
         count = 0
         for cell in cells:
@@ -49,7 +54,7 @@ class MplWidget(QWidget):
                 line_collection.set_gid(self.contour_gid)
         self.canvas.draw()
 
-    def draw_network_edges(self, cells):
+    def draw_cell_network_edges(self, cells):
         for cell in cells:
             (x1, y1) = cell._cell_center
             for adj_cell in cell._adj_list:
@@ -64,7 +69,7 @@ class MplWidget(QWidget):
                 child.remove()
         self.canvas.draw()
 
-    def remove_contours(self):
+    def remove_cell_contours(self):
         for child in self.canvas.axes.get_children():
             if hasattr(child, '_gid') and child._gid == self.contour_gid:
                 child.remove()
