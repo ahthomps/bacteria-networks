@@ -10,15 +10,17 @@ import matplotlib.pyplot as plt
 import subprocess
 import os
 
-from contouring import *
+from image_processing import *
+from contouring import compute_cell_contours
 from classes import *
 from make_labeled_crops import *
-from edge_detection import cell_overlaps
+from edge_detection import compute_cell_contact
 
 
 class ProgramManager:
-    def __init__(self, display):
+    def __init__(self, display, MplWidget):
         self._display = display
+        self._MplWidget = MplWidget
 
         self._image = np.asarray([])
         self._binary_image = np.asarray([])
@@ -62,7 +64,7 @@ class ProgramManager:
         if self._image.shape[0] > TILE_SIZE or self._image.shape[1] > TILE_SIZE:
             self._display.image_success(crop=True)
         self._display.image_success()
-        self._display.add_image(self._image)
+        self._MplWidget.draw_image(self._image)
 
     def get_label(self):
         filename, _ = QFileDialog.getOpenFileName(None, "Select label", "", "Label Files (*.txt)")
@@ -72,12 +74,10 @@ class ProgramManager:
         print("using label {}".format(filename))
         self._label_filename = filename
         self._label_ofile = open(self._label_filename)
-        self._bboxes = parse_yolo_input(self._label_ofile)
-        for box in self._bboxes:
-            box.to_px(len(self._image[0]), len(self._image))
+        self._cells = parse_yolo_input(self._label_ofile, self._image)
 
         self._display.bbox_success()
-        self._display.add_bboxes(self._bboxes)
+        self._MplWidget.draw_cell_bounding_boxes(self._cells)
 
     def run_yolo(self):
         # There's major copy-pasted code in this function. Should probably be cleaned up.
@@ -100,9 +100,9 @@ class ProgramManager:
         elif self._image_filename != "":
             output = subprocess.run(["./darknet", "detector", "test", "cells/obj.data", "cells/test.cfg", "backup/yolov3-custom_final.weights",
                                      self._image_filename], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
-            self._bboxes = parse_yolo_output(str(output.stdout, "UTF-8"))
+            self._cells = parse_yolo_output(str(output.stdout, "UTF-8"))
             self._display.bbox_success()
-            self._display.add_bboxes(self._bboxes)
+            self._MplWidget.draw_cell_bounding_boxes(self._cells)
         else:
             raise Exception("Didn't run YOLO for some reason.")
         print("Done!")
@@ -112,16 +112,16 @@ class ProgramManager:
         self._binary_image, self.threshold = process_image(self._image, self.openings, self.dilations, self.threshold)
         print("found processed image!")
         self._display.processed_image_success()
-        self.toggle_display('binary')
+        self._MplWidget.draw_image(self._binary_image)
 
     def get_contour(self):
         print("getting contours...")
-        self._contours = contour(self._binary_image, self._bboxes)
+        compute_cell_contours(self._binary_image, self._cells)
         print("found contours!")
         self._display.contour_success()
-        self._display.delete('bbox')
-        self._display.add_contours(self._contours)
-        self.toggle_display('binary')
+        self._MplWidget.remove_cell_bounding_boxes()
+        self._MplWidget.draw_contours(self._cells)
+        self._MplWidget.draw_image(self._image)
 
     def crop(self):
         assert self._image_filename is not None
@@ -148,29 +148,25 @@ class ProgramManager:
         self._display.reunify_success()
 
     def get_edges(self):
-        self._cells = initialize_cell_objects(self._binary_image, self._bboxes, self._contours)
-        cell_overlaps(self._cells)
-        for cell in self._cells:
-            print(cell._adj_list)
-        self._display.add_edges(self._cells)
-
+        compute_cell_contact(self._cells)
+        self._MplWidget.draw_network_edges(self._cells)
 
     def toggle_display(self, action):
         if action == 'bbox':
             if self._display.actionBounding_Boxes.isChecked():
-                self._display.add_bboxes(self._bboxes)
+                self._MplWidget.draw_cell_bounding_boxes(self._cells)
             else:
-                self._display.delete(action)
+                self._MplWidget.remove_cell_bounding_boxes()
         elif action == 'contour':
             if self._display.actionContour_view.isChecked():
-                self._display.add_contours(self._contours)
+                self._MplWidget.draw_contours(self._cells)
             else:
-                self._display.delete(action)
+                self._MplWidget.remove_contours()
         elif action == 'binary':
             if self._display.actionBinary_Image.isChecked():
-                self._display.add_image(self._binary_image)
+                self._MplWidget.draw_image(self._binary_image)
             else:
-                self._display.add_image(self._image)
+                self._MplWidget.draw_image(self._image)
         elif action == 'customProcessing':
             self._display.show_custom_processing()
 
@@ -183,7 +179,7 @@ class DisplayManager(QMainWindow):
         self.addToolBar(NavigationToolbar(self.MplWidget.canvas, self))
 
         # set up ProgramManager
-        self._program_manager = ProgramManager(self)
+        self._program_manager = ProgramManager(self, self.MplWidget)
         self.add_actions()
         self.initialize_enablements()
 
@@ -242,49 +238,6 @@ class DisplayManager(QMainWindow):
         self.MplWidget.canvas.draw()
         self.initialize_enablements()
 
-    def add_image(self, image):
-        self.MplWidget.canvas.axes.imshow(image, cmap='gray')
-        self.MplWidget.canvas.draw()
-
-    def add_bboxes(self, bboxes):
-        if not self.actionBounding_Boxes.isChecked():
-            self.actionBounding_Boxes.setChecked(True)
-        for box in bboxes:
-            self.MplWidget.canvas.axes.plot([box.x1, box.x2], [box.y1, box.y1], color='blue', linestyle='dashed', marker='o', gid='bbox')
-            self.MplWidget.canvas.axes.plot([box.x1, box.x2], [box.y2, box.y2], color='blue', linestyle='dashed', marker='o', gid='bbox')
-            self.MplWidget.canvas.axes.plot([box.x1, box.x1], [box.y1, box.y2], color='blue', linestyle='dashed', marker='o', gid='bbox')
-            self.MplWidget.canvas.axes.plot([box.x2, box.x2], [box.y1, box.y2], color='blue', linestyle='dashed', marker='o', gid='bbox')
-        self.MplWidget.canvas.draw()
-
-    def add_contours(self, contours):
-        colors = ['red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet']
-        self.actionContour_view.setChecked(True)
-        count = 0
-        for contour in contours:
-            contour_set = self.MplWidget.canvas.axes.contour(contour, [0.75], colors=colors[count % len(colors)])
-            count += 1
-            for line_collection in contour_set.collections:
-                line_collection.set_gid('contour')
-        self.MplWidget.canvas.draw()
-
-    def add_edges(self, cells):
-        for i in range(len(cells)):
-            cell = cells[i]
-            (x1, y1) = cell._cell_center
-            for edge in cell._adj_list:
-                if edge >= i:
-                    (x2, y2) = cells[edge]._cell_center
-                    self.MplWidget.canvas.axes.plot([x1, x2], [y1, y2], color='red', marker='o', gid='edge')
-        self.MplWidget.canvas.draw()
-
-
-    def delete(self, plot_item):
-        # attributes: bbox, contour\
-        for child in self.MplWidget.canvas.axes.get_children():
-            if hasattr(child, '_gid') and child._gid == plot_item:
-                child.remove()
-        self.MplWidget.canvas.draw()
-
     # display results of actions
     def image_success(self, crop=False):
         # enable cropping if required
@@ -323,6 +276,7 @@ class DisplayManager(QMainWindow):
         self.actionContour_run.setEnabled(False)
         # enable contour viewing
         self.actionContour_view.setEnabled(True)
+        self.actionContour_view.setChecked(True)
         # uncheck bounding boxes (don't want to view them)
         self.actionBounding_Boxes.setChecked(False)
         # uncheck binary image (want to see original)
