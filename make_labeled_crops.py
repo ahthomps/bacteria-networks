@@ -62,7 +62,7 @@ def make_labeled_tiles(input_dir):
             # Convert the bounding boxes to fit the tiles.
             for tile in tiles:
                 for box in bounding_boxes:
-                    if box.overlaps(tile):
+                    if box.bbox_is_contained_in_tile(tile):
                         tile.add_bounding_box(box)
 
             return tiles
@@ -110,10 +110,11 @@ def reunify_tiles(tiles, output_dir="."):
 
     return full_tile
 
-def parse_yolo_input(label_file):
+def parse_yolo_input(label_file, image):
     """ Reads from a yolo training file and returns a list of BoundingBox objects.
         Also takes the labels' image so we can convert from relative to px. """
     cells = []
+    id = 0
     for line in label_file.readlines():
         # Treat #s as comments
         if "#" in line:
@@ -122,18 +123,25 @@ def parse_yolo_input(label_file):
             continue
 
         classification, x, y, width, height = map(float, line.split())
-        cells.append(Cell(x - width / 2, y - height / 2, x + width / 2, y + height / 2, classification))
+        x *= len(image[0])
+        width *= len(image[0])
+        y *= len(image)
+        height *= len(image)
+        cells.append(Cell(int(x - width / 2), int(y - height / 2), int(x + width / 2), int(y + height / 2), id, classification))
+        id += 1
 
-    return bounding_boxes
+    return cells
 
 def parse_yolo_output(yolo_output):
     """ Takes a string (probably stdout from running yolo) and returns a list of Cell objects."""
     cells = []
     classification = None
+    id = 0
     for line in yolo_output.splitlines():
         if line.startswith("    BBOX:"):
             line = line[len("    BBOX:"):]
-            cells.append(Cell(*map(int, line.split())))
+            cells.append(Cell(*map(int, line.split()), id))
+            id += 1
 
     return cells
 
