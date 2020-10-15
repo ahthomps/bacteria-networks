@@ -1,4 +1,4 @@
-GPU=0
+GPU=1
 CUDNN=0
 OPENCV=0
 OPENMP=0
@@ -9,7 +9,9 @@ DEBUG=0
 #       -gencode arch=compute_52,code=[sm_52,compute_52]
 
 # For Jake's computer:
-ARCH= -gencode arch=compute_52,code=[sm_52,compute_52]
+# ARCH= -gencode arch=compute_52,code=[sm_52,compute_52]
+# For Ben's computer:
+ARCH= -gencode arch=compute_61,code=[sm_61,compute_61]
 
 VPATH=./src/:./.yolo_examples
 SLIB=libdarknet.so
@@ -47,12 +49,12 @@ endif
 ifeq ($(GPU), 1) 
 # For the HPC:
 # COMMON+= -DGPU -I/usr/local/cuda-11.1/targets/x86_64-linux/include/
-# For Jake's computer:
+# For Arch:
 COMMON+= -DGPU -I/opt/cuda/targets/x86_64-linux/include/
 CFLAGS+= -DGPU
 # For the HPC:
 # LDFLAGS+= -L/usr/local/cuda-11.1/lib64/stubs -lcuda -L/usr/local/cuda-11.1/lib64 -lcudart -lcublas -lcurand
-# For Jake's computer:
+# For Arch:
 LDFLAGS+= -L/opt/cuda/lib64/stubs -lcuda -L/opt/cuda/lib64 -lcudart -lcublas -lcurand
 endif
 

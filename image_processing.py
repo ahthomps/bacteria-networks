@@ -20,7 +20,6 @@ DEFAULT_DILATIONS = 4
 
 MIN_THRESHOLD = 0
 MAX_THRESHOLD = 100
-DEFAULT_THRESHOLD = 50
 
 def erode_and_dilate(image, erode, dilate):
     """ Performs erosions and dilations on an image and returns processed
@@ -64,6 +63,7 @@ class SliderWidget(QWidget):
         QWidget.__init__(self, parent)
         self.setWindowTitle('Image Processing Options')
 
+        # This is a hack
         if parent is not None:
             return
 
@@ -98,26 +98,29 @@ class SliderWidget(QWidget):
         """ Responds to changes of the opening slider """
         self.openingsLCD.display(event)
         self.prgmmgr.openings = event
-        self.prgmmgr.get_processed_image()
+        self.prgmmgr.compute_binary_image()
+        self.prgmmgr.MplWidget.draw_image(self.prgmmgr._binary_image)
 
     def update_dilations(self, event):
         """ Responds to changes of the dilations slider """
         self.dilationsLCD.display(event)
         self.prgmmgr.dilations = event
-        self.prgmmgr.get_processed_image()
+        self.prgmmgr.compute_binary_image()
+        self.prgmmgr.MplWidget.draw_image(self.prgmmgr._binary_image)
 
     def update_threshold(self, event):
         """ Responds to changes of the threshold slider """
         self.thresholdLCD.display(event / 100)
         self.prgmmgr.threshold = event / 100
-        self.prgmmgr.get_processed_image()
+        self.prgmmgr.compute_binary_image()
+        self.prgmmgr.MplWidget.draw_image(self.prgmmgr._binary_image)
 
     def restore_defaults(self, event):
         """ This is a hack and should be fixed. """
         self.update_dilations(DEFAULT_DILATIONS)
         self.update_openings(DEFAULT_OPENINGS)
         self.prgmmgr.threshold = None
-        self.prgmmgr.get_processed_image()
+        self.prgmmgr.compute_binary_image()
         self.update_threshold(self.prgmmgr.threshold * 100)
 
 

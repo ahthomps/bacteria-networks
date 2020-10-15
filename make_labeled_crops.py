@@ -17,14 +17,14 @@ def make_tiles(img, filename):
     """ img: A PIL.Image to be tiled.
         filename: A filename, usually the filename of img without its extension. """
     tiles = []
-    for r in range(0, img.height, 1 - TILE_SIZE // TILE_OVERLAP):
-        for c in range(0, img.width, 1 - TILE_SIZE // TILE_OVERLAP):
+    for r in range(0, img.height, ((TILE_OVERLAP - 1) * TILE_SIZE) // TILE_OVERLAP):
+        for c in range(0, img.width, ((TILE_OVERLAP - 1) * TILE_SIZE) // TILE_OVERLAP):
             x1, y1, x2, y2 = (r, c, r + TILE_SIZE, c + TILE_SIZE)
             tiles.append(Tile(img.crop((x1, y1, x2, y2)), x1, y1, x2, y2, filename))
 
     return tiles
 
-
+# For producing training data. Probably should be in a separate script
 def make_labeled_tiles(input_dir):
     """ input_dir:  Directory containing uncropped images and associated labels.
         Returns Tile objects representing CROP_SIZE x CROP_SIZE crops of each image in input_dir
@@ -83,6 +83,18 @@ def rebuild_original_image(tiles):
 
     return full_image
 
+class Box:
+    def __init__(self, xmin, ymin, xmax, ymax):
+        self.xmin = xmin
+        self.ymin = ymin
+        self.xmax = xmax
+        self.ymax = ymax
+
+    def contains_point(self, pt):
+        x, y = pt
+        return self.xmin <= x <= self.xmax and self.ymin <= y <= self.ymax
+
+
 def reunify_tiles(tiles, output_dir="."):
     """ Takes all the tiles in tiles, and returns a new Tile object representing the untiled image. """
 
@@ -97,11 +109,11 @@ def reunify_tiles(tiles, output_dir="."):
                             ((2 * TILE_OVERLAP - 1) * TILE_SIZE) // (2 * TILE_OVERLAP),
                             ((2 * TILE_OVERLAP - 1) * TILE_SIZE) // (2 * TILE_OVERLAP))
     for tile in tiles:
-        for bounding_box in tile.bounding_boxes:
+        for cell in tile.cells:
             # If the center of the bounding box is in the confidence region of this tile
-            if confidence_region.contains_point(bounding_box.center()):
+            if confidence_region.contains_point(cell.center()):
                 # Then we add the bounding box to the big image
-                new_bbox = deepcopy(bounding_box)
+                new_bbox = deepcopy(cell)
                 new_bbox.x1 += tile.x1
                 new_bbox.x2 += tile.x1
                 new_bbox.y1 += tile.y1

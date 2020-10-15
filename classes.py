@@ -120,14 +120,14 @@ class Tile:
         """ Returns center of bounding box"""
         return self.x1 + self.width() / 2, self.y1 + self.height() / 2
 
-    def add_bounding_box(self, box):
+    def add_bounding_box(self, cell):
         """ box: A bounding box with coordinates relative to the untiled image. """
-        box = deepcopy(box)
-        box.x1 = max(box.x1, self.x1) - self.x1
-        box.y1 = max(box.y1, self.y1) - self.y1
-        box.x2 = min(box.x2, self.x2) - self.x1
-        box.y2 = min(box.y2, self.y2) - self.y1
-        self.cells.append(box)
+        cell = deepcopy(cell)
+        cell.x1 = max(cell.x1, self.x1) - self.x1
+        cell.y1 = max(cell.y1, self.y1) - self.y1
+        cell.x2 = min(cell.x2, self.x2) - self.x1
+        cell.y2 = min(cell.y2, self.y2) - self.y1
+        self.cells.append(cell)
 
     # This is useful for cropping training data. Should be in a separate script
     def to_relative(self):
@@ -135,12 +135,12 @@ class Tile:
         for box in self.cells:
             box.to_relative(self.width(), self.height())
 
-    # This is useful for cropping training data. Should be in a separate script
     def save(self, directory="."):
-        """ Saves this tile as a cropped image and an associated label file.
+        """ Saves this tile as a cropped image and (potentially) an associated label file.
             Note: This will convert bounding boxes to relative, because that's how YOLO likes it. """
         self.img.save(f"{directory}/{self.filename}.jpg", "JPEG", subsampling=0, quality=100)
 
+        # For producing training data. Should be in a different script
         if self.cells != []:
             self.to_relative()
             ofile = open(f"{directory}/{self.filename}.txt", "w")

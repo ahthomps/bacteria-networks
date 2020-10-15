@@ -16,6 +16,7 @@ from classes import Tile
 from make_labeled_crops import *
 from edge_detection import compute_cell_contact
 
+CROP_SIZE = 416
 
 class ProgramManager:
     def __init__(self):
@@ -106,8 +107,6 @@ class ProgramManager:
         print("found contours!")
 
     def crop(self):
-        assert self._image_filename is not None
-
         # Make the crops directory
         directory = self._image_filename[:self._image_filename.rfind("/")]
         self._crop_dir = f"{directory}/crops"
@@ -125,7 +124,9 @@ class ProgramManager:
 
     def reunify(self):
         full_tile = reunify_tiles(self._tiles)
-        full_tile.save()
+        self._image = np.array(full_tile.img)
+        self._cells = full_tile.cells
+        return full_tile
 
     def compute_cell_network_edges(self):
         compute_cell_contact(self._cells)
@@ -167,7 +168,7 @@ class MainWindow(QMainWindow):
         self.actionClear.setEnabled(True)
 
         self.actionImage.setEnabled(True)
-        # self.actionImage_Directory.setEnabled(True)
+
         self.actionImage_Directory.setEnabled(False)
         self.actionCustom_Processing.setEnabled(False)
 
@@ -198,6 +199,9 @@ class MainWindow(QMainWindow):
             return
         self.MplWidget.draw_image(self._program_manager._image)
 
+        if any(dim > CROP_SIZE for dim in self._program_manager._image.shape):
+            self.actionCrop.setEnabled(True)
+
         # disable importing new images
         self.actionImage.setEnabled(False)
         self.actionImage_Directory.setEnabled(False)
@@ -222,7 +226,7 @@ class MainWindow(QMainWindow):
 
     def run_yolo_and_display(self):
         self._program_manager.run_yolo()
-        self.MplWidget.draw_cell_bounding_boxes(self._program_manager._cells)
+        self.MplWidget.draw_cell_bounding_boxes(self._program_manager._cells) # This does nothing when we run YOLO on crops
 
         # disable finding bounding boxes
         self.actionLabel.setEnabled(False)
@@ -285,9 +289,14 @@ class MainWindow(QMainWindow):
         self.actionCrop.setEnabled(False)
         # enable finding bboxes with YOLO
         self.actionYOLO.setEnabled(True)
+        # enable reunification of the crops
+        self.actionReunify.setEnabled(True)
 
     def compute_reunified_image_and_change_enablements(self):
-        self._program_manager.reunify()
+        full_tile = self._program_manager.reunify()
+
+        self.MplWidget.draw_image(self._program_manager._image)
+        self.MplWidget.draw_cell_bounding_boxes(full_tile.cells)
 
         # disable reunification
         self.actionReunify.setEnabled(False)
