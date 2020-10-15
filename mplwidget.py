@@ -7,7 +7,6 @@ from matplotlib.figure import Figure
 from PyQt5 import QtCore
 
 class MplWidget(QWidget):
-
     def __init__(self, parent = None):
         QWidget.__init__(self, parent)
 
