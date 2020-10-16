@@ -252,7 +252,7 @@ class MainWindow(QMainWindow):
         self.actionCustom_Processing.setEnabled(True)
 
     def create_binary_image_processing_window_and_display(self):
-        self.sliders = SliderWidget(mgr=self._program_manager)
+        self.sliders = SliderWidget(mgr=self._program_manager, dmgr=self)
         self.sliders.setLayout(self.sliders.layout)
         self.sliders.show()
 
