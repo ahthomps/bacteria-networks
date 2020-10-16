@@ -69,6 +69,9 @@ class Cell:
 
         # creates an np.array image of just the current bbox
         subimage = np.asarray(image_working[self.y1:self.y2 + 1, self.x1:self.x2 + 1])
+        # if cell completely overlapped by other bboxes, use binary_image
+        if not subimage.any():
+            subimage = np.asarray(binary_image[self.y1:self.y2 + 1, self.x1:self.x2 + 1])
         # finds connected bright regions (foreground)
         labels_mask = measure.label(subimage, connectivity=2)
         # determines quantitative properties of each region of brightness
