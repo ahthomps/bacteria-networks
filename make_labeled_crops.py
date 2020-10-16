@@ -9,7 +9,7 @@ from copy import deepcopy
 from os import listdir
 from classes import *
 
-TILE_OVERLAP = 2 # 2 -> 50% overlap, 3 -> 33% overlap, etc.
+TILE_OVERLAP = 3 # 2 -> 50% overlap, 3 -> 33% overlap, etc.
 TILE_SIZE = 416
 IMAGE_EXTENSIONS = (".tiff", ".tif", ".png", ".jpg", ".jpeg", ".gif")
 
