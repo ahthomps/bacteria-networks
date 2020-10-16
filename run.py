@@ -90,8 +90,6 @@ class ProgramManager:
             output = subprocess.run(["./darknet", "detector", "test", "cells/obj.data", "cells/test.cfg", "backup/yolov3-custom_final.weights",
                                      self._image_filename], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
             self._cells = parse_yolo_output(str(output.stdout, "UTF-8"))
-            # self._display.bbox_success()
-            # self._MplWidget.draw_cell_bounding_boxes(self._cells)
         else:
             raise Exception("Didn't run YOLO for some reason.")
         print("Done!")
