@@ -68,7 +68,7 @@ class ProgramManager:
         self._cells = parse_yolo_input(self._label_ofile, self._image)
         return True
 
-    def run_yolo(self):
+    def compute_bounding_boxes(self):
         # There's major copy-pasted code in this function. Should probably be cleaned up.
         print("Running YOLO...")
         # Batch of crops
@@ -223,7 +223,7 @@ class MainWindow(QMainWindow):
         self.actionProcess_Image.setEnabled(True)
 
     def run_yolo_and_display(self):
-        self._program_manager.run_yolo()
+        self._program_manager.compute_bounding_boxes()
         self.MplWidget.draw_cell_bounding_boxes(self._program_manager._cells) # This does nothing when we run YOLO on crops
 
         # disable finding bounding boxes
