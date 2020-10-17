@@ -59,7 +59,7 @@ def process_image(image, openings=DEFAULT_OPENINGS, initial_dilations=DEFAULT_DI
 class SliderWidget(QWidget):
     """ Sliders are used for user-interactive image processing. The binary image
     that's created by default is normally quite good, but this allows for tweaking"""
-    def __init__(self, parent=None, mgr=None):
+    def __init__(self, parent=None, mgr=None, dmgr=None):
         QWidget.__init__(self, parent)
         self.setWindowTitle('Image Processing Options')
 
@@ -68,6 +68,7 @@ class SliderWidget(QWidget):
             return
 
         self.prgmmgr = mgr
+        self.dmgr = dmgr
 
         self.layout = QVBoxLayout()
 
@@ -99,21 +100,21 @@ class SliderWidget(QWidget):
         self.openingsLCD.display(event)
         self.prgmmgr.openings = event
         self.prgmmgr.compute_binary_image()
-        self.prgmmgr.MplWidget.draw_image(self.prgmmgr._binary_image)
+        self.dmgr.MplWidget.draw_image(self.prgmmgr._binary_image)
 
     def update_dilations(self, event):
         """ Responds to changes of the dilations slider """
         self.dilationsLCD.display(event)
         self.prgmmgr.dilations = event
         self.prgmmgr.compute_binary_image()
-        self.prgmmgr.MplWidget.draw_image(self.prgmmgr._binary_image)
+        self.dmgr.MplWidget.draw_image(self.prgmmgr._binary_image)
 
     def update_threshold(self, event):
         """ Responds to changes of the threshold slider """
         self.thresholdLCD.display(event / 100)
         self.prgmmgr.threshold = event / 100
         self.prgmmgr.compute_binary_image()
-        self.prgmmgr.MplWidget.draw_image(self.prgmmgr._binary_image)
+        self.dmgr.MplWidget.draw_image(self.prgmmgr._binary_image)
 
     def restore_defaults(self, event):
         """ This is a hack and should be fixed. """
