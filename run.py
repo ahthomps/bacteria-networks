@@ -157,9 +157,9 @@ class MainWindow(QMainWindow):
         self.actionContour_view.triggered.connect(self.handle_cell_contours_view_press)
 
         # NEW SliderWidget ones:
-        self.SliderWidget.openingsSlider.valueChanged.connect(self.update_openings_number_and_display_new_binary_image)
-        self.SliderWidget.dilationsSlider.valueChanged.connect(self.update_dilations_number_and_display_new_binary_image)
-        self.SliderWidget.thresholdSlider.valueChanged.connect(self.update_threshold_number_and_display_new_binary_image)
+        self.SliderWidget.openingsSlider.sliderMoved.connect(self.update_openings_number_and_display_new_binary_image)
+        self.SliderWidget.dilationsSlider.sliderMoved.connect(self.update_dilations_number_and_display_new_binary_image)
+        self.SliderWidget.thresholdSlider.sliderMoved.connect(self.update_threshold_number_and_display_new_binary_image)
         self.SliderWidget.restoreDefaultsButton.clicked.connect(self.set_image_processing_numbers_to_default_and_display_new_binary_image)
 
     def set_default_enablements(self):
@@ -253,9 +253,6 @@ class MainWindow(QMainWindow):
         self.set_SliderWidget_defaults_and_display()
 
     def set_SliderWidget_defaults_and_display(self):
-        # self.sliders = SliderWidget(mgr=self.program_manager)
-        # self.sliders.setLayout(self.sliders.layout)
-        # self.sliders.show()
         self.SliderWidget.update_openingsLCD(self.program_manager.openings)
         self.SliderWidget.move_openings_slider(self.program_manager.openings)
         self.SliderWidget.update_dilationsLCD(self.program_manager.dilations)
@@ -265,6 +262,7 @@ class MainWindow(QMainWindow):
         self.SliderWidget.setVisible(True)
 
     def update_openings_number_and_display_new_binary_image(self, new_openings):
+        print("openings slider moved...")
         # update openingsLCD in SliderWidget
         self.SliderWidget.update_openingsLCD(new_openings)
         # update openings attribute in ProgramManager
@@ -273,12 +271,8 @@ class MainWindow(QMainWindow):
         self.program_manager.compute_binary_image()
         self.MplWidget.draw_image(self.program_manager.binary_image)
 
-    def create_binary_image_processing_window_and_display(self):
-        self.sliders = SliderWidget(mgr=self.program_manager, dmgr=self)
-        self.sliders.setLayout(self.sliders.layout)
-        self.sliders.show()
-
     def update_dilations_number_and_display_new_binary_image(self, new_dilations):
+        print("dilations slider moved...")
         # update dilationsLCD in SliderWidget
         self.SliderWidget.update_dilationsLCD(new_dilations)
         # update openings attribute in ProgramManager
@@ -288,6 +282,7 @@ class MainWindow(QMainWindow):
         self.MplWidget.draw_image(self.program_manager.binary_image)
 
     def update_threshold_number_and_display_new_binary_image(self, new_threshold):
+        print("threshold slider moved...")
         new_threshold /= 100
         # update dilationsLCD in SliderWidget
         self.SliderWidget.update_thresholdLCD(new_threshold)
