@@ -100,21 +100,21 @@ class SliderWidget(QWidget):
         self.openingsLCD.display(event)
         self.prgmmgr.openings = event
         self.prgmmgr.compute_binary_image()
-        self.dmgr.MplWidget.draw_image(self.prgmmgr._binary_image)
+        self.dmgr.MplWidget.draw_image(self.prgmmgr.binary_image)
 
     def update_dilations(self, event):
         """ Responds to changes of the dilations slider """
         self.dilationsLCD.display(event)
         self.prgmmgr.dilations = event
         self.prgmmgr.compute_binary_image()
-        self.dmgr.MplWidget.draw_image(self.prgmmgr._binary_image)
+        self.dmgr.MplWidget.draw_image(self.prgmmgr.binary_image)
 
     def update_threshold(self, event):
         """ Responds to changes of the threshold slider """
         self.thresholdLCD.display(event / 100)
         self.prgmmgr.threshold = event / 100
         self.prgmmgr.compute_binary_image()
-        self.dmgr.MplWidget.draw_image(self.prgmmgr._binary_image)
+        self.dmgr.MplWidget.draw_image(self.prgmmgr.binary_image)
 
     def restore_defaults(self, event):
         """ This is a hack and should be fixed. """
