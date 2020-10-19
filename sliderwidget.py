@@ -31,16 +31,19 @@ class SliderWidget(QWidget):
         # # Initialize Openings Slider
         self.openingsInfoButton.setIcon(self.style().standardIcon(getattr(QStyle, 'SP_FileDialogInfoView')))
         self.openingsInfoButton.setToolTip("does openings stuff")
+        self.openingsInfoButton.setStyleSheet("QToolButton {border: none;}")
         set_slider_defaults(self.openingsSlider, MIN_OPENINGS, MAX_OPENINGS, MIN_OPENINGS)
 
         # Initialize Dilations Slider
         self.dilationsInfoButton.setIcon(self.style().standardIcon(getattr(QStyle, 'SP_FileDialogInfoView')))
         self.dilationsInfoButton.setToolTip("does dilations stuff")
+        self.dilationsInfoButton.setStyleSheet("QToolButton {border: none;}")
         set_slider_defaults(self.dilationsSlider, MIN_DILATIONS, MAX_DILATIONS, MIN_DILATIONS)
 
         # Initialize Threshold Slider
         self.thresholdInfoButton.setIcon(self.style().standardIcon(getattr(QStyle, 'SP_FileDialogInfoView')))
         self.thresholdInfoButton.setToolTip("does threshold stuff")
+        self.thresholdInfoButton.setStyleSheet("QToolButton {border: none;}")
         set_slider_defaults(self.thresholdSlider, MIN_THRESHOLD, MAX_THRESHOLD, MIN_THRESHOLD)
 
     def update_openingsLCD(self, new_openings):

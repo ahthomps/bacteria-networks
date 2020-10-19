@@ -19,7 +19,7 @@ class Cell:
         self.contour = None
         self.classification = classification
         self.cell_center = (0, 0)
-        # list of the INDICES adjacent cells in the cells list
+        # list of the adjacent cells in the cells list
         self.adj_list = []
         self.overlapping_bboxes = []
 
