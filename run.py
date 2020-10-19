@@ -136,7 +136,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         # set up UI window
         QMainWindow.__init__(self)
-        loadUi("main.ui", self)
+        loadUi("newmain.ui", self)
         self.setWindowTitle("JAB Bacteria Networks Detector")
         self.addToolBar(NavigationToolbar(self.MplWidget.canvas, self))
 
@@ -146,7 +146,6 @@ class MainWindow(QMainWindow):
 
         # set up all button presses
         self.actionClear.triggered.connect(self.clear_all_data_and_reset_window)
-        self.actionCustom_Processing.triggered.connect(self.create_binary_image_processing_window_and_display)
 
         self.actionImage.triggered.connect(self.open_image_file_and_display)
         self.actionLabel.triggered.connect(self.open_label_file_and_display)
@@ -162,6 +161,12 @@ class MainWindow(QMainWindow):
         self.actionBounding_Boxes.triggered.connect(self.handle_cell_bounding_boxes_view_press)
         self.actionContour_view.triggered.connect(self.handle_cell_contours_view_press)
 
+        # NEW SliderWidget ones:
+        self.SliderWidget.openingsSlider.valueChanged.connect(self.update_openings_number_and_display_new_binary_image)
+        self.SliderWidget.dilationsSlider.valueChanged.connect(self.update_dilations_number_and_display_new_binary_image)
+        self.SliderWidget.thresholdSlider.valueChanged.connect(self.update_threshold_number_and_display_new_binary_image)
+        self.SliderWidget.restoreDefaultsButton.clicked.connect(self.set_image_processing_numbers_to_default_and_display_new_binary_image)
+
     def set_default_enablements(self):
         self.actionSave.setEnabled(False)
         self.actionSave_As.setEnabled(False)
@@ -169,8 +174,8 @@ class MainWindow(QMainWindow):
 
         self.actionImage.setEnabled(True)
 
-        self.actionImage_Directory.setEnabled(False)
         self.actionCustom_Processing.setEnabled(False)
+        self.SliderWidget.setVisible(False)
 
         self.actionLabel.setEnabled(False)
         self.actionYOLO.setEnabled(False)
@@ -204,7 +209,6 @@ class MainWindow(QMainWindow):
 
         # disable importing new images
         self.actionImage.setEnabled(False)
-        self.actionImage_Directory.setEnabled(False)
         # enable finding bboxes
         self.actionLabel.setEnabled(True)
         self.actionYOLO.setEnabled(True)
@@ -237,6 +241,8 @@ class MainWindow(QMainWindow):
         # enable image processing
         self.actionProcess_Image.setEnabled(True)
 
+    """ ---------------------- IMAGE PROCESSSING ---------------------------- """
+
     def compute_binary_image_and_display(self):
         self._program_manager.compute_binary_image()
         self.MplWidget.draw_image(self._program_manager._binary_image)
@@ -249,12 +255,57 @@ class MainWindow(QMainWindow):
         # enable contouring
         self.actionContour_run.setEnabled(True)
         # enable image processing options
-        self.actionCustom_Processing.setEnabled(True)
+        self.set_SliderWidget_defaults_and_display()
 
-    def create_binary_image_processing_window_and_display(self):
-        self.sliders = SliderWidget(mgr=self._program_manager)
-        self.sliders.setLayout(self.sliders.layout)
-        self.sliders.show()
+    def set_SliderWidget_defaults_and_display(self):
+        # self.sliders = SliderWidget(mgr=self._program_manager)
+        # self.sliders.setLayout(self.sliders.layout)
+        # self.sliders.show()
+        self.SliderWidget.update_openingsLCD(self._program_manager.openings)
+        self.SliderWidget.move_openings_slider(self._program_manager.openings)
+        self.SliderWidget.update_dilationsLCD(self._program_manager.dilations)
+        self.SliderWidget.move_dilations_slider(self._program_manager.dilations)
+        self.SliderWidget.update_thresholdLCD(self._program_manager.threshold)
+        self.SliderWidget.move_threshold_slider(self._program_manager.threshold)
+        self.SliderWidget.setVisible(True)
+
+    def update_openings_number_and_display_new_binary_image(self, new_openings):
+        # update openingsLCD in SliderWidget
+        self.SliderWidget.update_openingsLCD(new_openings)
+        # update openings attribute in ProgramManager
+        self._program_manager.openings = new_openings
+        # find new binary image and display
+        self._program_manager.compute_binary_image()
+        self.MplWidget.draw_image(self._program_manager._binary_image)
+
+    def update_dilations_number_and_display_new_binary_image(self, new_dilations):
+        # update dilationsLCD in SliderWidget
+        self.SliderWidget.update_dilationsLCD(new_dilations)
+        # update openings attribute in ProgramManager
+        self._program_manager.dilations = new_dilations
+        # find new binary image and display
+        self._program_manager.compute_binary_image()
+        self.MplWidget.draw_image(self._program_manager._binary_image)
+
+    def update_threshold_number_and_display_new_binary_image(self, new_threshold):
+        new_threshold /= 100
+        # update dilationsLCD in SliderWidget
+        self.SliderWidget.update_thresholdLCD(new_threshold)
+        # update openings attribute in ProgramManager
+        self._program_manager.threshold = new_threshold
+        # find new binary image and display
+        self._program_manager.compute_binary_image()
+        self.MplWidget.draw_image(self._program_manager._binary_image)
+
+    def set_image_processing_numbers_to_default_and_display_new_binary_image(self):
+        self._program_manager.openings = DEFAULT_OPENINGS
+        self._program_manager.dilations = DEFAULT_DILATIONS
+        self._program_manager.threshold = None
+        self._program_manager.compute_binary_image()
+        self.set_SliderWidget_defaults_and_display()
+        self.MplWidget.draw_image(self._program_manager._binary_image)
+
+    """ ------------------------- CONTOURING ----------------------------------- """
 
     def compute_cell_contours_and_display(self):
         self._program_manager.compute_cell_contours()
@@ -264,6 +315,9 @@ class MainWindow(QMainWindow):
 
         # disable contouring
         self.actionContour_run.setEnabled(False)
+        # disable image processing
+        self.SliderWidget.setVisible(False)
+        self.actionCustom_Processing.setEnabled(False)
         # enable contour viewing
         self.actionContour_view.setEnabled(True)
         self.actionContour_view.setChecked(True)
