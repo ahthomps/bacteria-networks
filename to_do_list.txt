@@ -4,6 +4,7 @@ Function:
     Fix crash when trying to launch image options and no image is loaded
     Separate the creation of training data from the rest of the application
     Get rid of black borders
+    Change run_yolo to not reload the model every time
 
 Form:
     Add docstrings to run.py and make_labeled_crops.py
