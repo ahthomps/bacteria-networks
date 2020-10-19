@@ -45,8 +45,8 @@ class MplWidget(QWidget):
         colors = ['red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet']
         count = 0
         for cell in cells:
-            self.canvas.axes.plot(cell._cell_center[0], cell._cell_center[1], color='red', marker='o', gid=self.contour_gid)
-            contour = cell._contour
+            self.canvas.axes.plot(cell.cell_center[0], cell.cell_center[1], color='red', marker='o', gid=self.contour_gid)
+            contour = cell.contour
             contour_set = self.canvas.axes.contour(contour, [0.75], colors=colors[count % len(colors)])
             count += 1
             for line_collection in contour_set.collections:
@@ -55,21 +55,21 @@ class MplWidget(QWidget):
 
     def draw_cell_network_edges(self, cells):
         for cell in cells:
-            (x1, y1) = cell._cell_center
-            for adj_cell in cell._adj_list:
+            (x1, y1) = cell.cell_center
+            for adj_cell in cell.adj_list:
                 if adj_cell.id > cell.id:
-                    (x2, y2) = adj_cell._cell_center
+                    (x2, y2) = adj_cell.cell_center
                     self.canvas.axes.plot([x1, x2], [y1, y2], color='red', marker='o', gid='edge')
         self.canvas.draw()
 
     def remove_cell_bounding_boxes(self):
         for child in self.canvas.axes.get_children():
-            if hasattr(child, '_gid') and child._gid == self.bbox_gid:
+            if hasattr(child, '_gid') and child.gid == self.bbox_gid:
                 child.remove()
         self.canvas.draw()
 
     def remove_cell_contours(self):
         for child in self.canvas.axes.get_children():
-            if hasattr(child, '_gid') and child._gid == self.contour_gid:
+            if hasattr(child, '_gid') and child.gid == self.contour_gid:
                 child.remove()
         self.canvas.draw()

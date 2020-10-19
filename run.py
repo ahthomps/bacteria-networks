@@ -20,32 +20,32 @@ CROP_SIZE = 416
 
 class ProgramManager:
     def __init__(self):
-        self._image = np.asarray([])
-        self._binary_image = np.asarray([])
-        self._cells = []
-        self._tiles = []
+        self.image = np.asarray([])
+        self.binary_image = np.asarray([])
+        self.cells = []
+        self.tiles = []
 
         self.openings = DEFAULT_OPENINGS
         self.dilations = DEFAULT_DILATIONS
         self.threshold = None # This is a hack and should be changed.
 
-        self._image_filename = ""
-        self._label_filename = ""
-        self._crop_dir = ""
+        self.image_filename = ""
+        self.label_filename = ""
+        self.crop_dir = ""
 
     def clear_data(self):
-        self._image = np.asarray([])
-        self._binary_image = np.asarray([])
-        self._cells = []
-        self._tiles = []
+        self.image = np.asarray([])
+        self.binary_image = np.asarray([])
+        self.cells = []
+        self.tiles = []
 
         self.openings = DEFAULT_OPENINGS
         self.dilations = DEFAULT_DILATIONS
         self.threshold = None # This is a hack and should be changed.
 
-        self._image_filename = ""
-        self._label_filename = ""
-        self._crop_dir = ""
+        self.image_filename = ""
+        self.label_filename = ""
+        self.crop_dir = ""
 
     def open_image_file(self):
         filename, _ = QFileDialog.getOpenFileName(None, "Select image", "", "Image Files (*.png *.jpg *.jpeg *.bmp *.tif)")
@@ -53,8 +53,8 @@ class ProgramManager:
             return False
 
         print("using image {}".format(filename))
-        self._image_filename = filename
-        self._image = plt.imread(self._image_filename)
+        self.image_filename = filename
+        self.image = plt.imread(self.image_filename)
         return True
 
     def open_label_file(self):
@@ -63,71 +63,68 @@ class ProgramManager:
             return False
 
         print("using label {}".format(filename))
-        self._label_filename = filename
-        self._label_ofile = open(self._label_filename)
-        self._cells = parse_yolo_input(self._label_ofile, self._image)
+        self.label_filename = filename
+        self.label_ofile = open(self.label_filename)
+        self.cells = parse_yolo_input(self.label_ofile, self.image)
         return True
 
     def compute_bounding_boxes(self):
         # There's major copy-pasted code in this function. Should probably be cleaned up.
-        print("Running YOLO...")
         # Batch of crops
-        if self._crop_dir != "":
-            for filename in filter(lambda s: any(s.lower().endswith(ext) for ext in IMAGE_EXTENSIONS), os.listdir(self._crop_dir)):
-                filename_no_ext = filename[:filename.rfind(".")]
-                x1, y1 = map(int, filename_no_ext.split("_")[-2:])
+        if self.crop_dir != "":
+            filenames = list(filter(lambda s: any(s.lower().endswith(ext) for ext in IMAGE_EXTENSIONS), os.listdir(self.crop_dir)))
+            crop_paths = list(map(lambda filename: f"{self.crop_dir}/{filename}", filenames))
+            top_left_corners = list(map(int, path[:path.rfind(".")].split("_")[-2:]) for path in crop_paths)
 
-                output = subprocess.run(["./darknet", "detector", "test", "cells/obj.data", "cells/test.cfg", "backup/yolov3-custom_final.weights",
-                                         f"{self._crop_dir}/{filename}"], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+            # This is a list of lists of cells, each list corresponding to a crop.
+            cells = parse_yolo_output(run_yolo_on_images(crop_paths))
 
-                tile = Tile(Image.open(f"{self._crop_dir}/{filename}"), x1, y1, x1 + TILE_SIZE, y1 + TILE_SIZE, filename_no_ext)
-                tile.cells = parse_yolo_output(str(output.stdout, "UTF-8"))
-                self._tiles.append(tile)
-
-                print(f"Processed {self._crop_dir}/{filename}.")
+            self.tiles = []
+            for i in range(len(filenames)):
+                xmin, ymin = top_left_corners[i]
+                tile = Tile(Image.open(crop_paths[i]), xmin, ymin, xmin + TILE_SIZE, ymin + TILE_SIZE, filenames[i])
+                tile.cells = cells[i]
+                self.tiles.append(tile)
         # Single image
-        elif self._image_filename != "":
-            output = subprocess.run(["./darknet", "detector", "test", "cells/obj.data", "cells/test.cfg", "backup/yolov3-custom_final.weights",
-                                     self._image_filename], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
-            self._cells = parse_yolo_output(str(output.stdout, "UTF-8"))
-        else:
-            raise Exception("Didn't run YOLO for some reason.")
-        print("Done!")
+        elif self.image_filename != "":
+            output = subprocess.run(["./darknet", "detector", "test", "cells/obj.data", "cells/test.cfg", "backup/yolov3-custom_final.weights", self.image_filename],
+                                    stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+            self.cells = parse_yolo_output(str(output.stdout, "UTF-8"))
 
     def compute_binary_image(self):
         print("progessing image...")
-        self._binary_image, self.threshold = process_image(self._image, self.openings, self.dilations, self.threshold)
+        self.binary_image, self.threshold = process_image(self.image, self.openings, self.dilations, self.threshold)
         print("found processed image!")
 
     def compute_cell_contours(self):
         print("getting contours...")
-        compute_cell_contours(self._binary_image, self._cells)
+        compute_cell_contours(self.binary_image, self.cells)
         print("found contours!")
 
     def crop(self):
         # Make the crops directory
-        directory = self._image_filename[:self._image_filename.rfind("/")]
-        self._crop_dir = f"{directory}/crops"
-        os.makedirs(self._crop_dir, exist_ok=True)
+        directory = self.image_filename[:self.image_filename.rfind("/")]
+        self.crop_dir = f"{directory}/crops"
+        os.makedirs(self.crop_dir, exist_ok=True)
 
         # Get a list of all the image files we're going to crop
-        input_images = [self._image_filename[self._image_filename.rfind("/") + 1:]]
+        input_images = [self.image_filename[self.image_filename.rfind("/") + 1:]]
 
-        # Crop each image, and save all the crops in self._crop_dir
+        # Crop each image, and save all the crops in self.crop_dir
         for filename in input_images:
             for tile in make_tiles(Image.open(f"{directory}/{filename}"), filename[:filename.rfind(".")]):
-                tile.save(directory=self._crop_dir)
+                tile.save(directory=self.crop_dir)
 
-        print("Made at most", len(os.listdir(self._crop_dir)), "crops.")
+        print("Made at most", len(os.listdir(self.crop_dir)), "crops.")
 
     def reunify(self):
-        full_tile = reunify_tiles(self._tiles)
-        self._image = np.array(full_tile.img)
-        self._cells = full_tile.cells
+        full_tile = reunify_tiles(self.tiles)
+        self.image = np.array(full_tile.img)
+        self.cells = full_tile.cells
         return full_tile
 
     def compute_cell_network_edges(self):
-        compute_cell_contact(self._cells)
+        compute_cell_contact(self.cells)
 
 
 class MainWindow(QMainWindow):
@@ -139,7 +136,7 @@ class MainWindow(QMainWindow):
         self.addToolBar(NavigationToolbar(self.MplWidget.canvas, self))
 
         # set up ProgramManager
-        self._program_manager = ProgramManager()
+        self.program_manager = ProgramManager()
         self.set_default_enablements()
 
         # set up all button presses
@@ -187,17 +184,17 @@ class MainWindow(QMainWindow):
         self.actionContour_view.setChecked(False)
 
     def clear_all_data_and_reset_window(self):
-        self._program_manager.clear_data()
+        self.program_manager.clear_data()
         self.MplWidget.clear_canvas()
         self.set_default_enablements()
 
     def open_image_file_and_display(self):
-        image_file_was_opened = self._program_manager.open_image_file()
+        image_file_was_opened = self.program_manager.open_image_file()
         if not image_file_was_opened:
             return
-        self.MplWidget.draw_image(self._program_manager._image)
+        self.MplWidget.draw_image(self.program_manager.image)
 
-        if any(dim > CROP_SIZE for dim in self._program_manager._image.shape):
+        if any(dim > CROP_SIZE for dim in self.program_manager.image.shape):
             self.actionCrop.setEnabled(True)
 
         # disable importing new images
@@ -208,10 +205,10 @@ class MainWindow(QMainWindow):
         self.actionYOLO.setEnabled(True)
 
     def open_label_file_and_display(self):
-        label_file_was_opened = self._program_manager.open_label_file()
+        label_file_was_opened = self.program_manager.open_label_file()
         if not label_file_was_opened:
             return
-        self.MplWidget.draw_cell_bounding_boxes(self._program_manager._cells)
+        self.MplWidget.draw_cell_bounding_boxes(self.program_manager.cells)
 
         # disable finding bounding boxes
         self.actionLabel.setEnabled(False)
@@ -223,8 +220,8 @@ class MainWindow(QMainWindow):
         self.actionProcess_Image.setEnabled(True)
 
     def run_yolo_and_display(self):
-        self._program_manager.compute_bounding_boxes()
-        self.MplWidget.draw_cell_bounding_boxes(self._program_manager._cells) # This does nothing when we run YOLO on crops
+        self.program_manager.compute_bounding_boxes()
+        self.MplWidget.draw_cell_bounding_boxes(self.program_manager.cells) # This does nothing when we run YOLO on crops
 
         # disable finding bounding boxes
         self.actionLabel.setEnabled(False)
@@ -236,8 +233,8 @@ class MainWindow(QMainWindow):
         self.actionProcess_Image.setEnabled(True)
 
     def compute_binary_image_and_display(self):
-        self._program_manager.compute_binary_image()
-        self.MplWidget.draw_image(self._program_manager._binary_image)
+        self.program_manager.compute_binary_image()
+        self.MplWidget.draw_image(self.program_manager.binary_image)
 
         # disable image processing
         self.actionProcess_Image.setEnabled(False)
@@ -250,15 +247,15 @@ class MainWindow(QMainWindow):
         self.actionCustom_Processing.setEnabled(True)
 
     def create_binary_image_processing_window_and_display(self):
-        self.sliders = SliderWidget(mgr=self._program_manager, dmgr=self)
+        self.sliders = SliderWidget(mgr=self.program_manager, dmgr=self)
         self.sliders.setLayout(self.sliders.layout)
         self.sliders.show()
 
     def compute_cell_contours_and_display(self):
-        self._program_manager.compute_cell_contours()
+        self.program_manager.compute_cell_contours()
         self.MplWidget.remove_cell_bounding_boxes()
-        self.MplWidget.draw_cell_contours(self._program_manager._cells)
-        self.MplWidget.draw_image(self._program_manager._image)
+        self.MplWidget.draw_cell_contours(self.program_manager.cells)
+        self.MplWidget.draw_image(self.program_manager.image)
 
         # disable contouring
         self.actionContour_run.setEnabled(False)
@@ -273,15 +270,15 @@ class MainWindow(QMainWindow):
         self.actionEdge_Detection.setEnabled(True)
 
     def compute_cell_network_edges_and_display(self):
-        self._program_manager.compute_cell_network_edges()
-        self.MplWidget.draw_cell_network_edges(self._program_manager._cells)
+        self.program_manager.compute_cell_network_edges()
+        self.MplWidget.draw_cell_network_edges(self.program_manager.cells)
 
         # disable edge detection
         self.actionEdge_Detection.setEnabled(False)
         # enable edges viewing
 
     def compute_image_crops_and_change_enablements(self):
-        self._program_manager.crop()
+        self.program_manager.crop()
 
         # disable cropping
         self.actionCrop.setEnabled(False)
@@ -291,9 +288,9 @@ class MainWindow(QMainWindow):
         self.actionReunify.setEnabled(True)
 
     def compute_reunified_image_and_change_enablements(self):
-        full_tile = self._program_manager.reunify()
+        full_tile = self.program_manager.reunify()
 
-        self.MplWidget.draw_image(self._program_manager._image)
+        self.MplWidget.draw_image(self.program_manager.image)
         self.MplWidget.draw_cell_bounding_boxes(full_tile.cells)
 
         # disable reunification
@@ -301,19 +298,19 @@ class MainWindow(QMainWindow):
 
     def handle_binary_image_view_press(self):
         if self.actionBinary_Image.isChecked():
-            self.MplWidget.draw_image(self._program_manager._binary_image)
+            self.MplWidget.draw_image(self.program_manager.binary_image)
         else:
-            self.MplWidget.draw_image(self._program_manager._image)
+            self.MplWidget.draw_image(self.program_manager.image)
 
     def handle_cell_bounding_boxes_view_press(self):
         if self.actionBounding_Boxes.isChecked():
-            self.MplWidget.draw_cell_bounding_boxes(self._program_manager._cells)
+            self.MplWidget.draw_cell_bounding_boxes(self.program_manager.cells)
         else:
             self.MplWidget.remove_cell_bounding_boxes()
 
     def handle_cell_contours_view_press(self):
         if self.actionContour_view.isChecked():
-            self.MplWidget.draw_cell_contours(self._program_manager._cells)
+            self.MplWidget.draw_cell_contours(self.program_manager.cells)
         else:
             self.MplWidget.remove_cell_contours()
 

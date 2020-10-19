@@ -7,21 +7,21 @@ import numpy as np
 from skimage import measure
 
 class Cell:
-    def __init__(self, x1, y1, x2, y2, id, classification="cell"):
+    def __init__(self, x1, y1, x2, y2, id_no, classification="cell"):
         """ Represents a cell found by YOLO.
             x1, y1, x2, y2: px coordinates of xmin xmax ymin ymax of bounding box.
             classification: the classification of this cell. This will eventually have to change. """
-        self.id = id
+        self.id = id_no
         self.x1 = x1
         self.y1 = y1
         self.x2 = x2
         self.y2 = y2
-        self._contour = None
-        self._classification = classification
-        self._cell_center = (0, 0)
+        self.contour = None
+        self.classification = classification
+        self.cell_center = (0, 0)
         # list of the INDICES adjacent cells in the cells list
-        self._adj_list = []
-        self._overlapping_bboxes = []
+        self.adj_list = []
+        self.overlapping_bboxes = []
 
     def width(self):
         """ Returns the width of this cell. """
@@ -64,7 +64,7 @@ class Cell:
         """ adapted code from contouring.py, finds some point in a cell """
         image_working = deepcopy(binary_image)
         # removes all other cells so only bright spots are cell in question
-        for overlap_box in self._overlapping_bboxes:
+        for overlap_box in self.overlapping_bboxes:
             image_working[overlap_box.y1:overlap_box.y2 + 1, overlap_box.x1:overlap_box.x2 + 1] = 0
 
         # creates an np.array image of just the current bbox
@@ -81,7 +81,7 @@ class Cell:
         # take the region with largest area and find its center
         y, x = map(int, regions[0].centroid) # subimage ils bbox
         # find cell center in original image
-        self._cell_center = (self.x1 + x, self.y1 + y)
+        self.cell_center = (self.x1 + x, self.y1 + y)
 
     # This is useful for cropping training data. Should be in a separate script
     def to_relative(self, width, height):
@@ -91,8 +91,11 @@ class Cell:
         self.y1 /= height
         self.y2 /= height
 
+    def __str__(self):
+        return f"{self.classification}: {self.x1} {self.y1} {self.x2} {self.y2}"
+
 class Tile:
-    def __init__(self, img, x1, y1, x2, y2, filename):
+    def __init__(self, img, x1, y1, x2, y2, filename_no_ext):
         """ img:            The cropped PIL Image object.
             x1, y1, x2, y2: The position of this tile in the larger image.
             filename:       A unique identifier for this tile. (No file extension) """
@@ -109,7 +112,7 @@ class Tile:
         self.cells = []
 
         # This will be used as a unique identifier for this crop.
-        self.filename = f"{filename}_{self.x1}_{self.y1}"
+        self.filename_no_ext = f"{filename_no_ext}_{self.x1}_{self.y1}"
 
     def width(self):
         """ Returns width of bounding box"""
@@ -123,7 +126,7 @@ class Tile:
         """ Returns center of bounding box"""
         return self.x1 + self.width() / 2, self.y1 + self.height() / 2
 
-    def add_bounding_box(self, cell):
+    def add_cell(self, cell):
         """ box: A bounding box with coordinates relative to the untiled image. """
         cell = deepcopy(cell)
         cell.x1 = max(cell.x1, self.x1) - self.x1
@@ -133,20 +136,20 @@ class Tile:
         self.cells.append(cell)
 
     # This is useful for cropping training data. Should be in a separate script
-    def to_relative(self):
-        """ Converts bounding boxes to image relative values. """
-        for box in self.cells:
-            box.to_relative(self.width(), self.height())
+    # def to_relative(self):
+    #     """ Converts bounding boxes to image relative values. """
+    #     for box in self.cells:
+    #         box.to_relative(self.width(), self.height())
 
     def save(self, directory="."):
         """ Saves this tile as a cropped image and (potentially) an associated label file.
             Note: This will convert bounding boxes to relative, because that's how YOLO likes it. """
-        self.img.save(f"{directory}/{self.filename}.jpg", "JPEG", subsampling=0, quality=100)
+        self.img.save(f"{directory}/{self.filename_no_ext}.jpg", "JPEG", subsampling=0, quality=100)
 
         # For producing training data. Should be in a different script
-        if self.cells != []:
-            self.to_relative()
-            ofile = open(f"{directory}/{self.filename}.txt", "w")
-            for cell in self.cells:
-                ofile.write(f"{cell.classification} {cell.center()[0]} {cell.center()[1]} {cell.width()} {cell.height()}\n")
-            ofile.close()
+        # if self.cells != []:
+        #     self.to_relative()
+        #     ofile = open(f"{directory}/{self.filename_no_ext}.txt", "w")
+        #     for cell in self.cells:
+        #         ofile.write(f"{cell.classification} {cell.center()[0]} {cell.center()[1]} {cell.width()} {cell.height()}\n")
+        #     ofile.close()

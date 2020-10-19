@@ -1,10 +1,9 @@
 Function:
     Tiled crops in the GUI
     Reunification in the GUI
-    Fix crash when trying to launch image options and no image is loaded
     Separate the creation of training data from the rest of the application
     Get rid of black borders
-    Change run_yolo to not reload the model every time
+    automatically reunify / fix run_yolo
 
 Form:
     Add docstrings to run.py and make_labeled_crops.py
