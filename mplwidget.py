@@ -64,12 +64,12 @@ class MplWidget(QWidget):
 
     def remove_cell_bounding_boxes(self):
         for child in self.canvas.axes.get_children():
-            if hasattr(child, 'gid') and child.gid == self.bbox_gid:
+            if hasattr(child, '_gid') and child._gid == self.bbox_gid:
                 child.remove()
         self.canvas.draw()
 
     def remove_cell_contours(self):
         for child in self.canvas.axes.get_children():
-            if hasattr(child, 'gid') and child.gid == self.contour_gid:
+            if hasattr(child, '_gid') and child._gid == self.contour_gid:
                 child.remove()
         self.canvas.draw()
