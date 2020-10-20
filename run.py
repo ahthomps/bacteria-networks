@@ -99,7 +99,7 @@ class ProgramManager:
     def crop(self):
         # Make the crops directory
         directory = self.image_path[:self.image_path.rfind("/")]
-        self.crop_dir = "./crops"
+        self.crop_dir = "./.crops"
 
         os.makedirs(self.crop_dir, exist_ok=True)
 
