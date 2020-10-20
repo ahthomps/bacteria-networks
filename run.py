@@ -99,8 +99,13 @@ class ProgramManager:
     def crop(self):
         # Make the crops directory
         directory = self.image_path[:self.image_path.rfind("/")]
-        self.crop_dir = f"{directory}/crops"
+        self.crop_dir = "./crops"
+
         os.makedirs(self.crop_dir, exist_ok=True)
+
+        # Remove any clutter in the crop directory
+        for file in os.listdir(self.crop_dir):
+            os.remove(f"{self.crop_dir}/{file}")
 
         # Get a list of all the image files we're going to crop
         input_images = [self.image_path[self.image_path.rfind("/") + 1:]]
@@ -110,7 +115,7 @@ class ProgramManager:
             for tile in make_tiles(Image.open(f"{directory}/{filename}"), filename[:filename.rfind(".")]):
                 tile.save(directory=self.crop_dir)
 
-        print("Made at most", len(os.listdir(self.crop_dir)), "crops.")
+        print(f"Made {len(os.listdir(self.crop_dir))} crops.")
 
     def compute_cell_network_edges(self):
         compute_cell_contact(self.cells)
