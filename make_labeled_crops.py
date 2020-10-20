@@ -158,6 +158,8 @@ def parse_yolo_output(yolo_output):
             cells[-1].append(Cell(xmin, ymin, xmax, ymax, cell_id, classification))
             cell_id += 1
 
+    if len(cells) > 0 and cells[-1] == []:
+        cells.pop()
     return cells
 
 
