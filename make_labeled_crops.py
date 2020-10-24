@@ -25,49 +25,6 @@ def make_tiles(img, filename):
 
     return tiles
 
-# For producing training data. Probably should be in a separate script
-def make_labeled_tiles(input_dir):
-    """ input_dir:  Directory containing uncropped images and associated labels.
-        Returns Tile objects representing CROP_SIZE x CROP_SIZE crops of each image in input_dir
-        that has an associated label file. Each of these Tiles has the appropriate labels. """
-    files = listdir(input_dir)
-    for filename in files:
-        if any(filename.lower().endswith(ext) for ext in IMAGE_EXTENSIONS):
-            # The filename of the image
-            image_filename = f"{input_dir}/{filename}"
-
-            # The filename of the image without an extension
-            filename = filename[:filename.rfind(".")]
-
-            # Ignore images with no label files
-            if f"{filename}.txt" not in files:
-                continue
-
-            # The filename of the label file
-            label_filename = f"{input_dir}/{filename}.txt"
-
-            # Open the files
-            img = Image.open(image_filename)
-            labels = open(label_filename)
-
-            # Make the BoundingBox objects
-            bounding_boxes = parse_yolo_input(labels)
-
-            # Convert them to px
-            for box in bounding_boxes:
-                box.to_px(img.width, img.height)
-
-            # Tile the image
-            tiles = make_tiles(img, filename)
-
-            # Convert the bounding boxes to fit the tiles.
-            for tile in tiles:
-                for box in bounding_boxes:
-                    if box.bbox_is_contained_in_tile(tile):
-                        tile.add_cell(box)
-
-            return tiles
-
 def save_tiles(tiles, output_dir):
     """ tiles: A list of Tile objects. """
     for tile in tiles:
@@ -162,13 +119,3 @@ def parse_yolo_output(yolo_output):
     if len(cells) > 0 and cells[-1] == []:
         cells.pop()
     return cells
-
-
-if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print("USAGE: python3 make_labeled_crops.py <input_directory> <output_directory>", file=sys.stderr)
-        sys.exit(1)
-
-    input_dir, output_dir = sys.argv[1:]
-    tiles = make_labeled_tiles(input_dir)
-    save_tiles(tiles, output_dir)
