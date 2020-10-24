@@ -369,7 +369,7 @@ class MainWindow(QMainWindow):
             print('somehow the path was none')
             return
         
-        if path[-4:] != ".gexf":
+        if path[-5:] != ".gexf":
             path = path + ".gexf"
 
         # initialize graph
