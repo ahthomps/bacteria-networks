@@ -367,6 +367,7 @@ class MainWindow(QMainWindow):
             self.MplWidget.remove_cell_contours()
 
     def convert_to_gephi_and_export(self):
+        # get the path and make sure it's good
         path = self.program_manager.get_export_loc()
 
         if not path:
@@ -375,8 +376,22 @@ class MainWindow(QMainWindow):
         
         if path[-4:] != ".gexf":
             path = path + ".gexf"
+
+        # initialize graph
         G = nx.Graph()
-        G.add_edge("a","b",weight=0.6)
+        # snag the cells
+        cells = self.program_manager.cells
+
+        # add all nodes
+        for cell in cells:
+            G.add_node(cell.id)
+
+        # add all edges
+        for cell in cells:
+            for adj_cell in cell.adj_list:
+                G.add_edge(cell.id, adj_cell.id)
+
+        # write the final output to the file
         nx.write_gexf(G, path)
 
 
