@@ -30,7 +30,7 @@ class ProgramManager:
 
         self.image_path = ""
         self.label_path = ""
-        self.crop_dir = ""
+        self.crop_dir = "" # This should actually be a constant
 
     def open_image_file(self):
         path, _ = QFileDialog.getOpenFileName(None, "Select image", "", "Image Files (*.png *.jpg *.jpeg *.bmp *.tif)")

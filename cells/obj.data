@@ -1,5 +1,0 @@
-classes = 1
-train = cells/train.txt
-valid = cells/test.txt
-names = cells/obj.names
-backup = backup-cells/
