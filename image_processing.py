@@ -32,7 +32,7 @@ def erode_and_dilate(image, erode, dilate):
 
     return image_open
 
-def process_image(image, openings=DEFAULT_OPENINGS, initial_dilations=DEFAULT_DILATIONS, threshold=None):
+def process_image(image, openings, initial_dilations, threshold):
     """ Takes original image (np.array) and option of numbers for threshold and
         number of openings. Returns an binary image (np.array type np.uint8) and the binary threshold. """
 
