@@ -165,6 +165,7 @@
     <addaction name="actionContour_run"/>
     <addaction name="actionEdge_Detection"/>
     <addaction name="actionCrop"/>
+    <addaction name="actionReunify"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
