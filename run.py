@@ -359,6 +359,8 @@ class MainWindow(QMainWindow):
         else:
             self.MplWidget.remove_cell_contours()
 
+    "------------------ UTILITIES -----------------------------"
+
     def convert_to_gephi_and_export(self):
         # get the path and make sure it's good
         path = self.program_manager.get_export_loc()
