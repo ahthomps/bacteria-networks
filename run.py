@@ -61,7 +61,7 @@ class ProgramManager:
             elif "\\" in image_filename:
                 slash_index = image_filename.rfind("\\")
             image_filename = image_filename[slash_index + 1:]
-            
+
             filenames = [image_filename]
             paths = [self.image_path]
             top_left_corners = [(0, 0)]
@@ -120,7 +120,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         # set up UI window
         QMainWindow.__init__(self)
-        loadUi("main.ui", self)
+        loadUi("ui/main.ui", self)
         self.setWindowTitle("JAB Bacteria Networks Detector")
         self.addToolBar(NavigationToolbar(self.MplWidget.canvas, self))
 
@@ -145,10 +145,10 @@ class MainWindow(QMainWindow):
         self.actionContour_view.triggered.connect(self.handle_cell_contours_view_press)
 
         # NEW SliderWidget ones:
-        self.SliderWidget.openingsSlider.sliderMoved.connect(self.update_openings_number_and_display_new_binary_image)
-        self.SliderWidget.dilationsSlider.sliderMoved.connect(self.update_dilations_number_and_display_new_binary_image)
-        self.SliderWidget.thresholdSlider.sliderMoved.connect(self.update_threshold_number_and_display_new_binary_image)
         self.SliderWidget.restoreDefaultsButton.clicked.connect(self.set_image_processing_numbers_to_default_and_display_new_binary_image)
+        self.SliderWidget.openingsSpinBox.valueChanged.connect(self.update_openings_number_and_display_new_binary_image)
+        self.SliderWidget.dilationsSpinBox.valueChanged.connect(self.update_dilations_number_and_display_new_binary_image)
+        self.SliderWidget.thresholdSpinBox.valueChanged.connect(self.update_threshold_number_and_display_new_binary_image)
 
     def set_default_enablements(self):
         self.actionSave.setEnabled(False)
@@ -242,18 +242,18 @@ class MainWindow(QMainWindow):
         self.set_SliderWidget_defaults_and_display()
 
     def set_SliderWidget_defaults_and_display(self):
-        self.SliderWidget.update_openingsLCD(self.program_manager.openings)
-        self.SliderWidget.move_openings_slider(self.program_manager.openings)
-        self.SliderWidget.update_dilationsLCD(self.program_manager.dilations)
-        self.SliderWidget.move_dilations_slider(self.program_manager.dilations)
-        self.SliderWidget.update_thresholdLCD(self.program_manager.threshold)
-        self.SliderWidget.move_threshold_slider(self.program_manager.threshold)
+        self.SliderWidget.openingsSpinBox.blockSignals(True)
+        self.SliderWidget.dilationsSpinBox.blockSignals(True)
+        self.SliderWidget.thresholdSpinBox.blockSignals(True)
+        self.SliderWidget.update_openingsSpinBox(self.program_manager.openings)
+        self.SliderWidget.update_dilationsSpinBox(self.program_manager.dilations)
+        self.SliderWidget.update_thresholdSpinBox(self.program_manager.threshold)
+        self.SliderWidget.openingsSpinBox.blockSignals(False)
+        self.SliderWidget.dilationsSpinBox.blockSignals(False)
+        self.SliderWidget.thresholdSpinBox.blockSignals(False)
         self.SliderWidget.setVisible(True)
 
     def update_openings_number_and_display_new_binary_image(self, new_openings):
-        print("openings slider moved...")
-        # update openingsLCD in SliderWidget
-        self.SliderWidget.update_openingsLCD(new_openings)
         # update openings attribute in ProgramManager
         self.program_manager.openings = new_openings
         # find new binary image and display
@@ -261,9 +261,6 @@ class MainWindow(QMainWindow):
         self.MplWidget.draw_image(self.program_manager.binary_image)
 
     def update_dilations_number_and_display_new_binary_image(self, new_dilations):
-        print("dilations slider moved...")
-        # update dilationsLCD in SliderWidget
-        self.SliderWidget.update_dilationsLCD(new_dilations)
         # update openings attribute in ProgramManager
         self.program_manager.dilations = new_dilations
         # find new binary image and display
@@ -271,10 +268,6 @@ class MainWindow(QMainWindow):
         self.MplWidget.draw_image(self.program_manager.binary_image)
 
     def update_threshold_number_and_display_new_binary_image(self, new_threshold):
-        print("threshold slider moved...")
-        new_threshold /= 100
-        # update dilationsLCD in SliderWidget
-        self.SliderWidget.update_thresholdLCD(new_threshold)
         # update openings attribute in ProgramManager
         self.program_manager.threshold = new_threshold
         # find new binary image and display
