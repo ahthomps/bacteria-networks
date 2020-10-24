@@ -31,7 +31,6 @@ def compute_cell_contours(binary_image, cells):
     binary_image = util.img_as_float(binary_image)
 
     for cell in cells:
-        print(cell.overlapping_bboxes)
         # computes the number of iterations for the contour method to grow --
         # based on the size of the diagonal of the bounding box multiplied by a scalar
         iterations = int(sqrt(cell.width() ** 2 + cell.height() ** 2) / 2.5)
