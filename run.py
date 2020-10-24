@@ -54,10 +54,9 @@ class ProgramManager:
         self.cells = parse_yolo_input(self.label_ofile, self.image)
 
     def get_export_loc(self):
-        path, _ = QFileDialog.getSaveFileName(None, 'Save File', "", "Gephi Files (*.gexf)")
+        path, _ = QFileDialog.getSaveFileName(None, 'Save File', ".gexf", "Gephi Files (*.gexf)")
         if not path:
             return
-        print("saving GEPHI export to", path)
         return path
 
 
@@ -369,10 +368,16 @@ class MainWindow(QMainWindow):
 
     def convert_to_gephi_and_export(self):
         path = self.program_manager.get_export_loc()
-        if path:
-            G = nx.Graph()
-            G.add_edge("a","b",weight=0.6)
-            nx.write_gexf(G, path)
+
+        if not path:
+            print('somehow the path was none')
+            return
+        
+        if path[-4:] != ".gexf":
+            path = path + ".gexf"
+        G = nx.Graph()
+        G.add_edge("a","b",weight=0.6)
+        nx.write_gexf(G, path)
 
 
 app = QApplication([])
