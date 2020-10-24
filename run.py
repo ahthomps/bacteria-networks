@@ -9,6 +9,7 @@ import random
 import matplotlib.pyplot as plt
 import subprocess
 import os
+import networkx as nx
 
 from image_processing import *
 from contouring import compute_cell_contours
@@ -51,6 +52,13 @@ class ProgramManager:
         self.label_path = path
         self.label_ofile = open(self.label_path)
         self.cells = parse_yolo_input(self.label_ofile, self.image)
+
+    def get_export_loc(self):
+        path, _ = QFileDialog.getSaveFileName(None, 'Save File', ".gexf", "Gephi Files (*.gexf)")
+        if not path:
+            return
+        return path
+
 
     def compute_bounding_boxes(self):
         if self.crop_dir == "":
@@ -138,6 +146,9 @@ class MainWindow(QMainWindow):
 
         self.actionImage.triggered.connect(self.open_image_file_and_display)
         self.actionLabel.triggered.connect(self.open_label_file_and_display)
+
+        self.actionExport_to_Gephi.triggered.connect(self.convert_to_gephi_and_export)
+
         self.actionYOLO.triggered.connect(self.run_yolo_and_display)
         self.actionProcess_Image.triggered.connect(self.compute_binary_image_and_display)
         self.actionContour_run.triggered.connect(self.compute_cell_contours_and_display)
@@ -158,6 +169,7 @@ class MainWindow(QMainWindow):
     def set_default_enablements(self):
         self.actionSave.setEnabled(False)
         self.actionSave_As.setEnabled(False)
+        self.actionExport_to_Gephi.setEnabled(False)
         self.actionClear.setEnabled(True)
 
         self.actionImage.setEnabled(True)
@@ -318,6 +330,9 @@ class MainWindow(QMainWindow):
         self.actionEdge_Detection.setEnabled(False)
         # enable edges viewing
 
+        # enable export to Gephi!
+        self.actionExport_to_Gephi.setEnabled(True)
+
     def compute_image_crops_and_change_enablements(self):
         self.program_manager.crop()
 
@@ -343,6 +358,34 @@ class MainWindow(QMainWindow):
             self.MplWidget.draw_cell_contours(self.program_manager.cells)
         else:
             self.MplWidget.remove_cell_contours()
+
+    def convert_to_gephi_and_export(self):
+        # get the path and make sure it's good
+        path = self.program_manager.get_export_loc()
+
+        if not path:
+            print('somehow the path was none')
+            return
+        
+        if path[-4:] != ".gexf":
+            path = path + ".gexf"
+
+        # initialize graph
+        G = nx.Graph()
+        # snag the cells
+        cells = self.program_manager.cells
+
+        # add all nodes
+        for cell in cells:
+            G.add_node(cell.id)
+
+        # add all edges
+        for cell in cells:
+            for adj_cell in cell.adj_list:
+                G.add_edge(cell.id, adj_cell.id)
+
+        # write the final output to the file
+        nx.write_gexf(G, path)
 
 
 app = QApplication([])
