@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>200</width>
-    <height>421</height>
+    <height>322</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -65,19 +65,9 @@
     </layout>
    </item>
    <item>
-    <widget class="QLCDNumber" name="openingsLCD">
-     <property name="frameShadow">
-      <enum>QFrame::Raised</enum>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QSlider" name="openingsSlider">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="tickPosition">
-      <enum>QSlider::TicksBelow</enum>
+    <widget class="QSpinBox" name="openingsSpinBox">
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
      </property>
     </widget>
    </item>
@@ -100,15 +90,9 @@
     </layout>
    </item>
    <item>
-    <widget class="QLCDNumber" name="dilationsLCD"/>
-   </item>
-   <item>
-    <widget class="QSlider" name="dilationsSlider">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="tickPosition">
-      <enum>QSlider::TicksBelow</enum>
+    <widget class="QSpinBox" name="dilationsSpinBox">
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
      </property>
     </widget>
    </item>
@@ -131,15 +115,9 @@
     </layout>
    </item>
    <item>
-    <widget class="QLCDNumber" name="thresholdLCD"/>
-   </item>
-   <item>
-    <widget class="QSlider" name="thresholdSlider">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="tickPosition">
-      <enum>QSlider::TicksBelow</enum>
+    <widget class="QDoubleSpinBox" name="thresholdSpinBox">
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
      </property>
     </widget>
    </item>
