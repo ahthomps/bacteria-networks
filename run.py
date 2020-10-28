@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import subprocess
 import os
 import networkx as nx
+import pickle
 
 from image_processing import *
 from contouring import compute_cell_contours
@@ -32,6 +33,7 @@ class ProgramManager:
         self.image_path = ""
         self.label_path = ""
         self.crop_dir = "" # This should actually be a constant
+        self.filename = None
 
     def open_image_file(self):
         path, _ = QFileDialog.getOpenFileName(None, "Select image", "", "Image Files (*.png *.jpg *.jpeg *.bmp *.tif)")
@@ -53,10 +55,10 @@ class ProgramManager:
         self.label_ofile = open(self.label_path)
         self.cells = parse_yolo_input(self.label_ofile, self.image)
 
-    def get_export_loc(self):
-        path, _ = QFileDialog.getSaveFileName(None, 'Save File', ".gexf", "Gephi Files (*.gexf)")
+    def get_save_loc(self, ext):
+        path, _ = QFileDialog.getSaveFileName(None, 'Save File', "", ext)
         if not path:
-            return
+            return False
         return path
 
 
@@ -147,7 +149,10 @@ class MainWindow(QMainWindow):
         self.actionImage.triggered.connect(self.open_image_file_and_display)
         self.actionLabel.triggered.connect(self.open_label_file_and_display)
 
+        self.actionSave.triggered.connect(self.save)
+        self.actionSave_As.triggered.connect(self.save_as)
         self.actionExport_to_Gephi.triggered.connect(self.convert_to_gephi_and_export)
+        self.actionLoad_Project.triggered.connect(self.load)
 
         self.actionYOLO.triggered.connect(self.run_yolo_and_display)
         self.actionProcess_Image.triggered.connect(self.compute_binary_image_and_display)
@@ -170,6 +175,7 @@ class MainWindow(QMainWindow):
         self.actionSave.setEnabled(False)
         self.actionSave_As.setEnabled(False)
         self.actionExport_to_Gephi.setEnabled(False)
+        self.actionLoad_Project.setEnabled(True)
         self.actionClear.setEnabled(True)
 
         self.actionImage.setEnabled(True)
@@ -205,6 +211,8 @@ class MainWindow(QMainWindow):
 
         if any(dim > CROP_SIZE for dim in self.program_manager.image.shape):
             self.actionCrop.setEnabled(True)
+        self.actionSave.setEnabled(True)
+        self.actionSave_As.setEnabled(True)
 
         # disable importing new images
         self.actionImage.setEnabled(False)
@@ -363,7 +371,7 @@ class MainWindow(QMainWindow):
 
     def convert_to_gephi_and_export(self):
         # get the path and make sure it's good
-        path = self.program_manager.get_export_loc()
+        path = self.program_manager.get_save_loc('Gephi Files (*.gexf)')
 
         if not path:
             print('somehow the path was none')
@@ -389,6 +397,34 @@ class MainWindow(QMainWindow):
         # write the final output to the file
         nx.write_gexf(G, path)
 
+    def save(self):
+        if self.program_manager.filename is None:
+            self.save_as()
+        else:
+            pickle.dump( self.program_manager, open(self.program_manager.filename, "wb"))
+
+    def save_as(self):
+        path = self.program_manager.get_save_loc('Pickle Files (*.p)')
+
+        if not path:
+            return
+        if path[-2:] != '.p':
+            path = path +'.p'
+            
+        self.program_manager.filename = path
+
+        self.save()
+
+    def load(self):
+        path, _ = QFileDialog.getOpenFileName(None, "Select image", "", "Pickle Files (*.p)")
+        if not path:
+            return
+        self.program_manager = pickle.load(open(path,"rb"))
+        self.MplWidget.draw_image(self.program_manager.image)
+
+        """ 
+        check to see what info program manager has and set the enablements that way
+        """
 
 app = QApplication([])
 window = MainWindow()
