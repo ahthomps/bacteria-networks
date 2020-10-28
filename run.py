@@ -22,8 +22,8 @@ CROP_SIZE = 416
 
 class ProgramManager:
     def __init__(self):
-        self.image = np.asarray([])
-        self.binary_image = np.asarray([])
+        self.image = np.array([])
+        self.binary_image = np.array([])
         self.cells = []
 
         self.openings = DEFAULT_OPENINGS
@@ -91,7 +91,7 @@ class ProgramManager:
                 tile = Tile(Image.open(paths[i]), xmin, ymin, xmin + TILE_SIZE, ymin + TILE_SIZE, filenames[i])
                 tile.cells = cell_lists[i]
                 tiles.append(tile)
-            full_tile = reunify_tiles(tiles)
+            full_tile = reunify_tiles(tiles, full_image=Image.fromarray(self.image))
             self.image = np.array(full_tile.img)
             self.cells = full_tile.cells
         elif cell_lists == []:
