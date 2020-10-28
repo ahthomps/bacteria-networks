@@ -48,10 +48,11 @@ def in_confidence_region(pt):
     return TILE_SIZE // (2 * TILE_OVERLAP) <= pt[0] <= (2 * TILE_OVERLAP - 1) * TILE_SIZE // (2 * TILE_OVERLAP) \
        and TILE_SIZE // (2 * TILE_OVERLAP) <= pt[1] <= (2 * TILE_OVERLAP - 1) * TILE_SIZE // (2 * TILE_OVERLAP)
 
-def reunify_tiles(tiles):
+def reunify_tiles(tiles, full_image=None):
     """ Takes all the tiles in tiles, and returns a new Tile object representing the untiled image. """
 
-    full_image = rebuild_original_image(tiles)
+    if full_image is None:
+        full_image = rebuild_original_image(tiles)
 
     # This is not really a tile per se, but I want to use Tile's methods.
     full_tile = Tile(full_image, 0, 0, *full_image.size, "full_image")

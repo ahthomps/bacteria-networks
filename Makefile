@@ -9,9 +9,9 @@ DEBUG=0
 #       -gencode arch=compute_52,code=[sm_52,compute_52]
 
 # For Jake's computer:
-ARCH= -gencode arch=compute_52,code=[sm_52,compute_52]
+# ARCH= -gencode arch=compute_52,code=[sm_52,compute_52]
 # For Ben's computer:
-#ARCH= -gencode arch=compute_61,code=[sm_61,compute_61]
+ARCH= -gencode arch=compute_61,code=[sm_61,compute_61]
 
 VPATH=./src/:./.yolo_examples
 SLIB=libdarknet.so
