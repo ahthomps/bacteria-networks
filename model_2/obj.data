@@ -1,4 +1,4 @@
-classes = 6
+classes = 2
 train = model_2/train.txt
 valid = model_2/test.txt
 names = model_2/obj.names
