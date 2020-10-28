@@ -73,7 +73,7 @@ def reunify_tiles(tiles):
 def run_yolo_on_images(filenames):
     output = subprocess.run(["./darknet", "detector", "test", DATA_PATH, CFG_PATH, WEIGHTS_PATH],
                             stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE,
+                            stderr=subprocess.DEVNULL,
                             input="\n".join(filenames).encode("UTF-8")).stdout
     return str(output, "UTF-8")
 
