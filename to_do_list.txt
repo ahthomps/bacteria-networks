@@ -1,6 +1,5 @@
 Function:
     Tiled crops in the GUI
-    Get rid of black borders
 
 Form:
     Add docstrings to run.py and make_labeled_crops.py
