@@ -166,7 +166,6 @@
     <addaction name="actionYOLO"/>
     <addaction name="actionContour_run"/>
     <addaction name="actionEdge_Detection"/>
-    <addaction name="actionCrop"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
