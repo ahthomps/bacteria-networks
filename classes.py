@@ -1,12 +1,41 @@
 """ classes.py
-    Here, we define the Cell and Tile classes.
+    Here, we define the BioObject and Tile classes.
 """
 
 from copy import deepcopy
 import numpy as np
 from skimage import measure
 
-class Cell:
+class NetworkEdge:
+    def __init__(self, tail, head, nanowire=None):
+        self.tail = tail
+        self.head = head
+        self.type = ""
+        self.nanowire = nanowire
+
+    def set_type_as_cell_contact(self):
+        self.type = "cell_contact"
+
+    def set_type_as_cell_to_cell(self):
+        self.type = "cell_to_cell"
+
+    def set_type_as_cell_to_surface(self):
+        self.type = "cell_to_surface"
+
+    def type_is_cell_contact(self):
+        return self.type == "cell_contact"
+
+    def type_is_cell_to_cell(self):
+        return self.type == "cell_to_cell"
+
+    def type_is_cell_to_surface(self):
+        return self.type == "cell_to_surface"
+
+    def __str__(self):
+        return f"{self.type}: {self.tail.id} {self.head.id}"
+
+
+class BioObject:
     def __init__(self, x1, y1, x2, y2, id_no, classification="cell"):
         """ Represents a cell found by YOLO.
             x1, y1, x2, y2: px coordinates of xmin xmax ymin ymax of bounding box.
@@ -21,7 +50,21 @@ class Cell:
         self.cell_center = (0, 0)
         # list of the adjacent cells in the cells list
         self.adj_list = []
+        # list of the edges this cell participates in
+        self.edge_list = []
         self.overlapping_bboxes = []
+
+    def is_cell(self):
+        return self.classification == "cell"
+
+    def is_nanowire(self):
+        return self.classification == "nanowire"
+
+    def is_surface(self):
+        return self.classification == "surface"
+
+    def has_contour(self):
+        return self.contour is not None
 
     def width(self):
         """ Returns the width of this cell. """
@@ -46,19 +89,23 @@ class Cell:
 
     def bbox_overlaps_with_other_bbox(self, other):
         """ Returns True if the bboxes of self and other overlap, False otherwise """
+        if (other.x1 <= self.x1 <= self.x2 <= other.x2 and other.y1 <= self.y1 <= self.y2 <= other.y2):
+            return False, True
         for point in other.compute_corners():
             x, y = point
             if self.x1 <= x <= self.x2 and self.y1 <= y <= self.y2:
-                return True
+                return True, False
 
+        # other intersects through top and/or bottom of self
         if (self.x1 <= other.x1 <= self.x2 or self.x1 <= other.x2 <= self.x2) and other.y1 <= self.y1 <= self.y2 <= other.y2:
-            return True
+            return True, False
+        # other intersects through right and/or
         elif (self.y1 <= other.y1 <= self.y2 or self.y1 <= other.y2 <= self.y2) and other.x1 <= self.x1 <= self.x2 <= other.x2:
-            return True
+            return True, False
         elif self.x1 <= other.x1 <= other.x2 <= self.x2 and self.y1 <= other.y1 <= other.y2 <= self.y2:
-            return True
+            return True, False
 
-        return False
+        return False, False
 
     def get_cell_center(self, binary_image):
         """ adapted code from contouring.py, finds some point in a cell """
