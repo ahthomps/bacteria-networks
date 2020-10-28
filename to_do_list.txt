@@ -1,9 +1,6 @@
 Function:
     Tiled crops in the GUI
-    Separate the creation of training data from the rest of the application
     Get rid of black borders
-    automatically reunify / fix run_yolo
-    decide on PIL or np images
 
 Form:
     Add docstrings to run.py and make_labeled_crops.py

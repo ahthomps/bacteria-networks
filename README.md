@@ -10,7 +10,9 @@ Clone this repository.
 
 Run `make`.
 
-Download [this file](https://drive.google.com/file/d/183yWT3OxjhXrpc5FyOgEfT3zViBdQMPO/view?usp=sharing), and stick it in `backup`.
+Download [one of these models](https://drive.google.com/drive/folders/1oHpzVVqVL67unqOnrObX49XkeUii3Jg4?usp=sharing), and stick it in `backup`.
+
+Change the constants in `make_labeled_crops.py` to reflect the model you chose.
 
 Run `python3 run.py`.
 

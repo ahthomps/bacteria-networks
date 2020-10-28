@@ -130,14 +130,6 @@ class BioObject:
         # find cell center in original image
         self.cell_center = (self.x1 + x, self.y1 + y)
 
-    # This is useful for cropping training data. Should be in a separate script
-    def to_relative(self, width, height):
-        """ Converts pixel data to data relative to size of the image"""
-        self.x1 /= width
-        self.x2 /= width
-        self.y1 /= height
-        self.y2 /= height
-
     def __str__(self):
         return f"{self.classification}: {self.x1} {self.y1} {self.x2} {self.y2}"
 
@@ -182,21 +174,7 @@ class Tile:
         cell.y2 = min(cell.y2, self.y2) - self.y1
         self.cells.append(cell)
 
-    # This is useful for cropping training data. Should be in a separate script
-    # def to_relative(self):
-    #     """ Converts bounding boxes to image relative values. """
-    #     for box in self.cells:
-    #         box.to_relative(self.width(), self.height())
-
     def save(self, directory="."):
         """ Saves this tile as a cropped image and (potentially) an associated label file.
             Note: This will convert bounding boxes to relative, because that's how YOLO likes it. """
         self.img.save(f"{directory}/{self.filename_no_ext}.jpg", "JPEG", subsampling=0, quality=100)
-
-        # For producing training data. Should be in a different script
-        # if self.cells != []:
-        #     self.to_relative()
-        #     ofile = open(f"{directory}/{self.filename_no_ext}.txt", "w")
-        #     for cell in self.cells:
-        #         ofile.write(f"{cell.classification} {cell.center()[0]} {cell.center()[1]} {cell.width()} {cell.height()}\n")
-        #     ofile.close()
