@@ -1,7 +1,6 @@
 Function:
     Tiled crops in the GUI
     Get rid of black borders
-    decide on PIL or np images
 
 Form:
     Add docstrings to run.py and make_labeled_crops.py

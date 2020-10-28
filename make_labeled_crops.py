@@ -2,7 +2,6 @@
     Here, we define some functions for dealing with Tiles. This will probably get merged into something else as the project grows.
 """
 
-
 import sys
 from PIL import Image
 from copy import deepcopy
@@ -13,6 +12,10 @@ from classes import *
 TILE_OVERLAP = 3 # 2 -> 50% overlap, 3 -> 33% overlap, etc.
 TILE_SIZE = 416
 IMAGE_EXTENSIONS = (".tiff", ".tif", ".png", ".jpg", ".jpeg", ".gif")
+
+DATA_PATH = "model_3/obj.data"
+CFG_PATH = "model_3/test.cfg"
+WEIGHTS_PATH = "backup/model_3.weights"
 
 def make_tiles(img, filename):
     """ img: A PIL.Image to be tiled.
@@ -45,7 +48,7 @@ def in_confidence_region(pt):
     return TILE_SIZE // (2 * TILE_OVERLAP) <= pt[0] <= (2 * TILE_OVERLAP - 1) * TILE_SIZE // (2 * TILE_OVERLAP) \
        and TILE_SIZE // (2 * TILE_OVERLAP) <= pt[1] <= (2 * TILE_OVERLAP - 1) * TILE_SIZE // (2 * TILE_OVERLAP)
 
-def reunify_tiles(tiles, output_dir="."):
+def reunify_tiles(tiles):
     """ Takes all the tiles in tiles, and returns a new Tile object representing the untiled image. """
 
     full_image = rebuild_original_image(tiles)
@@ -68,9 +71,9 @@ def reunify_tiles(tiles, output_dir="."):
     return full_tile
 
 def run_yolo_on_images(filenames):
-    output = subprocess.run(["./darknet", "detector", "test", "model_1/obj.data", "model_1/test.cfg", "backup/train.backup"],
-                            stderr=subprocess.DEVNULL,
+    output = subprocess.run(["./darknet", "detector", "test", DATA_PATH, CFG_PATH, WEIGHTS_PATH],
                             stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
                             input="\n".join(filenames).encode("UTF-8")).stdout
     return str(output, "UTF-8")
 
