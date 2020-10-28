@@ -12,9 +12,9 @@ import os
 
 from image_processing import *
 from contouring import compute_cell_contours
-from classes import Tile
+from classes import Tile, BioObject
 from make_labeled_crops import *
-from edge_detection import compute_cell_contact
+from edge_detection import compute_cell_contact, compute_nanowire_edges
 
 CROP_SIZE = 416
 
@@ -40,17 +40,22 @@ class ProgramManager:
         print("using image {}".format(path))
         self.image_path = path
         self.image = plt.imread(self.image_path)
+        self.cells.append(BioObject(0, 0, len(self.image[0]), len(self.image), 0, "surface"))
         return True
 
     def open_label_file(self):
         path, _ = QFileDialog.getOpenFileName(None, "Select label", "", "Label Files (*.txt)")
         if not path:
             return
-
+        classes_file_path = "{}classes.txt".format(path[:len(path) - path[::-1].find("/")])
         print("using label {}".format(path))
+        classes_ofile = None
+        if os.path.isfile(classes_file_path):
+            classes_ofile = open(classes_file_path)
+            print("using classifications {}".format(classes_file_path))
         self.label_path = path
         self.label_ofile = open(self.label_path)
-        self.cells = parse_yolo_input(self.label_ofile, self.image)
+        self.cells += parse_yolo_input(self.label_ofile, classes_ofile, self.image)
 
     def compute_bounding_boxes(self):
         if self.crop_dir == "":
@@ -82,9 +87,9 @@ class ProgramManager:
                 tiles.append(tile)
             full_tile = reunify_tiles(tiles)
             self.image = np.array(full_tile.img)
-            self.cells = full_tile.cells
+            self.cells += full_tile.cells
         else:
-            self.cells = cell_lists[0]
+            self.cells += cell_lists[0]
 
     def compute_binary_image(self):
         print("progessing image...")
@@ -117,8 +122,13 @@ class ProgramManager:
 
         print(f"Made {len(os.listdir(self.crop_dir))} crops.")
 
-    def compute_cell_network_edges(self):
+    def compute_cell_network_edges(self, canvas):
         compute_cell_contact(self.cells)
+        compute_nanowire_edges(self.cells, canvas)
+        for obj in self.cells:
+            if obj.is_nanowire():
+                continue
+            print(obj.classification, obj.id, [adj.id for adj in obj.adj_list])
 
 
 class MainWindow(QMainWindow):
@@ -311,7 +321,7 @@ class MainWindow(QMainWindow):
         self.actionEdge_Detection.setEnabled(True)
 
     def compute_cell_network_edges_and_display(self):
-        self.program_manager.compute_cell_network_edges()
+        self.program_manager.compute_cell_network_edges(self.MplWidget.canvas)
         self.MplWidget.draw_cell_network_edges(self.program_manager.cells)
 
         # disable edge detection
