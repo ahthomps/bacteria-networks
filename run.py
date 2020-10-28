@@ -35,15 +35,16 @@ class ProgramManager:
         self.crop_dir = "" # This should actually be a constant
         self.filename = None
 
-    def open_image_file(self):
+    def open_image_file_and_crop_if_necessary(self):
         path, _ = QFileDialog.getOpenFileName(None, "Select image", "", "Image Files (*.png *.jpg *.jpeg *.bmp *.tif)")
         if not path:
-            return False
+            return
 
         print("using image {}".format(path))
         self.image_path = path
         self.image = plt.imread(self.image_path)
-        return True
+        if self.image.shape[0] > CROP_SIZE or self.image.shape[1] > CROP_SIZE:
+            self.crop()
 
     def open_label_file(self):
         path, _ = QFileDialog.getOpenFileName(None, "Select label", "", "Label Files (*.txt)")
@@ -58,9 +59,8 @@ class ProgramManager:
     def get_save_loc(self, ext):
         path, _ = QFileDialog.getSaveFileName(None, 'Save File', "", ext)
         if not path:
-            return False
+            return
         return path
-
 
     def compute_bounding_boxes(self):
         if self.crop_dir == "":
@@ -162,8 +162,6 @@ class MainWindow(QMainWindow):
         self.actionContour_run.triggered.connect(self.compute_cell_contours_and_display)
         self.actionEdge_Detection.triggered.connect(self.compute_cell_network_edges_and_display)
 
-        self.actionCrop.triggered.connect(self.compute_image_crops_and_change_enablements)
-
         self.actionBinary_Image.triggered.connect(self.handle_binary_image_view_press)
         self.actionBounding_Boxes.triggered.connect(self.handle_cell_bounding_boxes_view_press)
         self.actionContour_view.triggered.connect(self.handle_cell_contours_view_press)
@@ -192,8 +190,6 @@ class MainWindow(QMainWindow):
         self.actionContour_run.setEnabled(False)
         self.actionEdge_Detection.setEnabled(False)
 
-        self.actionCrop.setEnabled(False)
-
         self.actionBounding_Boxes.setEnabled(False)
         self.actionBounding_Boxes.setChecked(False)
         self.actionBinary_Image.setEnabled(False)
@@ -207,13 +203,11 @@ class MainWindow(QMainWindow):
         self.set_default_enablements()
 
     def open_image_file_and_display(self):
-        self.program_manager.open_image_file()
+        self.program_manager.open_image_file_and_crop_if_necessary()
         if self.program_manager.image_path == "":
             return
         self.MplWidget.draw_image(self.program_manager.image)
 
-        if any(dim > CROP_SIZE for dim in self.program_manager.image.shape):
-            self.actionCrop.setEnabled(True)
         self.actionSave.setEnabled(True)
         self.actionSave_As.setEnabled(True)
 
@@ -344,14 +338,6 @@ class MainWindow(QMainWindow):
         # enable export to Gephi!
         self.actionExport_to_Gephi.setEnabled(True)
 
-    def compute_image_crops_and_change_enablements(self):
-        self.program_manager.crop()
-
-        # disable cropping
-        self.actionCrop.setEnabled(False)
-        # enable finding bboxes with YOLO
-        self.actionYOLO.setEnabled(True)
-
     def handle_binary_image_view_press(self):
         if self.actionBinary_Image.isChecked():
             self.MplWidget.draw_image(self.program_manager.binary_image)
@@ -370,7 +356,7 @@ class MainWindow(QMainWindow):
         else:
             self.MplWidget.remove_cell_contours()
 
-    "------------------ UTILITIES -----------------------------"
+    """------------------ UTILITIES -----------------------------"""
 
     def convert_to_gephi_and_export(self):
         # get the path and make sure it's good
