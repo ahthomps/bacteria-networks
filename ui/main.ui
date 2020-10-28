@@ -141,6 +141,7 @@
     <addaction name="actionSave"/>
     <addaction name="actionSave_As"/>
     <addaction name="actionExport_to_Gephi"/>
+    <addaction name="actionLoad_Project"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
@@ -260,6 +261,11 @@
   <action name="actionExport_to_Gephi">
    <property name="text">
     <string>Export to Gephi</string>
+   </property>
+  </action>
+  <action name="actionLoad_Project">
+   <property name="text">
+    <string>Load Project</string>
    </property>
   </action>
  </widget>
