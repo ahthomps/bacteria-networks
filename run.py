@@ -9,6 +9,8 @@ import random
 import matplotlib.pyplot as plt
 import subprocess
 import os
+import networkx as nx
+import pickle
 
 from image_processing import *
 from contouring import compute_cell_contours
@@ -20,8 +22,8 @@ CROP_SIZE = 416
 
 class ProgramManager:
     def __init__(self):
-        self.image = np.asarray([])
-        self.binary_image = np.asarray([])
+        self.image = np.array([])
+        self.binary_image = np.array([])
         self.cells = []
 
         self.openings = DEFAULT_OPENINGS
@@ -31,6 +33,7 @@ class ProgramManager:
         self.image_path = ""
         self.label_path = ""
         self.crop_dir = "" # This should actually be a constant
+        self.filename = None
 
     def open_image_file(self):
         path, _ = QFileDialog.getOpenFileName(None, "Select image", "", "Image Files (*.png *.jpg *.jpeg *.bmp *.tif)")
@@ -57,6 +60,13 @@ class ProgramManager:
         self.label_ofile = open(self.label_path)
         self.cells += parse_yolo_input(self.label_ofile, classes_ofile, self.image)
 
+    def get_save_loc(self, ext):
+        path, _ = QFileDialog.getSaveFileName(None, 'Save File', "", ext)
+        if not path:
+            return False
+        return path
+
+
     def compute_bounding_boxes(self):
         if self.crop_dir == "":
             image_filename = self.image_path
@@ -76,7 +86,8 @@ class ProgramManager:
             top_left_corners = list(map(int, path[:path.rfind(".")].split("_")[-2:]) for path in paths)
 
         # This is a list of lists of cells, each list corresponding to a crop.
-        cell_lists = parse_yolo_output(run_yolo_on_images(paths))
+        yolo_output = run_yolo_on_images(paths)
+        cell_lists = parse_yolo_output(yolo_output)
 
         if len(cell_lists) > 1:
             tiles = []
@@ -85,9 +96,11 @@ class ProgramManager:
                 tile = Tile(Image.open(paths[i]), xmin, ymin, xmin + TILE_SIZE, ymin + TILE_SIZE, filenames[i])
                 tile.cells = cell_lists[i]
                 tiles.append(tile)
-            full_tile = reunify_tiles(tiles)
+            full_tile = reunify_tiles(tiles, full_image=Image.fromarray(self.image))
             self.image = np.array(full_tile.img)
             self.cells += full_tile.cells
+        elif cell_lists == []:
+            self.cells += []
         else:
             self.cells += cell_lists[0]
 
@@ -148,6 +161,12 @@ class MainWindow(QMainWindow):
 
         self.actionImage.triggered.connect(self.open_image_file_and_display)
         self.actionLabel.triggered.connect(self.open_label_file_and_display)
+
+        self.actionSave.triggered.connect(self.save)
+        self.actionSave_As.triggered.connect(self.save_as)
+        self.actionExport_to_Gephi.triggered.connect(self.convert_to_gephi_and_export)
+        self.actionLoad_Project.triggered.connect(self.load)
+
         self.actionYOLO.triggered.connect(self.run_yolo_and_display)
         self.actionProcess_Image.triggered.connect(self.compute_binary_image_and_display)
         self.actionContour_run.triggered.connect(self.compute_cell_contours_and_display)
@@ -168,6 +187,8 @@ class MainWindow(QMainWindow):
     def set_default_enablements(self):
         self.actionSave.setEnabled(False)
         self.actionSave_As.setEnabled(False)
+        self.actionExport_to_Gephi.setEnabled(False)
+        self.actionLoad_Project.setEnabled(True)
         self.actionClear.setEnabled(True)
 
         self.actionImage.setEnabled(True)
@@ -203,6 +224,8 @@ class MainWindow(QMainWindow):
 
         if any(dim > CROP_SIZE for dim in self.program_manager.image.shape):
             self.actionCrop.setEnabled(True)
+        self.actionSave.setEnabled(True)
+        self.actionSave_As.setEnabled(True)
 
         # disable importing new images
         self.actionImage.setEnabled(False)
@@ -328,6 +351,9 @@ class MainWindow(QMainWindow):
         self.actionEdge_Detection.setEnabled(False)
         # enable edges viewing
 
+        # enable export to Gephi!
+        self.actionExport_to_Gephi.setEnabled(True)
+
     def compute_image_crops_and_change_enablements(self):
         self.program_manager.crop()
 
@@ -354,6 +380,64 @@ class MainWindow(QMainWindow):
         else:
             self.MplWidget.remove_cell_contours()
 
+    "------------------ UTILITIES -----------------------------"
+
+    def convert_to_gephi_and_export(self):
+        # get the path and make sure it's good
+        path = self.program_manager.get_save_loc('Gephi Files (*.gexf)')
+
+        if not path:
+            print('somehow the path was none')
+            return
+
+        if path[-5:] != ".gexf":
+            path = path + ".gexf"
+
+        # initialize graph
+        G = nx.Graph()
+        # snag the cells
+        cells = self.program_manager.cells
+
+        # add all nodes
+        for cell in cells:
+            G.add_node(cell.id)
+
+        # add all edges
+        for cell in cells:
+            for adj_cell in cell.adj_list:
+                G.add_edge(cell.id, adj_cell.id)
+
+        # write the final output to the file
+        nx.write_gexf(G, path)
+
+    def save(self):
+        if self.program_manager.filename is None:
+            self.save_as()
+        else:
+            pickle.dump( self.program_manager, open(self.program_manager.filename, "wb"))
+
+    def save_as(self):
+        path = self.program_manager.get_save_loc('Pickle Files (*.p)')
+
+        if not path:
+            return
+        if path[-2:] != '.p':
+            path = path +'.p'
+
+        self.program_manager.filename = path
+
+        self.save()
+
+    def load(self):
+        path, _ = QFileDialog.getOpenFileName(None, "Select image", "", "Pickle Files (*.p)")
+        if not path:
+            return
+        self.program_manager = pickle.load(open(path,"rb"))
+        self.MplWidget.draw_image(self.program_manager.image)
+
+        """
+        check to see what info program manager has and set the enablements that way
+        """
 
 app = QApplication([])
 window = MainWindow()
