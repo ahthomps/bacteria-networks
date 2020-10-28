@@ -81,7 +81,8 @@ class ProgramManager:
             top_left_corners = list(map(int, path[:path.rfind(".")].split("_")[-2:]) for path in paths)
 
         # This is a list of lists of cells, each list corresponding to a crop.
-        cell_lists = parse_yolo_output(run_yolo_on_images(paths))
+        yolo_output = run_yolo_on_images(paths)
+        cell_lists = parse_yolo_output(yolo_output)
 
         if len(cell_lists) > 1:
             tiles = []
@@ -93,6 +94,8 @@ class ProgramManager:
             full_tile = reunify_tiles(tiles)
             self.image = np.array(full_tile.img)
             self.cells = full_tile.cells
+        elif cell_lists == []:
+            self.cells = []
         else:
             self.cells = cell_lists[0]
 
