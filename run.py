@@ -14,16 +14,16 @@ import pickle
 
 from image_processing import *
 from contouring import compute_cell_contours
-from classes import Tile
+from classes import Tile, BioObject
 from make_labeled_crops import *
-from edge_detection import compute_cell_contact
+from edge_detection import compute_cell_contact, compute_nanowire_edges
 
 CROP_SIZE = 416
 
 class ProgramManager:
     def __init__(self):
-        self.image = np.asarray([])
-        self.binary_image = np.asarray([])
+        self.image = np.array([])
+        self.binary_image = np.array([])
         self.cells = []
 
         self.openings = DEFAULT_OPENINGS
@@ -35,32 +35,38 @@ class ProgramManager:
         self.crop_dir = "" # This should actually be a constant
         self.filename = None
 
-    def open_image_file(self):
+    def open_image_file_and_crop_if_necessary(self):
         path, _ = QFileDialog.getOpenFileName(None, "Select image", "", "Image Files (*.png *.jpg *.jpeg *.bmp *.tif)")
         if not path:
-            return False
+            return
 
         print("using image {}".format(path))
         self.image_path = path
         self.image = plt.imread(self.image_path)
-        return True
+
+        self.cells.append(BioObject(0, 0, len(self.image[0]), len(self.image), 0, "surface"))
+
+        if self.image.shape[0] > CROP_SIZE or self.image.shape[1] > CROP_SIZE:
+            self.crop()
 
     def open_label_file(self):
         path, _ = QFileDialog.getOpenFileName(None, "Select label", "", "Label Files (*.txt)")
         if not path:
             return
-
+        classes_file_path = "{}classes.txt".format(path[:len(path) - path[::-1].find("/")])
         print("using label {}".format(path))
+        classes_ofile = None
+        if os.path.isfile(classes_file_path):
+            classes_ofile = open(classes_file_path)
+            print("using classifications {}".format(classes_file_path))
         self.label_path = path
-        #self.label_ofile = open(self.label_path)
-        self.cells = parse_yolo_input(open(self.label_path), self.image)
+        self.cells = parse_yolo_input(open(self.label_path), classes_ofile, self.image)
 
     def get_save_loc(self, ext):
         path, _ = QFileDialog.getSaveFileName(None, 'Save File', "", ext)
         if not path:
-            return False
+            return
         return path
-
 
     def compute_bounding_boxes(self):
         if self.crop_dir == "":
@@ -91,13 +97,13 @@ class ProgramManager:
                 tile = Tile(Image.open(paths[i]), xmin, ymin, xmin + TILE_SIZE, ymin + TILE_SIZE, filenames[i])
                 tile.cells = cell_lists[i]
                 tiles.append(tile)
-            full_tile = reunify_tiles(tiles)
+            full_tile = reunify_tiles(tiles, full_image=Image.fromarray(self.image))
             self.image = np.array(full_tile.img)
-            self.cells = full_tile.cells
+            self.cells += full_tile.cells
         elif cell_lists == []:
-            self.cells = []
+            self.cells += []
         else:
-            self.cells = cell_lists[0]
+            self.cells += cell_lists[0]
 
     def compute_binary_image(self):
         print("progessing image...")
@@ -132,8 +138,13 @@ class ProgramManager:
 
         print(f"Made {len(os.listdir(self.crop_dir))} crops.")
 
-    def compute_cell_network_edges(self):
+    def compute_cell_network_edges(self, canvas):
         compute_cell_contact(self.cells)
+        compute_nanowire_edges(self.cells, canvas)
+        for obj in self.cells:
+            if obj.is_nanowire():
+                continue
+            print(obj.classification, obj.id, [adj.id for adj in obj.adj_list])
 
 
 class MainWindow(QMainWindow):
@@ -164,8 +175,6 @@ class MainWindow(QMainWindow):
         self.actionContour_run.triggered.connect(self.compute_cell_contours_and_display)
         self.actionEdge_Detection.triggered.connect(self.compute_cell_network_edges_and_display)
 
-        self.actionCrop.triggered.connect(self.compute_image_crops_and_change_enablements)
-
         self.actionBinary_Image.triggered.connect(self.handle_binary_image_view_press)
         self.actionBounding_Boxes.triggered.connect(self.handle_cell_bounding_boxes_view_press)
         self.actionContour_view.triggered.connect(self.handle_cell_contours_view_press)
@@ -193,8 +202,6 @@ class MainWindow(QMainWindow):
         self.actionContour_run.setEnabled(False)
         self.actionEdge_Detection.setEnabled(False)
 
-        self.actionCrop.setEnabled(False)
-
         self.actionBounding_Boxes.setEnabled(False)
         self.actionBounding_Boxes.setChecked(False)
         self.actionBinary_Image.setEnabled(False)
@@ -208,15 +215,11 @@ class MainWindow(QMainWindow):
         self.set_default_enablements()
 
     def open_image_file_and_display(self):
-        self.program_manager.open_image_file()
+        self.program_manager.open_image_file_and_crop_if_necessary()
         if self.program_manager.image_path == "":
             return
         self.MplWidget.draw_image(self.program_manager.image)
 
-        if any(dim > CROP_SIZE for dim in self.program_manager.image.shape):
-            self.actionCrop.setEnabled(True)
-
-        # once you've opened an image, allow the user to save.
         self.actionSave.setEnabled(True)
         self.actionSave_As.setEnabled(True)
 
@@ -337,7 +340,7 @@ class MainWindow(QMainWindow):
         self.actionEdge_Detection.setEnabled(True)
 
     def compute_cell_network_edges_and_display(self):
-        self.program_manager.compute_cell_network_edges()
+        self.program_manager.compute_cell_network_edges(self.MplWidget.canvas)
         self.MplWidget.draw_cell_network_edges(self.program_manager.cells)
 
         # disable edge detection
@@ -346,14 +349,6 @@ class MainWindow(QMainWindow):
 
         # enable export to Gephi!
         self.actionExport_to_Gephi.setEnabled(True)
-
-    def compute_image_crops_and_change_enablements(self):
-        self.program_manager.crop()
-
-        # disable cropping
-        self.actionCrop.setEnabled(False)
-        # enable finding bboxes with YOLO
-        self.actionYOLO.setEnabled(True)
 
     def handle_binary_image_view_press(self):
         if self.actionBinary_Image.isChecked():
@@ -373,7 +368,7 @@ class MainWindow(QMainWindow):
         else:
             self.MplWidget.remove_cell_contours()
 
-    "------------------ UTILITIES -----------------------------"
+    """------------------ UTILITIES -----------------------------"""
 
     def convert_to_gephi_and_export(self):
         # get the path and make sure it's good
@@ -416,7 +411,7 @@ class MainWindow(QMainWindow):
             return
         if path[-2:] != '.p':
             path = path +'.p'
-            
+
         self.program_manager.filename = path
 
         self.save()
@@ -452,9 +447,7 @@ class MainWindow(QMainWindow):
                     self.handle_binary_image_view_press()
                 else:
                     self.actionProcess_Image.setEnabled(True)
-        """ 
-        check to see what info program manager has and set the enablements that way
-        """
+                    
 
 app = QApplication([])
 window = MainWindow()

@@ -33,18 +33,25 @@ class MplWidget(QWidget):
         self.canvas.axes.imshow(image, cmap='gray')
         self.canvas.draw()
 
-    def draw_cell_bounding_boxes(self, cells):
-        for cell in cells:
-            self.canvas.axes.plot([cell.x1, cell.x2], [cell.y1, cell.y1], color='blue', linestyle='dashed', marker='o', gid=self.bbox_gid)
-            self.canvas.axes.plot([cell.x1, cell.x2], [cell.y2, cell.y2], color='blue', linestyle='dashed', marker='o', gid=self.bbox_gid)
-            self.canvas.axes.plot([cell.x1, cell.x1], [cell.y1, cell.y2], color='blue', linestyle='dashed', marker='o', gid=self.bbox_gid)
-            self.canvas.axes.plot([cell.x2, cell.x2], [cell.y1, cell.y2], color='blue', linestyle='dashed', marker='o', gid=self.bbox_gid)
+    def draw_cell_bounding_boxes(self, bio_objects):
+        for obj in bio_objects:
+            if obj.is_surface():
+                continue
+            color = "blue"
+            if obj.is_nanowire():
+                color = "yellow"
+            self.canvas.axes.plot([obj.x1, obj.x2], [obj.y1, obj.y1], color=color, linestyle='dashed', marker='o', gid=self.bbox_gid)
+            self.canvas.axes.plot([obj.x1, obj.x2], [obj.y2, obj.y2], color=color, linestyle='dashed', marker='o', gid=self.bbox_gid)
+            self.canvas.axes.plot([obj.x1, obj.x1], [obj.y1, obj.y2], color=color, linestyle='dashed', marker='o', gid=self.bbox_gid)
+            self.canvas.axes.plot([obj.x2, obj.x2], [obj.y1, obj.y2], color=color, linestyle='dashed', marker='o', gid=self.bbox_gid)
         self.canvas.draw()
 
     def draw_cell_contours(self, cells):
         colors = ['red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet']
         count = 0
         for cell in cells:
+            if not cell.has_contour():
+                continue
             self.canvas.axes.plot(cell.cell_center[0], cell.cell_center[1], color='red', marker='o', gid=self.contour_gid)
             contour = cell.contour
             contour_set = self.canvas.axes.contour(contour, [0.75], colors=colors[count % len(colors)])
@@ -53,14 +60,39 @@ class MplWidget(QWidget):
                 line_collection.set_gid(self.contour_gid)
         self.canvas.draw()
 
-    def draw_cell_network_edges(self, cells):
-        for cell in cells:
-            (x1, y1) = cell.cell_center
-            for adj_cell in cell.adj_list:
-                if adj_cell.id > cell.id:
-                    (x2, y2) = adj_cell.cell_center
-                    self.canvas.axes.plot([x1, x2], [y1, y2], color='red', marker='o', gid='edge')
+    def draw_cell_network_edges(self, bio_objects):
+        for obj in bio_objects:
+            if not obj.is_cell():
+                continue
+            for edge in obj.edge_list:
+                if (edge.head is not None) and (edge.tail.id <= edge.head.id):
+                    continue
+                elif edge.type_is_cell_to_surface():
+                    if (edge.nanowire.x2 - edge.nanowire.x1) > (edge.nanowire.y2 - edge.nanowire.y1):
+                        y_mid = (edge.nanowire.y2 + edge.nanowire.y1) // 2
+                        self.canvas.axes.plot([edge.nanowire.x1, edge.nanowire.x2], [y_mid, y_mid], color="blue", marker='o', gid='edge')
+                    else:
+                        x_mid = (edge.nanowire.x2 + edge.nanowire.x1) // 2
+                        self.canvas.axes.plot([x_mid, x_mid], [edge.nanowire.y1, edge.nanowire.y2], color="blue", marker='o', gid='edge')
+                else:
+                    (x1, y1) = obj.cell_center
+                    (x2, y2) = edge.head.cell_center
+                    if edge.type_is_cell_to_cell():
+                        self.canvas.axes.plot([x1, x2], [y1, y2], color='green', linestyle="dashed", marker='o', gid='edge')
+                    else:
+                        self.canvas.axes.plot([x1, x2], [y1, y2], color='red', marker='o', gid='edge')
         self.canvas.draw()
+
+        # for obj in bio_objects:
+        #     if obj.is_nanowire() or obj.is_surface():
+        #         continue
+        #     cell = obj
+        #     (x1, y1) = cell.cell_center
+        #     for adj_cell in cell.adj_list:
+        #         if adj_cell.id > cell.id:
+        #             (x2, y2) = adj_cell.cell_center
+        #             self.canvas.axes.plot([x1, x2], [y1, y2], color='red', marker='o', gid='edge')
+        # self.canvas.draw()
 
     def remove_cell_bounding_boxes(self):
         for child in self.canvas.axes.get_children():
