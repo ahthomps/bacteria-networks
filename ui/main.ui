@@ -148,7 +148,6 @@
      <string>Edit</string>
     </property>
     <addaction name="actionClear"/>
-    <addaction name="actionCustom_Processing"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
@@ -192,11 +191,6 @@
   <action name="actionClear">
    <property name="text">
     <string>Clear</string>
-   </property>
-  </action>
-  <action name="actionCustom_Processing">
-   <property name="text">
-    <string>Image Processing Options</string>
    </property>
   </action>
   <action name="actionBinary_Image">

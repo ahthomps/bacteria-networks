@@ -52,8 +52,8 @@ class ProgramManager:
 
         print("using label {}".format(path))
         self.label_path = path
-        self.label_ofile = open(self.label_path)
-        self.cells = parse_yolo_input(self.label_ofile, self.image)
+        #self.label_ofile = open(self.label_path)
+        self.cells = parse_yolo_input(open(self.label_path), self.image)
 
     def get_save_loc(self, ext):
         path, _ = QFileDialog.getSaveFileName(None, 'Save File', "", ext)
@@ -101,7 +101,9 @@ class ProgramManager:
 
     def compute_binary_image(self):
         print("progessing image...")
+        print(len(self.binary_image))
         self.binary_image, self.threshold = process_image(self.image, self.openings, self.dilations, self.threshold)
+        print(self.binary_image)
         print("found processed image!")
 
     def compute_cell_contours(self):
@@ -183,7 +185,6 @@ class MainWindow(QMainWindow):
 
         self.actionImage.setEnabled(True)
 
-        self.actionCustom_Processing.setEnabled(False)
         self.SliderWidget.setVisible(False)
 
         self.actionLabel.setEnabled(False)
@@ -214,6 +215,8 @@ class MainWindow(QMainWindow):
 
         if any(dim > CROP_SIZE for dim in self.program_manager.image.shape):
             self.actionCrop.setEnabled(True)
+
+        # once you've opened an image, allow the user to save.
         self.actionSave.setEnabled(True)
         self.actionSave_As.setEnabled(True)
 
@@ -322,7 +325,7 @@ class MainWindow(QMainWindow):
         self.actionContour_run.setEnabled(False)
         # disable image processing
         self.SliderWidget.setVisible(False)
-        self.actionCustom_Processing.setEnabled(False)
+        
         # enable contour viewing
         self.actionContour_view.setEnabled(True)
         self.actionContour_view.setChecked(True)
@@ -380,7 +383,7 @@ class MainWindow(QMainWindow):
             print('somehow the path was none')
             return
         
-        if path[-5:] != ".gexf":
+        if path[-5:] != ".gexf": 
             path = path + ".gexf"
 
         # initialize graph
@@ -419,12 +422,36 @@ class MainWindow(QMainWindow):
         self.save()
 
     def load(self):
+
         path, _ = QFileDialog.getOpenFileName(None, "Select image", "", "Pickle Files (*.p)")
         if not path:
             return
         self.program_manager = pickle.load(open(path,"rb"))
-        self.MplWidget.draw_image(self.program_manager.image)
 
+        self.MplWidget.draw_image(self.program_manager.image)
+        self.actionImage.setEnabled(False)
+        self.actionLabel.setEnabled(True)
+        self.actionSave.setEnabled(True)
+        self.actionSave_As.setEnabled(True)
+        if self.program_manager.cells:
+            self.actionBounding_Boxes.setEnabled(True)
+            self.actionLabel.setEnabled(False)
+
+            self.actionYOLO.setEnabled(False)
+            
+            if self.program_manager.cells[0].contour is not None:
+                self.actionContour_view.setEnabled(True)
+                self.actionContour_view.setChecked(True)
+                self.handle_cell_contours_view_press()
+            else:
+                self.actionBounding_Boxes.setChecked(True)
+                self.handle_cell_bounding_boxes_view_press()
+                self.actionContour_run.setEnabled(True)
+                if len(self.program_manager.binary_image) > 0:
+                    self.actionBinary_Image.setEnabled(True)
+                    self.handle_binary_image_view_press()
+                else:
+                    self.actionProcess_Image.setEnabled(True)
         """ 
         check to see what info program manager has and set the enablements that way
         """
