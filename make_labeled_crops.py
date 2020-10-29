@@ -48,14 +48,15 @@ def in_confidence_region(pt):
     return TILE_SIZE // (2 * TILE_OVERLAP) <= pt[0] <= (2 * TILE_OVERLAP - 1) * TILE_SIZE // (2 * TILE_OVERLAP) \
        and TILE_SIZE // (2 * TILE_OVERLAP) <= pt[1] <= (2 * TILE_OVERLAP - 1) * TILE_SIZE // (2 * TILE_OVERLAP)
 
-def reunify_tiles(tiles):
+def reunify_tiles(tiles, full_image=None):
     """ Takes all the tiles in tiles, and returns a new Tile object representing the untiled image. """
 
-    full_image = rebuild_original_image(tiles)
+    if full_image is None:
+        full_image = rebuild_original_image(tiles)
 
     # This is not really a tile per se, but I want to use Tile's methods.
     full_tile = Tile(full_image, 0, 0, *full_image.size, "full_image")
-                            
+
     for tile in tiles:
         for cell in tile.cells:
             # If the center of the bounding box is in the confidence region of this tile
@@ -77,11 +78,15 @@ def run_yolo_on_images(filenames):
                             input="\n".join(filenames).encode("UTF-8")).stdout
     return str(output, "UTF-8")
 
-def parse_yolo_input(label_file, image):
+def parse_yolo_input(label_file, classes_file, image):
     """ Reads from a yolo training file and returns a list of BoundingBox objects.
         Also takes the labels' image so we can convert from relative to px. """
     cells = []
-    id = 0
+    classifications = []
+    id = 1
+    if classes_file is not None:
+        for line in classes_file.readlines():
+            classifications.append(line.rstrip())
     for line in label_file.readlines():
         # Treat #s as comments
         if "#" in line:
@@ -94,17 +99,21 @@ def parse_yolo_input(label_file, image):
         width *= len(image[0])
         y *= len(image)
         height *= len(image)
-        cells.append(Cell(int(x - width / 2), int(y - height / 2), int(x + width / 2), int(y + height / 2), id, classification))
+        if classifications != []:
+            classification = classifications[int(classification)]
+        else:
+            classification = "cell"
+        cells.append(BioObject(int(x - width / 2), int(y - height / 2), int(x + width / 2), int(y + height / 2), id, classification))
         id += 1
 
     return cells
 
 def parse_yolo_output(yolo_output):
-    """ Takes a string (probably stdout from running yolo) and returns a list of lists of Cell objects.
+    """ Takes a string (probably stdout from running yolo) and returns a list of lists of BioObject objects.
         Each sublist corresponds to one input file."""
     print(yolo_output)
     cells = []
-    cell_id = 0
+    cell_id = 1
     for line in yolo_output.splitlines():
         if line.startswith("Enter Image Path:"):
             cells.append([])
@@ -116,7 +125,7 @@ def parse_yolo_output(yolo_output):
             ymin = int(tokens[3])
             xmax = int(tokens[4])
             ymax = int(tokens[5])
-            cells[-1].append(Cell(xmin, ymin, xmax, ymax, cell_id, classification))
+            cells[-1].append(BioObject(xmin, ymin, xmax, ymax, cell_id, classification))
             cell_id += 1
 
     if len(cells) > 0 and cells[-1] == []:
