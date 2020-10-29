@@ -60,9 +60,8 @@ class ProgramManager:
             classes_ofile = open(classes_file_path)
             print("using classifications {}".format(classes_file_path))
         self.label_path = path
-<<<<<<< label_ofile = open(self.label_path)
+        label_ofile = open(self.label_path)
         self.cells += parse_yolo_input(label_ofile, classes_ofile, self.image)
->>>>>>> d5fe5d0ea32451977a79a018e41200052d84986b
 
     def get_save_loc(self, ext):
         path, _ = QFileDialog.getSaveFileName(None, 'Save File', "", ext)
