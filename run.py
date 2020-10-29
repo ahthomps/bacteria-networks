@@ -60,7 +60,9 @@ class ProgramManager:
             classes_ofile = open(classes_file_path)
             print("using classifications {}".format(classes_file_path))
         self.label_path = path
-        self.cells = parse_yolo_input(open(self.label_path), classes_ofile, self.image)
+<<<<<<< label_ofile = open(self.label_path)
+        self.cells += parse_yolo_input(label_ofile, classes_ofile, self.image)
+>>>>>>> d5fe5d0ea32451977a79a018e41200052d84986b
 
     def get_save_loc(self, ext):
         path, _ = QFileDialog.getSaveFileName(None, 'Save File', "", ext)
@@ -431,9 +433,7 @@ class MainWindow(QMainWindow):
         if self.program_manager.cells:
             self.actionBounding_Boxes.setEnabled(True)
             self.actionLabel.setEnabled(False)
-
             self.actionYOLO.setEnabled(False)
-            
             if self.program_manager.cells[0].contour is not None:
                 self.actionContour_view.setEnabled(True)
                 self.actionContour_view.setChecked(True)
@@ -447,7 +447,6 @@ class MainWindow(QMainWindow):
                     self.handle_binary_image_view_press()
                 else:
                     self.actionProcess_Image.setEnabled(True)
-                    
 
 app = QApplication([])
 window = MainWindow()
