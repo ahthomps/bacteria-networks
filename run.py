@@ -196,6 +196,7 @@ class MainWindow(QMainWindow):
         self.actionImage.setEnabled(True)
 
         self.SliderWidget.setVisible(False)
+        self.CellCounter.setVisible(False)
 
         self.actionLabel.setEnabled(False)
         self.actionYOLO.setEnabled(False)
@@ -245,6 +246,12 @@ class MainWindow(QMainWindow):
         # enable image processing
         self.actionProcess_Image.setEnabled(True)
 
+        # allow user to view cell counts
+        count = sum([1 for bioObject in self.program_manager.cells
+                            if bioObject.is_cell()])
+        self.CellCounter.setText('Cell Count: ' + str(count))
+        self.CellCounter.setVisible(True)
+
     def run_yolo_and_display(self):
         self.program_manager.compute_bounding_boxes()
 
@@ -260,6 +267,12 @@ class MainWindow(QMainWindow):
         # enable image processing
         self.actionProcess_Image.setEnabled(True)
 
+        # allow user to view cell counts
+        count = sum([1 for bioObject in self.program_manager.cells
+                        if bioObject.is_cell()])
+        self.CellCounter.setText('Cell Count: ' + str(count))
+        self.CellCounter.setVisible(True)
+        
     """ ---------------------- IMAGE PROCESSSING ---------------------------- """
 
     def compute_binary_image_and_display(self):
@@ -433,7 +446,12 @@ class MainWindow(QMainWindow):
             self.actionBounding_Boxes.setEnabled(True)
             self.actionLabel.setEnabled(False)
             self.actionYOLO.setEnabled(False)
-            if self.program_manager.cells[0].contour is not None:
+            # get and display cell counts
+            count = sum([1 for bioObject in self.program_manager.cells
+                            if bioObject.is_cell()])
+            self.CellCounter.setText('Cell Count: ' + str(count))
+            self.CellCounter.setVisible(True)
+            if any ([cell.contour is not None for cell in self.program_manager.cells]):
                 self.actionContour_view.setEnabled(True)
                 self.actionContour_view.setChecked(True)
                 self.handle_cell_contours_view_press()
