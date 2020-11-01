@@ -247,9 +247,7 @@ class MainWindow(QMainWindow):
         self.actionProcess_Image.setEnabled(True)
 
         # allow user to view cell counts
-        count = sum([1 for bioObject in self.program_manager.cells
-                            if bioObject.is_cell()])
-        self.CellCounter.setText('Cell Count: ' + str(count))
+        self.CellCounter.setText('Cell Count: ' + str(self.getCellCount()))
         self.CellCounter.setVisible(True)
 
     def run_yolo_and_display(self):
@@ -268,9 +266,7 @@ class MainWindow(QMainWindow):
         self.actionProcess_Image.setEnabled(True)
 
         # allow user to view cell counts
-        count = sum([1 for bioObject in self.program_manager.cells
-                        if bioObject.is_cell()])
-        self.CellCounter.setText('Cell Count: ' + str(count))
+        self.CellCounter.setText('Cell Count: ' + str(self.getCellCount()))
         self.CellCounter.setVisible(True)
         
     """ ---------------------- IMAGE PROCESSSING ---------------------------- """
@@ -384,6 +380,10 @@ class MainWindow(QMainWindow):
 
     """------------------ UTILITIES -----------------------------"""
 
+    def getCellCount(self):
+        return sum([1 for bioObject in self.program_manager.cells
+                            if bioObject.is_cell()])
+
     def convert_to_gephi_and_export(self):
         # get the path and make sure it's good
         path = self.program_manager.get_save_loc('Gephi Files (*.gexf)')
@@ -401,13 +401,15 @@ class MainWindow(QMainWindow):
         cells = self.program_manager.cells
 
         # add all nodes
-        for cell in cells:
-            G.add_node(cell.id)
-
-        # add all edges
-        for cell in cells:
-            for adj_cell in cell.adj_list:
-                G.add_edge(cell.id, adj_cell.id)
+        for bioObject in cells:
+            if bioObject.is_cell():
+                G.add_node(bioObject.id)
+                # add all edges
+                print('hi im cell', bioObject.id, 'heres my adj list')
+                print(bioObject.adj_list)
+                for adj_cell in bioObject.adj_list:
+                    print(bioObject.id, adj_cell.id)
+                    G.add_edge(bioObject.id, adj_cell.id)
 
         # write the final output to the file
         nx.write_gexf(G, path)
@@ -437,24 +439,34 @@ class MainWindow(QMainWindow):
             return
         self.program_manager = pickle.load(open(path,"rb"))
 
+        # in order to save, there must have been an image loaded, so load the image
+        # allow them to save, etc
         self.MplWidget.draw_image(self.program_manager.image)
         self.actionImage.setEnabled(False)
         self.actionLabel.setEnabled(True)
         self.actionSave.setEnabled(True)
         self.actionSave_As.setEnabled(True)
-        if self.program_manager.cells:
+        
+        if self.program_manager.cells: # if there are cells:
             self.actionBounding_Boxes.setEnabled(True)
             self.actionLabel.setEnabled(False)
             self.actionYOLO.setEnabled(False)
-            # get and display cell counts
-            count = sum([1 for bioObject in self.program_manager.cells
-                            if bioObject.is_cell()])
-            self.CellCounter.setText('Cell Count: ' + str(count))
+            # display cell counts
+            self.CellCounter.setText('Cell Count: ' + str(self.getCellCount()))
             self.CellCounter.setVisible(True)
+            # check if countouring has been done:
             if any ([cell.contour is not None for cell in self.program_manager.cells]):
                 self.actionContour_view.setEnabled(True)
                 self.actionContour_view.setChecked(True)
                 self.handle_cell_contours_view_press()
+                # check if edge detectionw as done:
+                if any ([cell.adj_list is not None for cell in self.program_manager.cells]):
+                    self.actionExport_to_Gephi.setEnabled(True)
+                    # this may already be done by default
+                    self.actionEdge_Detection.setEnabled(False)
+                    self.MplWidget.draw_cell_network_edges(self.program_manager.cells)
+                else:
+                    self.actionEdge_Detection.setEnabled(True)
             else:
                 self.actionBounding_Boxes.setChecked(True)
                 self.handle_cell_bounding_boxes_view_press()
