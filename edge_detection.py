@@ -17,11 +17,11 @@ def compute_cell_contact(bio_objects):
             cell2 = cells[j]
             # if the intersections of the np arrays has 1s then they overlap
             if np.logical_and(cell1.contour, cell2.contour, dtype=np.int8).any():
-                # cell1.adj_list.append(cell2)
+                cell1.adj_list.append(cell2)
                 cell1.edge_list.append(NetworkEdge(cell1, cell2))
                 cell1.edge_list[-1].set_type_as_cell_contact()
 
-                # cell2.adj_list.append(cell1)
+                cell2.adj_list.append(cell1)
                 cell2.edge_list.append(NetworkEdge(cell2, cell1))
                 cell2.edge_list[-1].set_type_as_cell_contact()
 
@@ -29,11 +29,11 @@ def compute_cell_contact(bio_objects):
             else:
                 dilated_contour1 = morphology.dilation(cell1.contour)
                 if np.logical_and(dilated_contour1, cell2.contour, dtype=np.int8).any():
-                    # cell1.adj_list.append(cell2)
+                    cell1.adj_list.append(cell2)
                     cell1.edge_list.append(NetworkEdge(cell1, cell2))
                     cell1.edge_list[-1].set_type_as_cell_contact()
 
-                    # cell2.adj_list.append(cell1)
+                    cell2.adj_list.append(cell1)
                     cell2.edge_list.append(NetworkEdge(cell2, cell1))
                     cell2.edge_list[-1].set_type_as_cell_contact()
 
