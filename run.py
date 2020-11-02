@@ -11,6 +11,7 @@ import subprocess
 import os
 import networkx as nx
 import pickle
+import collections
 
 from image_processing import *
 from contouring import compute_cell_contours
@@ -43,6 +44,19 @@ class ProgramManager:
         print("using image {}".format(path))
         self.image_path = path
         self.image = plt.imread(self.image_path)
+        for i in range(len(self.image)):
+            count = 0
+            for item in self.image[i]:
+                if isinstance(item, collections.abc.Iterable):
+                    item = item[0]
+                if 0 < item < 255:
+                    count += 1
+                    if count > 10:
+                        break
+            else:
+                self.image = self.image[:i]
+                break
+
 
         self.cells.append(BioObject(0, 0, len(self.image[0]), len(self.image), 0, "surface"))
 
