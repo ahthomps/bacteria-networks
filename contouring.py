@@ -36,10 +36,10 @@ def compute_cell_contours(binary_image, bio_objects):
     # initial_level_sets = find_balloon_ils(binary_image, bounding_boxes)
     binary_image = util.img_as_float(binary_image)
 
-    for cell in cells:
+    for i, cell in enumerate(cells):
         if cell.overlapping_bboxes == []:
             continue
-        print("contouring cell#{} of {}".format(cell.id, len(cells)))
+        print("contouring cell #{} of {}".format(i, len(cells)))
         # computes the number of iterations for the contour method to grow --
         # based on the size of the diagonal of the bounding box multiplied by a scalar
         iterations = int(sqrt(cell.width() ** 2 + cell.height() ** 2) / 2.5)
