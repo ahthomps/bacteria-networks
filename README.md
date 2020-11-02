@@ -2,7 +2,7 @@
 
 ## Dependencies:
 
-python3, make, gcc, matplotlib
+python3, make, gcc, matplotlib, pyqt5, scikitimage, networkx
 
 ## Installation instructions:
 
