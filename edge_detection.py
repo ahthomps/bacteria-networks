@@ -87,5 +87,3 @@ def compute_nanowire_edges(bio_objects, canvas):
             surface.adj_list.append(cell1)
             surface.edge_list.append(NetworkEdge(surface, cell1, nanowire))
             surface.edge_list[-1].set_type_as_cell_to_surface()
-
-
