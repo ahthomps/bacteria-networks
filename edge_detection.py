@@ -89,13 +89,3 @@ def compute_nanowire_edges(bio_objects, canvas):
             surface.edge_list[-1].set_type_as_cell_to_surface()
 
 
-
-
-
-
-
-
-
-
-
-# end
