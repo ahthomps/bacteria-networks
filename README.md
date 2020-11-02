@@ -2,7 +2,7 @@
 
 ## Dependencies:
 
-python3, make, gcc, pyqt5, matplotlib, numpy, Pillow
+python3, make, gcc, matplotlib
 
 ## Installation instructions:
 
