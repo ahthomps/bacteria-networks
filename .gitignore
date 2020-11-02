@@ -6,5 +6,4 @@ darknet_orig/obj/*
 darknet_orig/libdarknet.a
 darknet_orig/libdarknet.so
 darknet_orig/backup/*
-darknet_orig/Makefile
 darknet_fork
