@@ -1,6 +1,4 @@
-Function:
-    Tiled crops in the GUI
-
 Form:
     Add docstrings to run.py and make_labeled_crops.py
     add headers
+    reorganize directories to isolate darknet from everything else

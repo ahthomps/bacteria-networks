@@ -13,9 +13,9 @@ TILE_OVERLAP = 3 # 2 -> 50% overlap, 3 -> 33% overlap, etc.
 TILE_SIZE = 416
 IMAGE_EXTENSIONS = (".tiff", ".tif", ".png", ".jpg", ".jpeg", ".gif")
 
-DATA_PATH = "model_3/obj.data"
-CFG_PATH = "model_3/test.cfg"
-WEIGHTS_PATH = "backup/model_3.weights"
+DATA_PATH = "darknet_orig/model_3/obj.data"
+CFG_PATH = "darknet_orig/model_3/test.cfg"
+WEIGHTS_PATH = "darknet_orig/backup/model_3.weights"
 
 def make_tiles(img, filename):
     """ img: A PIL.Image to be tiled.
@@ -72,7 +72,7 @@ def reunify_tiles(tiles, full_image=None):
     return full_tile
 
 def run_yolo_on_images(filenames):
-    output = subprocess.run(["./darknet", "detector", "test", DATA_PATH, CFG_PATH, WEIGHTS_PATH],
+    output = subprocess.run(["darknet_orig/darknet", "detector", "test", DATA_PATH, CFG_PATH, WEIGHTS_PATH],
                             stdout=subprocess.PIPE,
                             stderr=subprocess.DEVNULL,
                             input="\n".join(filenames).encode("UTF-8")).stdout

@@ -1,0 +1,5 @@
+classes = 6
+train = darknet_orig/model_1/train.txt
+valid = darknet_orig/model_1/test.txt
+names = darknet_orig/model_1/obj.names
+backup = darknet_orig/backup/
