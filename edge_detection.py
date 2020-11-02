@@ -17,11 +17,11 @@ def compute_cell_contact(bio_objects):
             cell2 = cells[j]
             # if the intersections of the np arrays has 1s then they overlap
             if np.logical_and(cell1.contour, cell2.contour, dtype=np.int8).any():
-                # cell1.adj_list.append(cell2)
+                cell1.adj_list.append(cell2)
                 cell1.edge_list.append(NetworkEdge(cell1, cell2))
                 cell1.edge_list[-1].set_type_as_cell_contact()
 
-                # cell2.adj_list.append(cell1)
+                cell2.adj_list.append(cell1)
                 cell2.edge_list.append(NetworkEdge(cell2, cell1))
                 cell2.edge_list[-1].set_type_as_cell_contact()
 
@@ -29,11 +29,11 @@ def compute_cell_contact(bio_objects):
             else:
                 dilated_contour1 = morphology.dilation(cell1.contour)
                 if np.logical_and(dilated_contour1, cell2.contour, dtype=np.int8).any():
-                    # cell1.adj_list.append(cell2)
+                    cell1.adj_list.append(cell2)
                     cell1.edge_list.append(NetworkEdge(cell1, cell2))
                     cell1.edge_list[-1].set_type_as_cell_contact()
 
-                    # cell2.adj_list.append(cell1)
+                    cell2.adj_list.append(cell1)
                     cell2.edge_list.append(NetworkEdge(cell2, cell1))
                     cell2.edge_list[-1].set_type_as_cell_contact()
 
@@ -52,9 +52,9 @@ def compute_nanowire_to_cell_bbox_overlaps(nanowires, bio_objects, canvas):
                 nanowire.overlapping_bboxes.append(cell)
 
                 # for testing purposes:
-                nanowire_center = ((nanowire.x1 + nanowire.x2 )// 2, (nanowire.y1 + nanowire.y2) // 2)
-                canvas.axes.plot([nanowire_center[0], cell.cell_center[0]], [nanowire_center[1], cell.cell_center[1]], color="violet", marker='o', gid='edge')
-    canvas.draw()
+                # nanowire_center = ((nanowire.x1 + nanowire.x2 )// 2, (nanowire.y1 + nanowire.y2) // 2)
+                # canvas.axes.plot([nanowire_center[0], cell.cell_center[0]], [nanowire_center[1], cell.cell_center[1]], color="violet", marker='o', gid='edge')
+    # canvas.draw()
 
 
 def compute_nanowire_edges(bio_objects, canvas):
