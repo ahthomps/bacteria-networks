@@ -108,9 +108,7 @@ class ProgramManager:
 
     def compute_binary_image(self):
         print("progessing image...")
-        print(len(self.binary_image))
         self.binary_image, self.threshold = process_image(self.image, self.openings, self.dilations, self.threshold)
-        print(self.binary_image)
         print("found processed image!")
 
     def compute_cell_contours(self):
@@ -142,10 +140,6 @@ class ProgramManager:
     def compute_cell_network_edges(self, canvas):
         compute_cell_contact(self.cells)
         compute_nanowire_edges(self.cells, canvas)
-        for obj in self.cells:
-            if obj.is_nanowire():
-                continue
-            print(obj.classification, obj.id, [adj.id for adj in obj.adj_list])
 
 
 class MainWindow(QMainWindow):
@@ -268,7 +262,7 @@ class MainWindow(QMainWindow):
         # allow user to view cell counts
         self.CellCounter.setText('Cell Count: ' + str(self.getCellCount()))
         self.CellCounter.setVisible(True)
-        
+
     """ ---------------------- IMAGE PROCESSSING ---------------------------- """
 
     def compute_binary_image_and_display(self):
@@ -338,7 +332,7 @@ class MainWindow(QMainWindow):
         self.actionContour_run.setEnabled(False)
         # disable image processing
         self.SliderWidget.setVisible(False)
-        
+
         # enable contour viewing
         self.actionContour_view.setEnabled(True)
         self.actionContour_view.setChecked(True)
@@ -391,8 +385,8 @@ class MainWindow(QMainWindow):
         if not path:
             print('somehow the path was none')
             return
-        
-        if path[-5:] != ".gexf": 
+
+        if path[-5:] != ".gexf":
             path = path + ".gexf"
 
         # initialize graph
@@ -405,10 +399,7 @@ class MainWindow(QMainWindow):
             if bioObject.is_cell():
                 G.add_node(bioObject.id)
                 # add all edges
-                print('hi im cell', bioObject.id, 'heres my adj list')
-                print(bioObject.adj_list)
                 for adj_cell in bioObject.adj_list:
-                    print(bioObject.id, adj_cell.id)
                     G.add_edge(bioObject.id, adj_cell.id)
 
         # write the final output to the file
@@ -446,7 +437,7 @@ class MainWindow(QMainWindow):
         self.actionLabel.setEnabled(True)
         self.actionSave.setEnabled(True)
         self.actionSave_As.setEnabled(True)
-        
+
         if self.program_manager.cells: # if there are cells:
             self.actionBounding_Boxes.setEnabled(True)
             self.actionLabel.setEnabled(False)
