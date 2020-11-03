@@ -1,12 +1,6 @@
-__pycache__
+**/__pycache__
 .crops
-darknet_orig/darknet
-predictions.jpg
-darknet_orig/obj/*
-darknet_orig/libdarknet.a
-darknet_orig/libdarknet.so
-darknet_orig/backup/*
 all_cell_images
 **/images
-bad.list
-backup/*
+*.weights
+*.backup

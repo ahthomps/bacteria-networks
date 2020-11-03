@@ -11,12 +11,12 @@ from classes import *
 
 TILE_OVERLAP = 3 # 2 -> 50% overlap, 3 -> 33% overlap, etc.
 TILE_SIZE = 416
-IMAGE_EXTENSIONS = (".tiff", ".tif", ".png", ".jpg", ".jpeg", ".gif")
+IMAGE_EXTENSIONS = (".tiff", ".tif", ".png", ".jpg", ".jpeg", ".gif", ".bmp")
 
 DARKNET_BINARY_PATH = "darknet/darknet"
-DATA_PATH = "model_4/obj.data"
-CFG_PATH = "model_4/test.cfg"
-WEIGHTS_PATH = "backup/model_4.weights"
+DATA_PATH = "models/model_4/obj.data"
+CFG_PATH = "models/model_4/test.cfg"
+WEIGHTS_PATH = "models/model_4/model_4.weights"
 YOLO_OPTIONS = ["-ext_output", "-dont_show"]
 
 def make_tiles(img, filename):
