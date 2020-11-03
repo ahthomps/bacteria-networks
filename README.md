@@ -2,7 +2,9 @@
 
 ## Dependencies:
 
-python3, make, gcc, matplotlib, pyqt5, scikit-image, networkx
+Download these from their websites or through your package manager: `python3`, `pip3`, `make`, `gcc`
+
+Download these with `pip3`: `matplotlib`, `pyqt5`, `scikit-image`, `networkx`
 
 ## Installation instructions:
 
