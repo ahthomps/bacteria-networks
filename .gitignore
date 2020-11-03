@@ -4,3 +4,4 @@ all_cell_images
 **/images
 *.weights
 *.backup
+predictions.jpg
