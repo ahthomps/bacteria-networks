@@ -2,11 +2,11 @@
 
 ## Dependencies:
 
-python3, make, gcc, matplotlib
+python3, make, gcc, matplotlib, pyqt5, scikit-image, networkx
 
 ## Installation instructions:
 
-Clone this repository.
+Clone this repository. You should probably use `--depth 1` so the download doesn't take 1000 years.
 
 Go into `darknet_orig` and run `make`.
 
