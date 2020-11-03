@@ -1,4 +1,4 @@
-# This is the makefile you'll want to use if you have access to a modern CUDA-enabled GPU.
+# This is the makefile you'll want to use if you're on Arch Linux (btw) and you have access to a modern CUDA-enabled GPU.
 # If that's the case, move this file into the darknet directory and then make.
 
 GPU=1
