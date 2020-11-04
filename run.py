@@ -24,6 +24,7 @@ CROP_SIZE = 416
 class ProgramManager:
     def __init__(self):
         self.image = np.array([])
+        self.original_image = np.array([])
         self.binary_image = np.array([])
         self.cells = []
 
@@ -43,7 +44,8 @@ class ProgramManager:
 
         print("using image {}".format(path))
         self.image_path = path
-        self.image = plt.imread(self.image_path)
+        self.image = color.rgb2gray(plt.imread(self.image_path))
+        self.original_image = plt.imread(self.image_path)
         for i in range(len(self.image)):
             count = 0
             for item in self.image[i]:
@@ -56,7 +58,6 @@ class ProgramManager:
             else:
                 self.image = self.image[:i]
                 break
-
 
         self.cells.append(BioObject(0, 0, len(self.image[0]), len(self.image), 0, "surface"))
 
@@ -75,7 +76,7 @@ class ProgramManager:
             print("using classifications {}".format(classes_file_path))
         self.label_path = path
         label_ofile = open(self.label_path)
-        self.cells += parse_yolo_input(label_ofile, classes_ofile, self.image)
+        self.cells += parse_yolo_input(label_ofile, classes_ofile, self.original_image)
 
     def get_save_loc(self, ext):
         path, _ = QFileDialog.getSaveFileName(None, 'Save File', "", ext)
@@ -127,7 +128,7 @@ class ProgramManager:
 
     def compute_cell_contours(self):
         print("getting contours...")
-        compute_cell_contours(self.binary_image, self.cells)
+        compute_cell_contours(self.binary_image, self.cells, self.image)
         print("found contours!")
 
     def crop(self):
@@ -152,8 +153,10 @@ class ProgramManager:
         print(f"Made {len(os.listdir(self.crop_dir))} crops.")
 
     def compute_cell_network_edges(self, canvas):
-        compute_cell_contact(self.cells)
-        compute_nanowire_edges(self.cells, canvas)
+        for obj in self.cells[1:]:
+            obj.compute_subimage_labels_and_region_data(self.image)
+        compute_cell_contact(self.cells, self.image)
+        compute_nanowire_edges(self.cells, canvas, self.image, self.binary_image)
 
 
 class MainWindow(QMainWindow):
@@ -252,7 +255,9 @@ class MainWindow(QMainWindow):
         self.actionBounding_Boxes.setEnabled(True)
         self.actionBounding_Boxes.setChecked(True)
         # enable image processing
-        self.actionProcess_Image.setEnabled(True)
+        # self.actionProcess_Image.setEnabled(True)
+        # enable edge detection
+        self.actionEdge_Detection.setEnabled(True)
 
         # allow user to view cell counts
         self.CellCounter.setText('Cell Count: ' + str(self.getCellCount()))
@@ -363,7 +368,8 @@ class MainWindow(QMainWindow):
 
         # disable edge detection
         self.actionEdge_Detection.setEnabled(False)
-        # enable edges viewing
+        # enable contour viewing
+        self.actionContour_view.setEnabled(True)
 
         # enable export to Gephi!
         self.actionExport_to_Gephi.setEnabled(True)
@@ -465,7 +471,7 @@ class MainWindow(QMainWindow):
                 self.actionContour_view.setChecked(True)
                 self.handle_cell_contours_view_press()
                 # check if edge detectionw as done:
-                if any ([cell.adj_list is not None for cell in self.program_manager.cells]):
+                if any ([cell.adj_list != [] for cell in self.program_manager.cells]):
                     self.actionExport_to_Gephi.setEnabled(True)
                     # this may already be done by default
                     self.actionEdge_Detection.setEnabled(False)
