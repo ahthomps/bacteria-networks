@@ -78,7 +78,7 @@ cd bacteria-networks\darknet
 - `scikit-image`
 - `networkx`
 
-(Note: If you're on Mac or Linux, these packages may be available from your package manager. Feel free to use those versions instead of the `pip` ones.)
+(Note: If you're on Mac or Linux, some of these packages may be available from your package manager. Feel free to use those versions instead of the `pip` ones.)
 
 ## Downloading the model:
 
