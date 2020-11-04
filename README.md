@@ -1,5 +1,7 @@
 # bacteria-networks
 
+This program employs a neural network to identify nanowire network structure in images of Shewanella oneidensis.
+
 ## Installation instructions:
 
 ### Mac
