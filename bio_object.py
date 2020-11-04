@@ -7,7 +7,7 @@ def compute_cell_center(bio_obj, image):
     """ finds some point in the cell"""
     placeholder_image = np.zeros(image.shape, dtype=np.uint8)
 
-    subimage = np.asarray(image[self.y1:self.y2 + 1, self.x1:self.x2 + 1])
+    subimage = np.asarray(image[bio_obj.y1:bio_obj.y2 + 1, bio_obj.x1:bio_obj.x2 + 1])
 
     threshold = filters.threshold_li(subimage)
     subimage = subimage > threshold
