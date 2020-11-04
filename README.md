@@ -51,7 +51,7 @@ You can greatly improve the performance of this application by tweaking Darknet'
 
 2. If you have a modern Nvidia GPU, install CUDA (at least v10.0) enabling VS Integration during installation. You can download it [here](https://developer.nvidia.com/cuda-downloads).
 
-3. Open Powershell (Start -> All programs -> Windows Powershell) and type these commands:
+3. Open Powershell (Start -> All programs -> Windows Powershell) and run these commands:
 
 ```PowerShell
 git clone https://github.com/microsoft/vcpkg
@@ -59,11 +59,14 @@ cd vcpkg
 $env:VCPKG_ROOT=$PWD
 .\bootstrap-vcpkg.bat
 .\vcpkg install darknet[full]:x64-windows
+cd ..
 ```
 
-That last command might take a long time to finish. Once it's done, clone this repository by running `git clone --recurse-submodules --depth 1 https://github.com/ahthomps/bacteria-networks.git`. Then, `cd` into the `darknet` directory in this repository, and run 
+Once that's done, run these commands:
 
 ```PowerShell
+git clone --recurse-submodules --depth 1 https://github.com/ahthomps/bacteria-networks.git
+cd bacteria-networks\darknet
 .\build.ps1
 ```
 
