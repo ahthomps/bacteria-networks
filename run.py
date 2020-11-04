@@ -167,6 +167,8 @@ class MainWindow(QMainWindow):
         loadUi("ui/main.ui", self)
         self.setWindowTitle("JAB Bacteria Networks Detector")
         self.addToolBar(NavigationToolbar(self.MplWidget.canvas, self))
+        
+        self.labeling_buttons = [self.BaddCell, self.BaddEdge, self.BchangeClass]
 
         # set up ProgramManager
         self.program_manager = ProgramManager()
@@ -191,6 +193,9 @@ class MainWindow(QMainWindow):
         self.actionBinary_Image.triggered.connect(self.handle_binary_image_view_press)
         self.actionBounding_Boxes.triggered.connect(self.handle_cell_bounding_boxes_view_press)
         self.actionContour_view.triggered.connect(self.handle_cell_contours_view_press)
+        self.actionRun_All.triggered.connect(self.run_yolo_and_edge_detection_and_display)
+
+        self.MplWidget.canvas.mpl_connect("button_press_event", self.on_canvas_press)
 
         # NEW SliderWidget ones:
         self.SliderWidget.restoreDefaultsButton.clicked.connect(self.set_image_processing_numbers_to_default_and_display_new_binary_image)
@@ -209,12 +214,15 @@ class MainWindow(QMainWindow):
 
         self.SliderWidget.setVisible(False)
         self.CellCounter.setVisible(False)
+        
+        self.toggle_labeling_buttons(False)
 
         self.actionLabel.setEnabled(False)
         self.actionYOLO.setEnabled(False)
         self.actionProcess_Image.setEnabled(False)
         self.actionContour_run.setEnabled(False)
         self.actionEdge_Detection.setEnabled(False)
+        self.actionRun_All.setEnabled(False)
 
         self.actionBounding_Boxes.setEnabled(False)
         self.actionBounding_Boxes.setChecked(False)
@@ -227,6 +235,23 @@ class MainWindow(QMainWindow):
         self.program_manager = ProgramManager()
         self.MplWidget.clear_canvas()
         self.set_default_enablements()
+
+    def on_canvas_press(self, event):
+        print("press")
+        print("event.xdata", event.xdata)
+        print("event.ydata", event.ydata)
+        print("event.inaxes", event.inaxes)
+        print("x", event.x)
+        print("y", event.y)
+        self.MplWidget.draw_point(event.xdata, event.ydata)
+
+    def toggle_labeling_buttons(self, on):
+        if on:
+            for button in self.labeling_buttons:
+                button.setVisible(True)
+        else:
+            for button in self.labeling_buttons:
+                button.setVisible(False)
 
     def open_image_file_and_display(self):
         self.program_manager.open_image_file_and_crop_if_necessary()
@@ -242,6 +267,7 @@ class MainWindow(QMainWindow):
         # enable finding bboxes
         self.actionLabel.setEnabled(True)
         self.actionYOLO.setEnabled(True)
+        self.actionRun_All.setEnabled(True)
 
     def open_label_file_and_display(self):
         self.program_manager.open_label_file()
@@ -284,6 +310,12 @@ class MainWindow(QMainWindow):
         # allow user to view cell counts
         self.CellCounter.setText('Cell Count: ' + str(self.getCellCount()))
         self.CellCounter.setVisible(True)
+
+    def run_yolo_and_edge_detection_and_display(self):
+        self.run_yolo_and_display()
+        # then need to run contouring and edge detection and bring up the option
+        # to manually label the image
+        self.toggle_labeling_buttons(True)
 
     """ ---------------------- IMAGE PROCESSSING ---------------------------- """
 
@@ -376,6 +408,9 @@ class MainWindow(QMainWindow):
 
         # enable export to Gephi!
         self.actionExport_to_Gephi.setEnabled(True)
+
+        # enable manual labeling!
+        self.toggle_labeling_buttons(True)
 
     def handle_binary_image_view_press(self):
         if self.actionBinary_Image.isChecked():

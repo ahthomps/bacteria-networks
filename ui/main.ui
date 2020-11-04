@@ -73,6 +73,45 @@
       </size>
      </property>
     </widget>
+    <widget class="QPushButton" name="BaddCell">
+     <property name="geometry">
+      <rect>
+       <x>50</x>
+       <y>310</y>
+       <width>80</width>
+       <height>26</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Add Cells</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="BaddEdge">
+     <property name="geometry">
+      <rect>
+       <x>50</x>
+       <y>370</y>
+       <width>80</width>
+       <height>26</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Add Edges</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="BchangeClass">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>430</y>
+       <width>151</width>
+       <height>26</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Change Classification</string>
+     </property>
+    </widget>
    </widget>
    <widget class="QWidget" name="MplWidgetContainer" native="true">
     <property name="geometry">
@@ -165,6 +204,7 @@
     <addaction name="actionYOLO"/>
     <addaction name="actionContour_run"/>
     <addaction name="actionEdge_Detection"/>
+    <addaction name="actionRun_All"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -259,6 +299,11 @@
   <action name="actionLoad_Project">
    <property name="text">
     <string>Load Project</string>
+   </property>
+  </action>
+  <action name="actionRun_All">
+   <property name="text">
+    <string>Run All</string>
    </property>
   </action>
  </widget>
