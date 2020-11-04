@@ -1,12 +1,13 @@
-# This is the makefile you'll want to use if you're on Arch Linux (btw) and you have access to a modern CUDA-enabled GPU.
-# If that's the case, move this file into the darknet directory and then make.
+# This is Ben's makefile for darknet. If you want to use this on Arch Linux (btw), your makefile should look something like this.
+# This is because Arch puts cuda in /opt/cuda instead of /usr/local/cuda.
+# I also commented out the lines about compiling for graphics cards other than my (Blake's) GTX 1070.
 
 GPU=1
 CUDNN=1
 CUDNN_HALF=0
 OPENCV=1
-AVX=0
-OPENMP=0
+AVX=1
+OPENMP=1
 LIBSO=0
 ZED_CAMERA=0
 ZED_CAMERA_v2_8=0
