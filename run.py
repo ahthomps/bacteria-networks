@@ -15,7 +15,8 @@ import collections
 
 from image_processing import *
 from contouring import compute_cell_contours
-from classes import Tile, BioObject
+from classes import Tile
+from bio_object import BioObject, compute_subimage_labels_and_region_data
 from make_labeled_crops import *
 from edge_detection import compute_cell_contact, compute_nanowire_edges
 
@@ -154,7 +155,7 @@ class ProgramManager:
 
     def compute_cell_network_edges(self, canvas):
         for obj in self.cells[1:]:
-            obj.compute_subimage_labels_and_region_data(self.image)
+            compute_subimage_labels_and_region_data(obj, self.image)
         compute_cell_contact(self.cells, self.image)
         compute_nanowire_edges(self.cells, canvas, self.image, self.binary_image)
 

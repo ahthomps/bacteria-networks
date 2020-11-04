@@ -1,6 +1,7 @@
 import numpy as np
 from skimage import morphology, filters, exposure, segmentation, restoration, color, util, measure
 from classes import NetworkEdge
+from bio_object import compute_contour, compute_cell_center
 import matplotlib.pyplot as plt
 
 def add_edge(obj1, obj2, nanowire=None):
@@ -37,10 +38,10 @@ def compute_cell_contact(bio_objects, image):
     cells = []
     for obj in bio_objects:
         if obj.is_cell():
-            obj.get_cell_center(image)
+            compute_cell_center(obj, image)
             if obj.overlapping_bboxes != []:
                 cells.append(obj)
-                obj.compute_cell_contour(image)
+                compute_contour(obj, image)
 
     for i in range(len(cells) - 1):
         cell1 = cells[i]
@@ -124,7 +125,7 @@ def compute_nanowire_edges(bio_objects, canvas, image, binary_image):
             # nanowire_contour = np.zeros(image.shape, dtype=np.uint8)
             # nanowire_contour[nanowire.y1:nanowire.y1 + len(nanowire_image), nanowire.x1:nanowire.x1 + len(nanowire_image[0])] = nanowire_image
             # nanowire_contour = morphology.dilation(nanowire_contour)
-            nanowire.compute_nanowire_contour(image)
+            compute_contour(nanowire, image)
 
             intersections = []
             for cell in nanowire.overlapping_bboxes:

@@ -8,6 +8,7 @@ from copy import deepcopy
 from os import listdir
 import subprocess
 from classes import *
+from bio_object import BioObject
 from multiprocessing import cpu_count
 
 TILE_OVERLAP = 3 # 2 -> 50% overlap, 3 -> 33% overlap, etc.
