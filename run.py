@@ -163,6 +163,8 @@ class MainWindow(QMainWindow):
         loadUi("ui/main.ui", self)
         self.setWindowTitle("JAB Bacteria Networks Detector")
         self.addToolBar(NavigationToolbar(self.MplWidget.canvas, self))
+        
+        self.labeling_buttons = (self.BaddCell, self.BaddEdge, self.BchangeClass)
 
         # set up ProgramManager
         self.program_manager = ProgramManager()
@@ -205,6 +207,9 @@ class MainWindow(QMainWindow):
 
         self.SliderWidget.setVisible(False)
         self.CellCounter.setVisible(False)
+        
+        for button in self.labeling_buttons:
+            button.setVisible(False)
 
         self.actionLabel.setEnabled(False)
         self.actionYOLO.setEnabled(False)
