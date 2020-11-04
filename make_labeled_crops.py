@@ -8,10 +8,13 @@ from copy import deepcopy
 from os import listdir
 import subprocess
 from classes import *
+from multiprocessing import cpu_count
 
 TILE_OVERLAP = 3 # 2 -> 50% overlap, 3 -> 33% overlap, etc.
 TILE_SIZE = 416
 IMAGE_EXTENSIONS = (".tiff", ".tif", ".png", ".jpg", ".jpeg", ".gif", ".bmp")
+
+DARKNET_MAKEFILE_PATH = "darknet/Makefile"
 
 DARKNET_BINARY_PATH = "darknet/darknet"
 DATA_PATH = "models/model_4/obj.data"
@@ -73,12 +76,41 @@ def reunify_tiles(tiles, full_image=None):
 
     return full_tile
 
+def using_gpu():
+    return any(line.startswith("GPU=1") for line in open(DARKNET_MAKEFILE_PATH).readlines())
+
 def run_yolo_on_images(filenames):
-    output = subprocess.run([DARKNET_BINARY_PATH, "detector", "test", DATA_PATH, CFG_PATH, WEIGHTS_PATH, *YOLO_OPTIONS],
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.DEVNULL,
-                            input="\n".join(filenames).encode("UTF-8")).stdout
-    return str(output, "UTF-8")
+    using_gpu = any(line.startswith("GPU=1") for line in open(DARKNET_MAKEFILE_PATH).readlines())
+
+    if using_gpu:
+        print("Using GPU")
+        return subprocess.run([DARKNET_BINARY_PATH, "detector", "test", DATA_PATH, CFG_PATH, WEIGHTS_PATH, *YOLO_OPTIONS],
+                              stdout=subprocess.PIPE,
+                              stderr=subprocess.DEVNULL,
+                              encoding="UTF-8",
+                              input="\n".join(filenames)).stdout.read()
+    else:
+        print("Using CPU")
+        batch_size = len(filenames) // cpu_count() if cpu_count() <= len(filenames) else 1
+        batched_filenames = [filenames[i * batch_size:(i + 1) * batch_size] for i in range(len(filenames) // batch_size)]
+        for i, filename in enumerate(filenames[batch_size * cpu_count():]):
+            batched_filenames[i].append(filename)
+
+        procs = []
+        for batch in batched_filenames:
+            proc = subprocess.Popen([DARKNET_BINARY_PATH, "detector", "test", DATA_PATH, CFG_PATH, WEIGHTS_PATH, *YOLO_OPTIONS],
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.DEVNULL,
+                                    stdin=subprocess.PIPE,
+                                    encoding="UTF-8")
+            proc.stdin.write("\n".join(batch))
+            proc.stdin.close()
+            procs.append(proc)
+
+        for proc in procs:
+            proc.wait()
+
+        return "\n".join(proc.stdout.read() for proc in procs)
 
 def parse_yolo_input(label_file, classes_file, image):
     """ Reads from a yolo training file and returns a list of BoundingBox objects.
