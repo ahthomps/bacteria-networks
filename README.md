@@ -37,7 +37,7 @@ Use your package manager to install the following packages:
 
 Clone this repository by running `git clone --recurse-submodules --depth 1 https://github.com/ahthomps/bacteria-networks.git`.
 
-You can greatly improve the performance of this application by tweaking Darknet's makefile. If you installed CUDA, set `GPU=1`. If you installed cuDNN, set `CUDNN=1`. If you aren't using a GPU, and your CPU was manufactured after 2011, you should set `AVX=1`. If you installed OpenMP (`libomp`), set `OPENMP=1`.
+You can greatly improve the performance of this application by tweaking Darknet's makefile. If you installed `cuda`, set `GPU=1`. If you installed `cudnn`, set `CUDNN=1`. If you aren't using a GPU, and your CPU was manufactured after 2011, you should set `AVX=1`. If you installed `openmp` (`libomp`), set `OPENMP=1`.
 
 `cd` into the `darknet` directory, then run `make`.
 
