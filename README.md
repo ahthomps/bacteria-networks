@@ -78,6 +78,8 @@ cd bacteria-networks\darknet
 - `scikit-image`
 - `networkx`
 
+(Note: If you're on Mac or Linux, these packages may be available from your package manager. Feel free to use those versions instead of the `pip` ones.)
+
 ## Downloading the model:
 
 Download `model_4.weights` from [here](https://drive.google.com/drive/folders/1oHpzVVqVL67unqOnrObX49XkeUii3Jg4?usp=sharing), and stick it in `models/model_4`.
