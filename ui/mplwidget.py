@@ -49,13 +49,11 @@ class MplWidget(QWidget):
 
     def draw_point(self, x, y):
         self.canvas.axes.plot(x, y, color='red', marker='o', gid=self.cell_center_gid)
-        self.canvas.draw()
 
     def draw_cell_centers(self, bio_objects):
         for obj in bio_objects:
             if obj.is_cell():
-                self.canvas.axes.plot(obj.cell_center[0], obj.cell_center[1], color='red', marker='o', gid=self.cell_center_gid)
-        self.canvas.draw()
+                self.draw_point(obj.cell_center[0], obj.cell_center[1])
 
     def draw_cell_contours(self, cells):
         colors = ['red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet']
