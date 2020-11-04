@@ -1,35 +1,81 @@
 # bacteria-networks
 
-## Dependencies:
+## Installation instructions:
 
-Download these from their websites or through your package manager:
+#### Mac
+
+Install `homebrew` by following the instructions [here](https://brew.sh/).
+
+`brew install` these packages:
 - `python3`
-- `pip3`
 - `make`
 - `gcc`
+- `git` (duh)
+- `libomp` (optional; improves performance)
 
-Download these with `pip3`:
+`pip3 install` these packages:
 - `matplotlib`
 - `pyqt5`
 - `scikit-image`
 - `networkx`
 
-Optional dependencies:
-- `cuda` (For better performance if you have a modern Nvidia GPU)
-- `cudnn` (Also for better performance if you have a modern Nvidia GPU)
-- `openmp` (For better performance if you don't have a GPU)
+Clone this repository by running `git clone --recurse-submodules --depth 1 https://github.com/ahthomps/bacteria-networks.git`.
 
-## Installation instructions:
+You can greatly improve the performance of this application by tweaking Darknet's makefile. If your CPU was manufactured after 2011, you should set `AVX=1`. If you installed `libomp`, set `OPENMP=1`.
 
-### Download the application
+`cd` into the `darknet` directory, then run `make`.
+
+#### Linux
+
+Use your package manager to install the following packages:
+- `python3`
+- `pip3`
+- `make`
+- `gcc`
+- `git` (duh)
+- `cuda` (optional; improves performance if you have a modern Nvidia GPU)
+- `cudnn` (optional; improves performance if you have a modern Nvidia GPU; requires `cuda`)
+- `openmp` (optional; improves performance if you're not using `cuda`)
+
+(Note: Some of these packages will have different names in different repositories. These are their names in the Arch repositories.)
+
+`pip3 install` these packages:
+- `matplotlib`
+- `pyqt5`
+- `scikit-image`
+- `networkx`
 
 Clone this repository by running `git clone --recurse-submodules --depth 1 https://github.com/ahthomps/bacteria-networks.git`.
 
-### Configure the makefile and compile Darknet
-
-You can greatly improve the performance of this application by tweaking Darknet's makefile. If you have a CUDA-enabled GPU, and you have CUDA installed, set `GPU=1`. If you also have cuDNN installed, set `CUDNN=1`. If you aren't using a GPU, and your CPU was manufactured after 2011, you should set `AVX=1`. Installing OpenMP and setting `OPENMP=1` will massively improve performance for those of you without GPUs.
+You can greatly improve the performance of this application by tweaking Darknet's makefile. If you installed CUDA, set `GPU=1`. If you installed cuDNN, set `CUDNN=1`. If you aren't using a GPU, and your CPU was manufactured after 2011, you should set `AVX=1`. If you installed OpenMP (`libomp`), set `OPENMP=1`.
 
 `cd` into the `darknet` directory, then run `make`.
+
+#### Windows
+
+(This is copied almost verbatim from [here](https://github.com/AlexeyAB/darknet/blob/master/README.md).)
+
+0. Install git.
+
+1. Install Visual Studio 2017 or 2019. In case you need to download it, please go here: [Visual Studio Community](http://visualstudio.com)
+
+2. Install CUDA (at least v10.0) enabling VS Integration during installation.
+
+3. Open Powershell (Start -> All programs -> Windows Powershell) and type these commands:
+
+```PowerShell
+git clone https://github.com/microsoft/vcpkg
+cd vcpkg
+$env:VCPKG_ROOT=$PWD
+.\bootstrap-vcpkg.bat
+.\vcpkg install darknet[full]:x64-windows
+```
+
+That last command might take a long time to finish. Once it's done, clone this repository by running `git clone --recurse-submodules --depth 1 https://github.com/ahthomps/bacteria-networks.git`. Then, `cd` into the repository, and run 
+
+```PowerShell
+.\build.ps1
+```
 
 ### Download the model
 
