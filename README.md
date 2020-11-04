@@ -14,7 +14,7 @@ Clone this repository by running `git clone --recurse-submodules --depth 1 https
 
 ### Configure the makefile and compile Darknet
 
-If you have an Nvidia GPU with CUDA installed, and you want to use it, configure `darknet/Makefile` to your liking. You probably want to set `GPU=1`, and `CUDNN=1`. If you aren't using a GPU, you will get better performance by seting `AVX=1` (speeds up vector math) and `OPENMP=1` (enables parallel processing). In order to use OpenMP, you'll need to install OpenMP.
+You can greatly improve the performance of this application by tweaking Darknet's makefile. You probably want to set `GPU=1`, and `CUDNN=1`. If you aren't using a GPU, you will get better performance by seting `AVX=1` (speeds up vector math) and `OPENMP=1` (enables parallel processing). In order to use OpenMP, you'll need to install OpenMP.
 
 Run `cd darknet; make`.
 
