@@ -61,7 +61,7 @@ $env:VCPKG_ROOT=$PWD
 .\vcpkg install darknet[full]:x64-windows
 ```
 
-That last command might take a long time to finish. Once it's done, clone this repository by running `git clone --recurse-submodules --depth 1 https://github.com/ahthomps/bacteria-networks.git`. Then, `cd` into the repository, and run 
+That last command might take a long time to finish. Once it's done, clone this repository by running `git clone --recurse-submodules --depth 1 https://github.com/ahthomps/bacteria-networks.git`. Then, `cd` into `darknet` directory in this repository, and run 
 
 ```PowerShell
 .\build.ps1
