@@ -47,6 +47,10 @@ class MplWidget(QWidget):
             self.canvas.axes.plot([obj.x2, obj.x2], [obj.y1, obj.y2], color=color, linestyle='dashed', marker='o', gid=self.bbox_gid)
         self.canvas.draw()
 
+    def draw_point(self, x, y):
+        self.canvas.axes.plot(x, y, color='red', marker='o', gid=self.cell_center_gid)
+        self.canvas.draw()
+
     def draw_cell_centers(self, bio_objects):
         for obj in bio_objects:
             if obj.is_cell():
