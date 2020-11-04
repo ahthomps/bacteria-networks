@@ -15,12 +15,6 @@ Install `homebrew` by following the instructions [here](https://brew.sh/).
 - `git` (duh)
 - `libomp` (optional; improves performance)
 
-`pip3 install` these packages:
-- `matplotlib`
-- `pyqt5`
-- `scikit-image`
-- `networkx`
-
 Clone this repository by running `git clone --recurse-submodules --depth 1 https://github.com/ahthomps/bacteria-networks.git`.
 
 You can greatly improve the performance of this application by tweaking Darknet's makefile. If your CPU was manufactured after 2011, you should set `AVX=1`. If you installed `libomp`, set `OPENMP=1`.
@@ -41,12 +35,6 @@ Use your package manager to install the following packages:
 
 (Note: Some of these packages will have different names in different repositories. These are their names in the Arch repositories.)
 
-`pip3 install` these packages:
-- `matplotlib`
-- `pyqt5`
-- `scikit-image`
-- `networkx`
-
 Clone this repository by running `git clone --recurse-submodules --depth 1 https://github.com/ahthomps/bacteria-networks.git`.
 
 You can greatly improve the performance of this application by tweaking Darknet's makefile. If you installed CUDA, set `GPU=1`. If you installed cuDNN, set `CUDNN=1`. If you aren't using a GPU, and your CPU was manufactured after 2011, you should set `AVX=1`. If you installed OpenMP (`libomp`), set `OPENMP=1`.
@@ -57,7 +45,7 @@ You can greatly improve the performance of this application by tweaking Darknet'
 
 (This is copied almost verbatim from [here](https://github.com/AlexeyAB/darknet/blob/master/README.md).)
 
-0. Install git.
+0. Install `git`, `python3`, and `pip3`.
 
 1. Install Visual Studio 2017 or 2019. In case you need to download it, please go here: [Visual Studio Community](http://visualstudio.com)
 
@@ -79,9 +67,19 @@ That last command might take a long time to finish. Once it's done, clone this r
 .\build.ps1
 ```
 
+## Installing `pip` dependencies:
+
+`pip3 install` these packages:
+- `matplotlib`
+- `pyqt5`
+- `scikit-image`
+- `networkx`
+
 ## Downloading the model:
 
-Download `model_4.weights` from [here](https://drive.google.com/drive/folders/1oHpzVVqVL67unqOnrObX49XkeUii3Jg4?usp=sharing), and stick it in `models/model_4`. If the program never finds any bounding boxes, there's a good chance you forgot this step.
+Download `model_4.weights` from [here](https://drive.google.com/drive/folders/1oHpzVVqVL67unqOnrObX49XkeUii3Jg4?usp=sharing), and stick it in `models/model_4`.
+
+If the program never finds any bounding boxes, there's a good chance you forgot this step.
 
 ## Using this application:
 
