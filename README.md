@@ -2,7 +2,7 @@
 
 ## Installation instructions:
 
-#### Mac
+### Mac
 
 Install `homebrew` by following the instructions [here](https://brew.sh/).
 
@@ -25,7 +25,7 @@ You can greatly improve the performance of this application by tweaking Darknet'
 
 `cd` into the `darknet` directory, then run `make`.
 
-#### Linux
+### Linux
 
 Use your package manager to install the following packages:
 - `python3`
@@ -51,7 +51,7 @@ You can greatly improve the performance of this application by tweaking Darknet'
 
 `cd` into the `darknet` directory, then run `make`.
 
-#### Windows
+### Windows
 
 (This is copied almost verbatim from [here](https://github.com/AlexeyAB/darknet/blob/master/README.md).)
 
@@ -77,9 +77,9 @@ That last command might take a long time to finish. Once it's done, clone this r
 .\build.ps1
 ```
 
-### Download the model
+## Downloading the model:
 
-Download `model_4.weights` from [here](https://drive.google.com/drive/folders/1oHpzVVqVL67unqOnrObX49XkeUii3Jg4?usp=sharing), and stick it in `models/model_4`.
+Download `model_4.weights` from [here](https://drive.google.com/drive/folders/1oHpzVVqVL67unqOnrObX49XkeUii3Jg4?usp=sharing), and stick it in `models/model_4`. If the program never finds any bounding boxes, there's a good chance you forgot this step.
 
 ## Using this application:
 
