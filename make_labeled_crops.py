@@ -106,7 +106,7 @@ def parse_yolo_input(label_file, classes_file, image):
             classification = classifications[int(classification)]
         else:
             classification = "cell"
-        cells.append(BioObject(int(x - width / 2), int(y - height / 2), int(x + width / 2), int(y + height / 2), id, classification))
+        cells.append(BioObject(int(x - width / 2), int(y - height / 2), int(x + width / 2), int(y + height / 2), obj_id, classification))
         obj_id += 1
 
     return cells

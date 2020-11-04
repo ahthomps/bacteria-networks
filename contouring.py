@@ -19,7 +19,7 @@ def compute_all_cell_bbox_overlaps(cells):
                 cell2.overlapping_bboxes.append(cell1)
 
 
-def compute_cell_contours(binary_image, bio_objects):
+def compute_cell_contours(binary_image, bio_objects, image):
     """ Takes a binary image and corresponding bounding boxes and returns a list of
         cell contours, [np.array]"""
 
@@ -32,8 +32,17 @@ def compute_cell_contours(binary_image, bio_objects):
     # finds areas inside cells to start ballooning
     compute_all_cell_bbox_overlaps(cells)
     for cell in cells:
-        cell.get_cell_center(binary_image)
-    # initial_level_sets = find_balloon_ils(binary_image, bounding_boxes)
+        cell.get_cell_center(image)
+
+    for cell in cells:
+        if cell.overlapping_bboxes == []:
+            continue
+        cell.compute_cell_contour(image)
+
+    return
+
+    # old way
+
     binary_image = util.img_as_float(binary_image)
 
     for i, cell in enumerate(cells):

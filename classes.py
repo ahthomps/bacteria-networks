@@ -4,7 +4,8 @@
 
 from copy import deepcopy
 import numpy as np
-from skimage import measure
+from skimage import measure, filters, morphology, color
+import matplotlib.pyplot as plt
 
 class NetworkEdge:
     def __init__(self, tail, head, nanowire=None):
@@ -45,9 +46,9 @@ class BioObject:
         self.y1 = y1
         self.x2 = x2
         self.y2 = y2
-        self.contour = None
         self.classification = classification
         self.cell_center = (0, 0)
+        self.contour = None
         # list of the adjacent cells in the cells list
         self.adj_list = []
         # list of the edges this cell participates in
@@ -107,18 +108,35 @@ class BioObject:
 
         return False, False
 
-    def get_cell_center(self, binary_image):
-        """ adapted code from contouring.py, finds some point in a cell """
-        image_working = deepcopy(binary_image)
-        # removes all other cells so only bright spots are cell in question
-        for overlap_box in self.overlapping_bboxes:
-            image_working[overlap_box.y1:overlap_box.y2 + 1, overlap_box.x1:overlap_box.x2 + 1] = 0
-
+    def compute_subimage_labels_and_region_data(self, image):
         # creates an np.array image of just the current bbox
-        subimage = np.asarray(image_working[self.y1:self.y2 + 1, self.x1:self.x2 + 1])
-        # if cell completely overlapped by other bboxes, use binary_image
-        if not subimage.any():
-            subimage = np.asarray(binary_image[self.y1:self.y2 + 1, self.x1:self.x2 + 1])
+        subimage = np.asarray(image[self.y1:self.y2 + 1, self.x1:self.x2 + 1])
+        # makes the image binary using li thresholding method
+        threshold = filters.threshold_li(subimage)
+        subimage = subimage > threshold
+        if self.is_cell():
+            subimage = morphology.erosion(subimage)
+            subimage = morphology.dilation(subimage)
+        self.subimage_labels = measure.label(subimage, connectivity=2)
+        self.subimage_regions = measure.regionprops(self.subimage_labels)
+
+    def get_cell_center(self, image):
+        """ finds some point in the cell"""
+        placeholder_image = np.zeros(image.shape, dtype=np.uint8)
+
+        subimage = np.asarray(image[self.y1:self.y2 + 1, self.x1:self.x2 + 1])
+
+        threshold = filters.threshold_li(subimage)
+        subimage = subimage > threshold
+
+        placeholder_image[self.y1:self.y2 + 1, self.x1:self.x2 + 1] = subimage
+
+        for overlap_box in self.overlapping_bboxes:
+            placeholder_image[overlap_box.y1:overlap_box.y2 + 1, overlap_box.x1:overlap_box.x2 + 1] = 0
+
+        if np.any(placeholder_image[self.y1:self.y2 + 1, self.x1:self.x2 + 1]):
+            subimage = placeholder_image[self.y1:self.y2 + 1, self.x1:self.x2 + 1]
+
         # finds connected bright regions (foreground)
         labels_mask = measure.label(subimage, connectivity=2)
         # determines quantitative properties of each region of brightness
@@ -129,6 +147,49 @@ class BioObject:
         y, x = map(int, regions[0].centroid) # subimage ils bbox
         # find cell center in original image
         self.cell_center = (self.x1 + x, self.y1 + y)
+
+
+    def compute_cell_contour(self, image):
+        assert(self.is_cell() and self.subimage_labels is not None)
+        # subimage = np.asarray(image[self.y1:self.y2 + 1, self.x1:self.x2 + 1])
+        # subimage_binary_plot = plt.imshow(subimage, cmap='gray')
+        # plt.show()
+        # fig, ax = filters.try_all_threshold(subimage, figsize=(10, 8), verbose=False)
+        # plt.show()
+
+        # subimage = np.asarray(image[self.y1:self.y2 + 1, self.x1:self.x2 + 1])
+        # threshold = filters.threshold_li(subimage)
+        # subimage = subimage > threshold
+        # subimage = morphology.erosion(subimage)
+        # subimage = morphology.dilation(subimage)
+        # subimage_binary_plot = plt.imshow(subimage, cmap='gray')
+        # plt.show()
+        #
+        # labels_mask = measure.label(subimage, connectivity=2)
+        # image_labels_plt = plt.imshow(labels_mask, cmap='gray')
+        # plt.show()
+        # regions = measure.regionprops(labels_mask)
+        self.subimage_regions.sort(key=lambda x: x.area, reverse=True)
+        largest_region_label = self.subimage_regions[0].label
+        subimage_contour = self.subimage_labels == largest_region_label
+        # largest_region_plt = plt.imshow(largest_region, cmap='gray')
+        # plt.show()
+        contour = np.zeros(image.shape, dtype=np.uint8)
+
+        # contour[self.y1:self.y1 + len(largest_region), self.x1:self.x1 + len(largest_region[0])] = regions[0].image
+        contour[self.y1:self.y2 + 1, self.x1:self.x2 + 1] = subimage_contour
+        self.contour = contour
+
+    def compute_nanowire_contour(self, image):
+        assert(self.is_nanowire() and self.subimage_labels is not None)
+        self.subimage_regions.sort(key=lambda x: x.bbox_area, reverse=True)
+        nanowire_label = self.subimage_regions[0].label
+        subimage_contour = self.subimage_labels == nanowire_label
+        contour = np.zeros(image.shape, dtype=np.uint8)
+        contour[self.y1:self.y2 + 1, self.x1:self.x2 + 1] = subimage_contour
+        self.contour = contour
+
+
 
     def __str__(self):
         return f"{self.classification}: {self.x1} {self.y1} {self.x2} {self.y2}"

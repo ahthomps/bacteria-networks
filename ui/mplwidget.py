@@ -23,6 +23,7 @@ class MplWidget(QWidget):
 
         self.bbox_gid = 'bbox'
         self.contour_gid = 'contour'
+        self.cell_center_gid = 'cell_center'
 
     def clear_canvas(self):
         self.canvas.axes.cla()
@@ -44,6 +45,12 @@ class MplWidget(QWidget):
             self.canvas.axes.plot([obj.x1, obj.x2], [obj.y2, obj.y2], color=color, linestyle='dashed', marker='o', gid=self.bbox_gid)
             self.canvas.axes.plot([obj.x1, obj.x1], [obj.y1, obj.y2], color=color, linestyle='dashed', marker='o', gid=self.bbox_gid)
             self.canvas.axes.plot([obj.x2, obj.x2], [obj.y1, obj.y2], color=color, linestyle='dashed', marker='o', gid=self.bbox_gid)
+        self.canvas.draw()
+
+    def draw_cell_centers(self, bio_objects):
+        for obj in bio_objects:
+            if obj.is_cell():
+                self.canvas.axes.plot(obj.cell_center[0], obj.cell_center[1], color='red', marker='o', gid=self.cell_center_gid)
         self.canvas.draw()
 
     def draw_cell_contours(self, cells):
@@ -82,17 +89,6 @@ class MplWidget(QWidget):
                     else:
                         self.canvas.axes.plot([x1, x2], [y1, y2], color='red', marker='o', gid='edge')
         self.canvas.draw()
-
-        # for obj in bio_objects:
-        #     if obj.is_nanowire() or obj.is_surface():
-        #         continue
-        #     cell = obj
-        #     (x1, y1) = cell.cell_center
-        #     for adj_cell in cell.adj_list:
-        #         if adj_cell.id > cell.id:
-        #             (x2, y2) = adj_cell.cell_center
-        #             self.canvas.axes.plot([x1, x2], [y1, y2], color='red', marker='o', gid='edge')
-        # self.canvas.draw()
 
     def remove_cell_bounding_boxes(self):
         for child in self.canvas.axes.get_children():
