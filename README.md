@@ -47,7 +47,7 @@ You can greatly improve the performance of this application by tweaking Darknet'
 
 0. Install `git`, `python3`, and `pip3`.
 
-1. Install Visual Studio 2017 or 2019. You can download it [here](http://visualstudio.com).
+1. Install Visual Studio 2017 or 2019. You can download it [here](http://visualstudio.com). Be sure to install all of the optional C++ extensions.
 
 2. If you have a modern Nvidia GPU, install CUDA (at least v10.0) enabling VS Integration during installation. You can download it [here](https://developer.nvidia.com/cuda-downloads).
 
