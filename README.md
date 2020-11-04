@@ -17,7 +17,7 @@ Install `homebrew` by following the instructions [here](https://brew.sh/).
 
 Clone this repository by running `git clone --recurse-submodules --depth 1 https://github.com/ahthomps/bacteria-networks.git`.
 
-You can greatly improve the performance of this application by tweaking Darknet's makefile. If your CPU was manufactured after 2011, you should set `AVX=1`. If you installed `libomp`, set `OPENMP=1`.
+You'll need to edit `Makefile` in the `darknet` directory of this repository. If your CPU was manufactured after 2011, you should set `AVX=1`. If you installed `libomp`, set `OPENMP=1`. Now, do a find and replace across the file replacing all instance of `gcc` with `gcc-10` and all instance of `g++` with `g++-10`.
 
 `cd` into the `darknet` directory, then run `make`.
 
