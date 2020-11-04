@@ -85,10 +85,10 @@ Download `model_4.weights` from [here](https://drive.google.com/drive/folders/1o
 
 Run `python3 run.py`.
 
-File->Open->Image, then choose an image.
+File -> Open -> Image, then choose an image.
 
-Run->YOLO
+Run -> YOLO
 
-Run->Process Image
+Run -> Process Image
 
-Run->Contour
+Run -> Contour
