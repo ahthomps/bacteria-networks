@@ -6,3 +6,7 @@ all_cell_images
 *.backup
 predictions.jpg
 bad.list
+*.jpg
+*.jpeg
+*.tif
+*.tiff
