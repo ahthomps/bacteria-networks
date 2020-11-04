@@ -14,15 +14,13 @@ Clone this repository by running `git clone --recurse-submodules --depth 1 https
 
 ### Configure the makefile and compile Darknet
 
-You can greatly improve the performance of this application by tweaking Darknet's makefile. You probably want to set `GPU=1`, and `CUDNN=1`. If you aren't using a GPU, you will get better performance by seting `AVX=1` (speeds up vector math) and `OPENMP=1` (enables parallel processing). In order to use OpenMP, you'll need to install OpenMP.
+You can greatly improve the performance of this application by tweaking Darknet's makefile. If you have a CUDA-enabled GPU, and you have CUDA installed, set `GPU=1`. If you also have cuDNN installed, set `CUDNN=1`. If you aren't using a GPU, and your CPU was manufactured after 2011, you should set `AVX=1`.
 
-Run `cd darknet; make`.
+`cd` into the `darknet` directory, then run `make`.
 
 ### Download the model
 
 Download `model_4.weights` from [here](https://drive.google.com/drive/folders/1oHpzVVqVL67unqOnrObX49XkeUii3Jg4?usp=sharing), and stick it in `models/model_4`.
-
-### That's it!
 
 ## Using this application:
 
