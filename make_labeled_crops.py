@@ -8,14 +8,17 @@ from copy import deepcopy
 from os import listdir
 import subprocess
 from classes import *
+from multiprocessing import cpu_count
 
 TILE_OVERLAP = 3 # 2 -> 50% overlap, 3 -> 33% overlap, etc.
 TILE_SIZE = 416
-IMAGE_EXTENSIONS = (".tiff", ".tif", ".png", ".jpg", ".jpeg", ".gif")
+IMAGE_EXTENSIONS = (".tiff", ".tif", ".png", ".jpg", ".jpeg", ".gif", ".bmp")
 
-DATA_PATH = "darknet_orig/model_3/obj.data"
-CFG_PATH = "darknet_orig/model_3/test.cfg"
-WEIGHTS_PATH = "darknet_orig/backup/model_3.weights"
+DARKNET_BINARY_PATH = "darknet/darknet"
+DATA_PATH = "models/model_4/obj.data"
+CFG_PATH = "models/model_4/test.cfg"
+WEIGHTS_PATH = "models/model_4/model_4.weights"
+YOLO_OPTIONS = ["-ext_output", "-dont_show"]
 
 def make_tiles(img, filename):
     """ img: A PIL.Image to be tiled.
@@ -72,18 +75,18 @@ def reunify_tiles(tiles, full_image=None):
     return full_tile
 
 def run_yolo_on_images(filenames):
-    output = subprocess.run(["darknet_orig/darknet", "detector", "test", DATA_PATH, CFG_PATH, WEIGHTS_PATH],
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.DEVNULL,
-                            input="\n".join(filenames).encode("UTF-8")).stdout
-    return str(output, "UTF-8")
+    return subprocess.run([DARKNET_BINARY_PATH, "detector", "test", DATA_PATH, CFG_PATH, WEIGHTS_PATH, *YOLO_OPTIONS],
+                          stdout=subprocess.PIPE,
+                          stderr=subprocess.DEVNULL,
+                          encoding="UTF-8",
+                          input="\n".join(filenames)).stdout
 
 def parse_yolo_input(label_file, classes_file, image):
     """ Reads from a yolo training file and returns a list of BoundingBox objects.
         Also takes the labels' image so we can convert from relative to px. """
     cells = []
     classifications = []
-    id = 1
+    obj_id = 1
     if classes_file is not None:
         for line in classes_file.readlines():
             classifications.append(line.rstrip())
@@ -104,30 +107,35 @@ def parse_yolo_input(label_file, classes_file, image):
         else:
             classification = "cell"
         cells.append(BioObject(int(x - width / 2), int(y - height / 2), int(x + width / 2), int(y + height / 2), id, classification))
-        id += 1
+        obj_id += 1
 
     return cells
 
 def parse_yolo_output(yolo_output):
     """ Takes a string (probably stdout from running yolo) and returns a list of lists of BioObject objects.
         Each sublist corresponds to one input file."""
-    print(yolo_output)
-    cells = []
-    cell_id = 1
-    for line in yolo_output.splitlines():
-        if line.startswith("Enter Image Path:"):
-            cells.append([])
-        else:
-            tokens = line.split()
-            classification = tokens[0]
-            confidence = int(tokens[1]) # Not used yet
-            xmin = int(tokens[2])
-            ymin = int(tokens[3])
-            xmax = int(tokens[4])
-            ymax = int(tokens[5])
-            cells[-1].append(BioObject(xmin, ymin, xmax, ymax, cell_id, classification))
-            cell_id += 1
 
-    if len(cells) > 0 and cells[-1] == []:
-        cells.pop()
-    return cells
+    bio_objs = []
+    bio_obj_id = 1
+    in_an_image = False
+    for line in yolo_output.splitlines():
+        if line.endswith("milli-seconds."): # Starting a new image
+            bio_objs.append([])
+            in_an_image = True
+        elif line.startswith("Enter Image Path:"): # It's asking for another image, so this one is done
+            in_an_image = False
+        elif in_an_image:
+            tokens = line.split()
+            classification = tokens[0][:-1] # Slice because this will have a ':' stuck on the end
+            confidence = tokens[1] # Not used yet
+            xmin = int(tokens[3])
+            ymin = int(tokens[5])
+            width = int(tokens[7])
+            height = int(tokens[9][:-1]) # Slice because this will have a ')' stuck on the end
+            bio_objs[-1].append(BioObject(xmin, ymin, xmin + width, ymin + height, bio_obj_id, classification))
+            bio_obj_id += 1
+
+    if len(bio_objs) > 0 and bio_objs[-1] == []:
+        bio_objs.pop()
+
+    return bio_objs
