@@ -276,7 +276,9 @@ class MainWindow(QMainWindow):
         self.actionBounding_Boxes.setEnabled(True)
         self.actionBounding_Boxes.setChecked(True)
         # enable image processing
-        self.actionProcess_Image.setEnabled(True)
+        # self.actionProcess_Image.setEnabled(True)
+        # enable edge detection
+        self.actionEdge_Detection.setEnabled(True)
 
         # allow user to view cell counts
         self.CellCounter.setText('Cell Count: ' + str(self.getCellCount()))
