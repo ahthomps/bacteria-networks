@@ -10,7 +10,7 @@ import networkx as nx
 import pickle
 import collections
 
-from bio_object import BioObject, compute_subimage_labels_and_region_data
+from bio_object import BioObject, compute_all_cell_bbox_overlaps, compute_nanowire_to_cell_bbox_overlaps, compute_cell_center
 from crop_processing import Tile, make_tiles, IMAGE_EXTENSIONS, reunify_tiles
 from yolo import parse_yolo_input, parse_yolo_output, run_yolo_on_images
 from edge_detection import compute_cell_contact, compute_nanowire_edges
@@ -110,6 +110,13 @@ class ProgramManager:
             self.cells += []
         else:
             self.cells += cell_lists[0]
+
+    def compute_bbox_overlaps_and_cell_centers(self):
+        compute_all_cell_bbox_overlaps(self.cells)
+        compute_nanowire_to_cell_bbox_overlaps(self.cells)
+        for obj in self.cells:
+            if obj.is_cell():
+                compute_cell_center(obj, self.image)
 
     def crop(self):
         # Make the crops directory
