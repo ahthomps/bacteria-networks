@@ -13,9 +13,9 @@ def compute_all_cell_bbox_overlaps(cells):
         for j in range(i + 1, len(cells)):
             cell2 = cells[j]
 
-            if cell1.bbox_overlaps_with_other_bbox(cell2)[0]:
+            if cell1.bbox_overlaps_with_other_bbox(cell2):
                 cell1.overlapping_bboxes.append(cell2)
-            if cell2.bbox_overlaps_with_other_bbox(cell1)[0]:
+            if cell2.bbox_overlaps_with_other_bbox(cell1):
                 cell2.overlapping_bboxes.append(cell1)
 
 

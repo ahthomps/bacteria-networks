@@ -23,9 +23,9 @@ def compute_all_cell_bbox_overlaps(bio_objects):
             if not cell2.is_cell():
                 continue
 
-            if cell1.bbox_overlaps_with_other_bbox(cell2)[0]:
+            if cell1.bbox_overlaps_with_other_bbox(cell2):
                 cell1.overlapping_bboxes.append(cell2)
-            if cell2.bbox_overlaps_with_other_bbox(cell1)[0]:
+            if cell2.bbox_overlaps_with_other_bbox(cell1):
                 cell2.overlapping_bboxes.append(cell1)
 
 def compute_cell_contact(bio_objects, image):
@@ -66,8 +66,7 @@ def compute_nanowire_to_cell_bbox_overlaps(nanowires, bio_objects, canvas):
                 continue
 
             # want overlaps where nanowire and cell partially overlap or cell completely overlaps nanowire
-            partially_overlaps, nanowire_is_contained_in_cell = nanowire.bbox_overlaps_with_other_bbox(cell)
-            if partially_overlaps or nanowire_is_contained_in_cell:
+            if nanowire.bbox_overlaps_with_other_bbox(cell) or nanowire.bbox_is_contained_in_other_bbox(cell):
                 nanowire.overlapping_bboxes.append(cell)
 
                 # for testing purposes:
@@ -130,8 +129,8 @@ def compute_nanowire_edges(bio_objects, canvas, image, binary_image):
             intersections = []
             for cell in nanowire.overlapping_bboxes:
                 if cell.contour is None:
-                    cell.compute_cell_contour(image)
-                if np.logical_and(cell.contour, nanowire.contour, dtype=np.int8).any():
+                    compute_contour(cell, image)
+                if np.logical_and(cell.contour, nanowire.contour, dtype=np.uint8).any():
                     intersections.append(cell)
 
             print("intersections length: ", len(intersections))
@@ -144,17 +143,3 @@ def compute_nanowire_edges(bio_objects, canvas, image, binary_image):
                 cell1 = intersections[0]
                 add_edge(cell1, surface, nanowire)
                 cell1.edge_list[-1].set_type_as_cell_to_surface()
-
-
-
-
-
-
-
-
-
-
-
-
-
-# end

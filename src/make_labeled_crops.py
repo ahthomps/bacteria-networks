@@ -7,7 +7,7 @@ from PIL import Image
 from copy import deepcopy
 from os import listdir
 import subprocess
-from classes import *
+from classes import Tile
 from bio_object import BioObject
 from multiprocessing import cpu_count
 
