@@ -3,6 +3,40 @@ import numpy as np
 from skimage import measure, filters, morphology, color
 import matplotlib.pyplot as plt
 
+def compute_all_cell_bbox_overlaps(bio_objects):
+    """ Computes the overlaps of the bounding boxes containing cells. """
+    for i in range(len(bio_objects) - 1):
+        cell1 = bio_objects[i]
+        if not cell1.is_cell():
+            continue
+
+        for j in range(i + 1, len(bio_objects)):
+            cell2 = bio_objects[j]
+            if not cell2.is_cell():
+                continue
+
+            if cell1.bbox_overlaps_with_other_bbox(cell2):
+                cell1.overlapping_bboxes.append(cell2)
+            if cell2.bbox_overlaps_with_other_bbox(cell1):
+                cell2.overlapping_bboxes.append(cell1)
+
+
+def compute_nanowire_to_cell_bbox_overlaps(bio_objects):
+    """ Computes the overlaps between nanowires and cells. Stores the overlaps in the nanowire
+        objects only. """
+    for nanowire in bio_objects:
+        if not nanowire.is_nanowire():
+            continue
+        for cell in bio_objects:
+            # only looking at nanowire to cell overlaps, skip nanowires
+            if not cell.is_cell():
+                continue
+
+            # want overlaps where nanowire and cell partially overlap or cell completely overlaps nanowire
+            if nanowire.bbox_overlaps_with_other_bbox(cell) or nanowire.bbox_is_contained_in_other_bbox(cell):
+                nanowire.overlapping_bboxes.append(cell)
+
+
 def compute_cell_center(bio_obj, image):
     """ finds some point in the cell"""
     placeholder_image = np.zeros(image.shape, dtype=np.uint8)
@@ -124,18 +158,24 @@ class BioObject:
 
     def bbox_overlaps_with_other_bbox(self, other):
         """ Returns True if the bboxes of self and other overlap, False otherwise """
+
+        x1 = self.x1 - 5
+        x2 = self.x2 + 5
+        y1 = self.y1 - 5
+        y2 = self.y2 + 5
+
         for point in other.compute_corners():
             x, y = point
-            if self.x1 <= x <= self.x2 and self.y1 <= y <= self.y2:
+            if x1 <= x <= x2 and y1 <= y <= y2:
                 return True
 
         # other intersects through top and/or bottom of self
-        if (self.x1 <= other.x1 <= self.x2 or self.x1 <= other.x2 <= self.x2) and other.y1 <= self.y1 <= self.y2 <= other.y2:
+        if (x1 <= other.x1 <= x2 or x1 <= other.x2 <= x2) and other.y1 <= y1 <= y2 <= other.y2:
             return True
         # other intersects through right and/or
-        elif (self.y1 <= other.y1 <= self.y2 or self.y1 <= other.y2 <= self.y2) and other.x1 <= self.x1 <= self.x2 <= other.x2:
+        elif (y1 <= other.y1 <= y2 or y1 <= other.y2 <= y2) and other.x1 <= x1 <= x2 <= other.x2:
             return True
-        elif self.x1 <= other.x1 <= other.x2 <= self.x2 and self.y1 <= other.y1 <= other.y2 <= self.y2:
+        elif x1 <= other.x1 <= other.x2 <= x2 and y1 <= other.y1 <= other.y2 <= y2:
             return True
 
         return False

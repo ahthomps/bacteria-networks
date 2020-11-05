@@ -38,28 +38,6 @@
     <property name="autoFillBackground">
      <bool>false</bool>
     </property>
-    <widget class="SliderWidget" name="SliderWidget" native="true">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>0</y>
-       <width>200</width>
-       <height>271</height>
-      </rect>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>200</width>
-       <height>150</height>
-      </size>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>200</width>
-       <height>16777215</height>
-      </size>
-     </property>
-    </widget>
     <widget class="QPushButton" name="BaddCell">
      <property name="geometry">
       <rect>
@@ -179,14 +157,7 @@
     <property name="title">
      <string>File</string>
     </property>
-    <widget class="QMenu" name="menuOpen">
-     <property name="title">
-      <string>Open</string>
-     </property>
-     <addaction name="actionImage"/>
-     <addaction name="actionLabel"/>
-    </widget>
-    <addaction name="menuOpen"/>
+    <addaction name="actionImage"/>
     <addaction name="separator"/>
     <addaction name="actionSave"/>
     <addaction name="actionSave_As"/>
@@ -220,12 +191,7 @@
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionImage">
    <property name="text">
-    <string>Image</string>
-   </property>
-  </action>
-  <action name="actionLabel">
-   <property name="text">
-    <string>Label</string>
+    <string>Open Image</string>
    </property>
   </action>
   <action name="actionSave">
@@ -319,13 +285,7 @@
    <extends>QWidget</extends>
    <header>ui/mplwidget.h</header>
    <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>SliderWidget</class>
-   <extends>QWidget</extends>
-   <header>ui/sliderwidget.h</header>
-   <container>1</container>
-  </customwidget>
+</customwidget>
  </customwidgets>
  <resources/>
  <connections/>
