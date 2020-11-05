@@ -6,5 +6,6 @@ from main_window import MainWindow
 from PyQt5.QtWidgets import QApplication
 
 app = QApplication([])
-MainWindow().show()
+mainwindow = MainWindow()
+mainwindow.show()
 app.exec_()
