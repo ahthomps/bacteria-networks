@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import QMainWindow, QFileDialog
 from PyQt5.uic import loadUi
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
 from program_manager import ProgramManager
+import pickle
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -91,9 +92,6 @@ class MainWindow(QMainWindow):
             return
         self.MplWidget.draw_image(self.program_manager.image)
 
-        self.actionSave.setEnabled(True)
-        self.actionSave_As.setEnabled(True)
-
         # disable importing new images
         self.actionImage.setEnabled(False)
         # enable finding bboxes
@@ -149,6 +147,9 @@ class MainWindow(QMainWindow):
         # to manually label the image
         self.compute_cell_network_edges_and_display()
         self.toggle_labeling_buttons(True)
+
+        self.actionSave.setEnabled(True)
+        self.actionSave_As.setEnabled(True)
 
     """ ---------------------- IMAGE PROCESSSING ---------------------------- """
 
