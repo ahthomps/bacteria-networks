@@ -26,7 +26,7 @@ class Tile:
         # This will store all the (potentially partial) bounding boxes that overlap this tile.
         # Their coordinates are relative to this tile.
         # (i.e. if a bounding box starts on the left edge of this tile, its x1 is 0)
-        self.cells = []
+        self.bio_objs = []
 
         # This will be used as a unique identifier for this crop.
         self.filename_no_ext = f"{filename_no_ext}_{self.x1}_{self.y1}"
@@ -50,7 +50,7 @@ class Tile:
         cell.y1 = max(cell.y1, self.y1) - self.y1
         cell.x2 = min(cell.x2, self.x2) - self.x1
         cell.y2 = min(cell.y2, self.y2) - self.y1
-        self.cells.append(cell)
+        self.bio_objs.append(cell)
 
     def save(self, directory="."):
         """ Saves this tile as a cropped image and (potentially) an associated label file.
@@ -91,7 +91,7 @@ def reunify_tiles(tiles, full_image):
     full_tile = Tile(full_image, 0, 0, *full_image.size, "full_image")
 
     for tile in tiles:
-        for cell in tile.cells:
+        for cell in tile.bio_objs:
             # If the center of the bounding box is in the confidence region of this tile
             if in_confidence_region(cell.center()):
                 # Then we add the bounding box to the big image

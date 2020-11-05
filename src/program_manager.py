@@ -22,7 +22,7 @@ class ProgramManager:
     def __init__(self):
         self.image = np.array([])
         self.original_image = np.array([])
-        self.cells = []
+        self.bio_objs = []
 
         self.made_crops = False
 
@@ -50,7 +50,7 @@ class ProgramManager:
                 self.image = self.image[:i]
                 break
 
-        self.cells.append(BioObject(0, 0, len(self.image[0]), len(self.image), 0, "surface"))
+        self.bio_objs.append(BioObject(0, 0, len(self.image[0]), len(self.image), 0, "surface"))
 
         if self.image.shape[0] > TILE_SIZE or self.image.shape[1] > TILE_SIZE:
             self.crop()
@@ -67,7 +67,7 @@ class ProgramManager:
             print("using classifications {}".format(classes_file_path))
         self.label_path = path
         label_ofile = open(self.label_path)
-        self.cells += parse_yolo_input(label_ofile, classes_ofile, self.original_image)
+        self.bio_objs += parse_yolo_input(label_ofile, classes_ofile, self.original_image)
 
     def get_save_loc(self, ext):
         path, _ = QFileDialog.getSaveFileName(None, 'Save File', "", ext)
@@ -102,14 +102,14 @@ class ProgramManager:
             for i in range(len(filenames)):
                 xmin, ymin = top_left_corners[i]
                 tile = Tile(Image.open(paths[i]), xmin, ymin, xmin + TILE_SIZE, ymin + TILE_SIZE, filenames[i])
-                tile.cells = cell_lists[i]
+                tile.bio_objs = cell_lists[i]
                 tiles.append(tile)
             full_tile = reunify_tiles(tiles, full_image=Image.fromarray(self.image))
-            self.cells += full_tile.cells
+            self.bio_objs += full_tile.bio_objs
         elif cell_lists == []:
-            self.cells += []
+            self.bio_objs += []
         else:
-            self.cells += cell_lists[0]
+            self.bio_objs += cell_lists[0]
 
     def crop(self):
         # Make the crops directory
@@ -131,5 +131,5 @@ class ProgramManager:
                 tile.save(directory=CROP_DIR)
 
     def compute_cell_network_edges(self, canvas):
-        compute_cell_contact(self.cells, self.image)
-        compute_nanowire_edges(self.cells, canvas, self.image)
+        compute_cell_contact(self.bio_objs, self.image)
+        compute_nanowire_edges(self.bio_objs, canvas, self.image)

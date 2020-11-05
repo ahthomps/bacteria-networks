@@ -70,13 +70,14 @@ class MainWindow(QMainWindow):
         self.set_default_enablements()
 
     def on_canvas_press(self, event):
-        print("press")
-        print("event.xdata", event.xdata)
-        print("event.ydata", event.ydata)
-        print("event.inaxes", event.inaxes)
-        print("x", event.x)
-        print("y", event.y)
-        self.MplWidget.draw_point(event.xdata, event.ydata)
+        ...
+        # print("press")
+        # print("event.xdata", event.xdata)
+        # print("event.ydata", event.ydata)
+        # print("event.inaxes", event.inaxes)
+        # print("x", event.x)
+        # print("y", event.y)
+        # self.MplWidget.draw_point(event.xdata, event.ydata)
 
     def toggle_labeling_buttons(self, on):
         if on:
@@ -103,7 +104,7 @@ class MainWindow(QMainWindow):
         self.program_manager.open_label_file()
         if self.program_manager.label_path == "":
             return
-        self.MplWidget.draw_cell_bounding_boxes(self.program_manager.cells)
+        self.MplWidget.draw_cell_bounding_boxes(self.program_manager.bio_objs)
 
         # disable finding bounding boxes
         self.actionLabel.setEnabled(False)
@@ -124,7 +125,7 @@ class MainWindow(QMainWindow):
         self.program_manager.compute_bounding_boxes()
 
         self.MplWidget.draw_image(self.program_manager.image)
-        self.MplWidget.draw_cell_bounding_boxes(self.program_manager.cells)
+        self.MplWidget.draw_cell_bounding_boxes(self.program_manager.bio_objs)
 
         # disable finding bounding boxes
         self.actionLabel.setEnabled(False)
@@ -213,7 +214,7 @@ class MainWindow(QMainWindow):
     def compute_cell_contours_and_display(self):
         self.program_manager.compute_cell_contours()
         self.MplWidget.remove_cell_bounding_boxes()
-        self.MplWidget.draw_cell_contours(self.program_manager.cells)
+        self.MplWidget.draw_cell_contours(self.program_manager.bio_objs)
         self.MplWidget.draw_image(self.program_manager.image)
 
         # disable contouring
@@ -233,7 +234,7 @@ class MainWindow(QMainWindow):
 
     def compute_cell_network_edges_and_display(self):
         self.program_manager.compute_cell_network_edges(self.MplWidget.canvas)
-        self.MplWidget.draw_cell_network_edges(self.program_manager.cells)
+        self.MplWidget.draw_cell_network_edges(self.program_manager.bio_objs)
 
         # disable edge detection
         self.actionEdge_Detection.setEnabled(False)
@@ -248,20 +249,20 @@ class MainWindow(QMainWindow):
 
     def handle_cell_bounding_boxes_view_press(self):
         if self.actionBounding_Boxes.isChecked():
-            self.MplWidget.draw_cell_bounding_boxes(self.program_manager.cells)
+            self.MplWidget.draw_cell_bounding_boxes(self.program_manager.bio_objs)
         else:
             self.MplWidget.remove_cell_bounding_boxes()
 
     def handle_cell_contours_view_press(self):
         if self.actionContour_view.isChecked():
-            self.MplWidget.draw_cell_contours(self.program_manager.cells)
+            self.MplWidget.draw_cell_contours(self.program_manager.bio_objs)
         else:
             self.MplWidget.remove_cell_contours()
 
     """------------------ UTILITIES -----------------------------"""
 
     def get_cell_count(self):
-        return sum(bio_object.is_cell() for bio_object in self.program_manager.cells)
+        return sum(bio_object.is_cell() for bio_object in self.program_manager.bio_objs)
 
     def convert_to_gephi_and_export(self):
         # get the path and make sure it's good
@@ -277,7 +278,7 @@ class MainWindow(QMainWindow):
         # initialize graph
         G = nx.Graph()
         # snag the cells
-        cells = self.program_manager.cells
+        cells = self.program_manager.bio_objs
 
         # add all nodes
         for bioObject in cells:
@@ -328,6 +329,6 @@ class MainWindow(QMainWindow):
         self.CellCounter.setVisible(True)
         self.actionContour_view.setEnabled(True)
         self.actionContour_view.setChecked(False)
-        self.MplWidget.draw_cell_centers(self.program_manager.cells)
+        self.MplWidget.draw_cell_centers(self.program_manager.bio_objs)
         self.actionExport_to_Gephi.setEnabled(True)
-        self.MplWidget.draw_cell_network_edges(self.program_manager.cells)
+        self.MplWidget.draw_cell_network_edges(self.program_manager.bio_objs)

@@ -17,7 +17,7 @@ def run_yolo_on_images(filenames):
 def parse_yolo_input(label_file, classes_file, image):
     """ Reads from a yolo training file and returns a list of BoundingBox objects.
         Also takes the labels' image so we can convert from relative to px. """
-    cells = []
+    bio_objs = []
     classifications = []
     obj_id = 1
     if classes_file is not None:
@@ -39,10 +39,10 @@ def parse_yolo_input(label_file, classes_file, image):
             classification = classifications[int(classification)]
         else:
             classification = "cell"
-        cells.append(BioObject(int(x - width / 2), int(y - height / 2), int(x + width / 2), int(y + height / 2), obj_id, classification))
+        bio_objs.append(BioObject(int(x - width / 2), int(y - height / 2), int(x + width / 2), int(y + height / 2), obj_id, classification))
         obj_id += 1
 
-    return cells
+    return bio_objs
 
 def parse_yolo_output(yolo_output):
     """ Takes a string (probably stdout from running yolo) and returns a list of lists of BioObject objects.
