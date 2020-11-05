@@ -1,8 +1,35 @@
 import numpy as np
 from skimage import morphology, filters, exposure, segmentation, restoration, color, util, measure
-from classes import NetworkEdge
 from bio_object import compute_contour, compute_cell_center
 import matplotlib.pyplot as plt
+
+class NetworkEdge:
+    def __init__(self, tail, head, nanowire=None):
+        self.tail = tail
+        self.head = head
+        self.type = ""
+        self.nanowire = nanowire
+
+    def set_type_as_cell_contact(self):
+        self.type = "cell_contact"
+
+    def set_type_as_cell_to_cell(self):
+        self.type = "cell_to_cell"
+
+    def set_type_as_cell_to_surface(self):
+        self.type = "cell_to_surface"
+
+    def type_is_cell_contact(self):
+        return self.type == "cell_contact"
+
+    def type_is_cell_to_cell(self):
+        return self.type == "cell_to_cell"
+
+    def type_is_cell_to_surface(self):
+        return self.type == "cell_to_surface"
+
+    def __str__(self):
+        return f"{self.type}: {self.tail.id} {self.head.id}"
 
 def add_edge(obj1, obj2, nanowire=None):
     obj1.adj_list.append(obj2)
@@ -75,7 +102,7 @@ def compute_nanowire_to_cell_bbox_overlaps(nanowires, bio_objects, canvas):
     # canvas.draw()
 
 
-def compute_nanowire_edges(bio_objects, canvas, image, binary_image):
+def compute_nanowire_edges(bio_objects, canvas, image):
 
     nanowires = []
     for obj in bio_objects:

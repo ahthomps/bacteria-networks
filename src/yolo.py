@@ -1,79 +1,11 @@
-""" make_labeled_crops.py
-    Here, we define some functions for dealing with Tiles. This will probably get merged into something else as the project grows.
-"""
-
-import sys
-from PIL import Image
-from copy import deepcopy
-from os import listdir
 import subprocess
-from classes import Tile
 from bio_object import BioObject
-from multiprocessing import cpu_count
-
-TILE_OVERLAP = 3 # 2 -> 50% overlap, 3 -> 33% overlap, etc.
-TILE_SIZE = 416
-IMAGE_EXTENSIONS = (".tiff", ".tif", ".png", ".jpg", ".jpeg", ".gif", ".bmp")
 
 DARKNET_BINARY_PATH = "darknet/darknet"
 DATA_PATH = "models/model_4/obj.data"
 CFG_PATH = "models/model_4/test.cfg"
 WEIGHTS_PATH = "models/model_4/model_4.weights"
 YOLO_OPTIONS = ["-ext_output", "-dont_show"]
-
-def make_tiles(img, filename):
-    """ img: A PIL.Image to be tiled.
-        filename: A filename, usually the filename of img without its extension. """
-    tiles = []
-    for r in range(0, img.height, ((TILE_OVERLAP - 1) * TILE_SIZE) // TILE_OVERLAP):
-        for c in range(0, img.width, ((TILE_OVERLAP - 1) * TILE_SIZE) // TILE_OVERLAP):
-            x1, y1, x2, y2 = (r, c, r + TILE_SIZE, c + TILE_SIZE)
-            tiles.append(Tile(img.crop((x1, y1, x2, y2)), x1, y1, x2, y2, filename))
-
-    return tiles
-
-def save_tiles(tiles, output_dir):
-    """ tiles: A list of Tile objects. """
-    for tile in tiles:
-        tile.save(output_dir)
-
-def rebuild_original_image(tiles):
-    full_height = max(tiles, key=lambda tile: tile.y2).y2
-    full_width = max(tiles, key=lambda tile: tile.x2).x2
-
-    # Rebuild the original image
-    full_image = Image.new(mode="L", size=(full_width, full_height)) # mode "L" is for 8-bit greyscale
-    for tile in tiles:
-        full_image.paste(tile.img, box=(tile.x1, tile.y1, tile.x2, tile.y2))
-
-    return full_image
-
-def in_confidence_region(pt):
-    return TILE_SIZE // (2 * TILE_OVERLAP) <= pt[0] <= (2 * TILE_OVERLAP - 1) * TILE_SIZE // (2 * TILE_OVERLAP) \
-       and TILE_SIZE // (2 * TILE_OVERLAP) <= pt[1] <= (2 * TILE_OVERLAP - 1) * TILE_SIZE // (2 * TILE_OVERLAP)
-
-def reunify_tiles(tiles, full_image=None):
-    """ Takes all the tiles in tiles, and returns a new Tile object representing the untiled image. """
-
-    if full_image is None:
-        full_image = rebuild_original_image(tiles)
-
-    # This is not really a tile per se, but I want to use Tile's methods.
-    full_tile = Tile(full_image, 0, 0, *full_image.size, "full_image")
-
-    for tile in tiles:
-        for cell in tile.cells:
-            # If the center of the bounding box is in the confidence region of this tile
-            if in_confidence_region(cell.center()):
-                # Then we add the bounding box to the big image
-                new_cell = deepcopy(cell)
-                new_cell.x1 += tile.x1
-                new_cell.x2 += tile.x1
-                new_cell.y1 += tile.y1
-                new_cell.y2 += tile.y1
-                full_tile.add_cell(new_cell)
-
-    return full_tile
 
 def run_yolo_on_images(filenames):
     return subprocess.run([DARKNET_BINARY_PATH, "detector", "test", DATA_PATH, CFG_PATH, WEIGHTS_PATH, *YOLO_OPTIONS],

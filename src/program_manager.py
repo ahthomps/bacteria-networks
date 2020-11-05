@@ -10,11 +10,9 @@ import networkx as nx
 import pickle
 import collections
 
-from image_processing import process_image, DEFAULT_OPENINGS, DEFAULT_DILATIONS
-from contouring import compute_cell_contours
-from classes import Tile
 from bio_object import BioObject, compute_subimage_labels_and_region_data
-from make_labeled_crops import parse_yolo_input, parse_yolo_output, run_yolo_on_images, make_tiles, IMAGE_EXTENSIONS, reunify_tiles
+from crop_processing import Tile, make_tiles, IMAGE_EXTENSIONS, reunify_tiles
+from yolo import parse_yolo_input, parse_yolo_output, run_yolo_on_images
 from edge_detection import compute_cell_contact, compute_nanowire_edges
 
 TILE_SIZE = 416
@@ -24,12 +22,7 @@ class ProgramManager:
     def __init__(self):
         self.image = np.array([])
         self.original_image = np.array([])
-        self.binary_image = np.array([])
         self.cells = []
-
-        self.openings = DEFAULT_OPENINGS
-        self.dilations = DEFAULT_DILATIONS
-        self.threshold = None # This is a hack and should be changed.
 
         self.made_crops = False
 
@@ -49,8 +42,6 @@ class ProgramManager:
         for i in range(len(self.image)):
             count = 0
             for item in self.image[i]:
-                if isinstance(item, collections.abc.Iterable):
-                    item = item[0]
                 if 0 < item < 255:
                     count += 1
                     if count > 10:
@@ -114,22 +105,11 @@ class ProgramManager:
                 tile.cells = cell_lists[i]
                 tiles.append(tile)
             full_tile = reunify_tiles(tiles, full_image=Image.fromarray(self.image))
-            self.image = np.array(full_tile.img)
             self.cells += full_tile.cells
         elif cell_lists == []:
             self.cells += []
         else:
             self.cells += cell_lists[0]
-
-    def compute_binary_image(self):
-        print("progessing image...")
-        self.binary_image, self.threshold = process_image(self.image, self.openings, self.dilations, self.threshold)
-        print("found processed image!")
-
-    def compute_cell_contours(self):
-        print("getting contours...")
-        compute_cell_contours(self.binary_image, self.cells, self.image)
-        print("found contours!")
 
     def crop(self):
         # Make the crops directory
@@ -150,8 +130,6 @@ class ProgramManager:
             for tile in make_tiles(Image.open(f"{directory}/{filename}"), filename[:filename.rfind(".")]):
                 tile.save(directory=CROP_DIR)
 
-        print(f"Made {len(os.listdir(CROP_DIR))} crops.")
-
     def compute_cell_network_edges(self, canvas):
         compute_cell_contact(self.cells, self.image)
-        compute_nanowire_edges(self.cells, canvas, self.image, self.binary_image)
+        compute_nanowire_edges(self.cells, canvas, self.image)

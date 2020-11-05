@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from sys import path
 path.insert(1, "src")
 

@@ -29,23 +29,11 @@ class MainWindow(QMainWindow):
         self.actionExport_to_Gephi.triggered.connect(self.convert_to_gephi_and_export)
         self.actionLoad_Project.triggered.connect(self.load)
 
-        self.actionYOLO.triggered.connect(self.run_yolo_and_display)
-        self.actionProcess_Image.triggered.connect(self.compute_binary_image_and_display)
-        self.actionContour_run.triggered.connect(self.compute_cell_contours_and_display)
-        self.actionEdge_Detection.triggered.connect(self.compute_cell_network_edges_and_display)
-
-        self.actionBinary_Image.triggered.connect(self.handle_binary_image_view_press)
         self.actionBounding_Boxes.triggered.connect(self.handle_cell_bounding_boxes_view_press)
         self.actionContour_view.triggered.connect(self.handle_cell_contours_view_press)
         self.actionRun_All.triggered.connect(self.run_yolo_and_edge_detection_and_display)
 
         self.MplWidget.canvas.mpl_connect("button_press_event", self.on_canvas_press)
-
-        # NEW SliderWidget ones:
-        self.SliderWidget.restoreDefaultsButton.clicked.connect(self.set_image_processing_numbers_to_default_and_display_new_binary_image)
-        self.SliderWidget.openingsSpinBox.valueChanged.connect(self.update_openings_number_and_display_new_binary_image)
-        self.SliderWidget.dilationsSpinBox.valueChanged.connect(self.update_dilations_number_and_display_new_binary_image)
-        self.SliderWidget.thresholdSpinBox.valueChanged.connect(self.update_threshold_number_and_display_new_binary_image)
 
     def set_default_enablements(self):
         self.actionSave.setEnabled(False)
@@ -131,7 +119,7 @@ class MainWindow(QMainWindow):
         self.actionEdge_Detection.setEnabled(True)
 
         # allow user to view cell counts
-        self.CellCounter.setText('Cell Count: ' + str(self.getCellCount()))
+        self.CellCounter.setText('Cell Count: ' + str(self.get_cell_count()))
         self.CellCounter.setVisible(True)
 
     def run_yolo_and_display(self):
@@ -152,13 +140,14 @@ class MainWindow(QMainWindow):
         self.actionEdge_Detection.setEnabled(True)
 
         # allow user to view cell counts
-        self.CellCounter.setText('Cell Count: ' + str(self.getCellCount()))
+        self.CellCounter.setText('Cell Count: ' + str(self.get_cell_count()))
         self.CellCounter.setVisible(True)
 
     def run_yolo_and_edge_detection_and_display(self):
         self.run_yolo_and_display()
         # then need to run contouring and edge detection and bring up the option
         # to manually label the image
+        self.compute_cell_network_edges_and_display()
         self.toggle_labeling_buttons(True)
 
     """ ---------------------- IMAGE PROCESSSING ---------------------------- """
@@ -256,12 +245,6 @@ class MainWindow(QMainWindow):
         # enable manual labeling!
         self.toggle_labeling_buttons(True)
 
-    def handle_binary_image_view_press(self):
-        if self.actionBinary_Image.isChecked():
-            self.MplWidget.draw_image(self.program_manager.binary_image)
-        else:
-            self.MplWidget.draw_image(self.program_manager.image)
-
     def handle_cell_bounding_boxes_view_press(self):
         if self.actionBounding_Boxes.isChecked():
             self.MplWidget.draw_cell_bounding_boxes(self.program_manager.cells)
@@ -276,9 +259,8 @@ class MainWindow(QMainWindow):
 
     """------------------ UTILITIES -----------------------------"""
 
-    def getCellCount(self):
-        return sum([1 for bioObject in self.program_manager.cells
-                            if bioObject.is_cell()])
+    def get_cell_count(self):
+        return sum(bio_object.is_cell() for bio_object in self.program_manager.cells)
 
     def convert_to_gephi_and_export(self):
         # get the path and make sure it's good
@@ -335,36 +317,16 @@ class MainWindow(QMainWindow):
         # allow them to save, etc
         self.MplWidget.draw_image(self.program_manager.image)
         self.actionImage.setEnabled(False)
-        self.actionLabel.setEnabled(True)
         self.actionSave.setEnabled(True)
         self.actionSave_As.setEnabled(True)
 
-        if self.program_manager.cells: # if there are cells:
-            self.actionBounding_Boxes.setEnabled(True)
-            self.actionLabel.setEnabled(False)
-            self.actionYOLO.setEnabled(False)
-            # display cell counts
-            self.CellCounter.setText('Cell Count: ' + str(self.getCellCount()))
-            self.CellCounter.setVisible(True)
-            # check if countouring has been done:
-            if any ([cell.contour is not None for cell in self.program_manager.cells]):
-                self.actionContour_view.setEnabled(True)
-                self.actionContour_view.setChecked(True)
-                self.handle_cell_contours_view_press()
-                # check if edge detectionw as done:
-                if any ([cell.adj_list != [] for cell in self.program_manager.cells]):
-                    self.actionExport_to_Gephi.setEnabled(True)
-                    # this may already be done by default
-                    self.actionEdge_Detection.setEnabled(False)
-                    self.MplWidget.draw_cell_network_edges(self.program_manager.cells)
-                else:
-                    self.actionEdge_Detection.setEnabled(True)
-            else:
-                self.actionBounding_Boxes.setChecked(True)
-                self.handle_cell_bounding_boxes_view_press()
-                self.actionContour_run.setEnabled(True)
-                if len(self.program_manager.binary_image) > 0:
-                    self.actionBinary_Image.setEnabled(True)
-                    self.handle_binary_image_view_press()
-                else:
-                    self.actionProcess_Image.setEnabled(True)
+        self.actionBounding_Boxes.setEnabled(True)
+        self.actionBounding_Boxes.setChecked(False)
+
+        self.CellCounter.setText('Cell Count: ' + str(self.get_cell_count()))
+        self.CellCounter.setVisible(True)
+        self.actionContour_view.setEnabled(True)
+        self.actionContour_view.setChecked(False)
+        self.MplWidget.draw_cell_centers(self.program_manager.cells)
+        self.actionExport_to_Gephi.setEnabled(True)
+        self.MplWidget.draw_cell_network_edges(self.program_manager.cells)
