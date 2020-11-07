@@ -1,5 +1,4 @@
 from skimage.color import rgb2gray
-from PyQt5.QtWidgets import QFileDialog
 from PIL import Image
 import numpy as np
 import random
@@ -12,7 +11,7 @@ import collections
 
 from bio_object import BioObject, compute_all_cell_bbox_overlaps, compute_nanowire_to_cell_bbox_overlaps, compute_cell_center
 from crop_processing import Tile, make_tiles, IMAGE_EXTENSIONS, reunify_tiles
-from yolo import parse_yolo_input, parse_yolo_output, run_yolo_on_images
+from yolo import parse_yolo_output, run_yolo_on_images
 from edge_detection import compute_cell_contact, compute_nanowire_edges
 
 TILE_SIZE = 416
@@ -27,16 +26,10 @@ class ProgramManager:
         self.made_crops = False
 
         self.image_path = ""
-        self.label_path = ""
         self.filename = None
 
-    def open_image_file_and_crop_if_necessary(self):
-        path, _ = QFileDialog.getOpenFileName(None, "Select image", "", "Image Files (*.png *.jpg *.jpeg *.bmp *.tif)")
-        if not path:
-            return
-
-        print("using image {}".format(path))
-        self.image_path = path
+    def open_image_file_and_crop_if_necessary(self, image_path):
+        self.image_path = image_path
         self.image = rgb2gray(plt.imread(self.image_path))
         self.original_image = plt.imread(self.image_path)
         for i in range(len(self.image)):
@@ -54,26 +47,6 @@ class ProgramManager:
 
         if self.image.shape[0] > TILE_SIZE or self.image.shape[1] > TILE_SIZE:
             self.crop()
-
-    def open_label_file(self):
-        path, _ = QFileDialog.getOpenFileName(None, "Select label", "", "Label Files (*.txt)")
-        if not path:
-            return
-        classes_file_path = "{}classes.txt".format(path[:len(path) - path[::-1].find("/")])
-        print("using label {}".format(path))
-        classes_ofile = None
-        if os.path.isfile(classes_file_path):
-            classes_ofile = open(classes_file_path)
-            print("using classifications {}".format(classes_file_path))
-        self.label_path = path
-        label_ofile = open(self.label_path)
-        self.bio_objs += parse_yolo_input(label_ofile, classes_ofile, self.original_image)
-
-    def get_save_loc(self, ext):
-        path, _ = QFileDialog.getSaveFileName(None, 'Save File', "", ext)
-        if not path:
-            return
-        return path
 
     def compute_bounding_boxes(self, update_progress_bar):
         if not self.made_crops:

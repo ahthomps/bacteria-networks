@@ -40,36 +40,6 @@ def run_yolo_on_images(img_paths, update_progress_bar):
 
     return total_output
 
-def parse_yolo_input(label_file, classes_file, image):
-    """ Reads from a yolo training file and returns a list of BoundingBox objects.
-        Also takes the labels' image so we can convert from relative to px. """
-    bio_objs = []
-    classifications = []
-    obj_id = 1
-    if classes_file is not None:
-        for line in classes_file.readlines():
-            classifications.append(line.rstrip())
-    for line in label_file.readlines():
-        # Treat #s as comments
-        if "#" in line:
-            line = line[:line.index("#")]
-        if line.split() == []:
-            continue
-
-        classification, x, y, width, height = map(float, line.split())
-        x *= len(image[0])
-        width *= len(image[0])
-        y *= len(image)
-        height *= len(image)
-        if classifications != []:
-            classification = classifications[int(classification)]
-        else:
-            classification = "cell"
-        bio_objs.append(BioObject(int(x - width / 2), int(y - height / 2), int(x + width / 2), int(y + height / 2), obj_id, classification))
-        obj_id += 1
-
-    return bio_objs
-
 def parse_yolo_output(yolo_output):
     """ Takes a string (probably stdout from running yolo) and returns a list of lists of BioObject objects.
         Each sublist corresponds to one input file."""
