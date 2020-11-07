@@ -6,13 +6,20 @@ from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
 from program_manager import ProgramManager
 import pickle
 
+class NavigationToolbar(NavigationToolbar2QT):
+    def __init__(self, canvas, main_window):
+        super().__init__(canvas, main_window)
+        for _ in range(5):
+            self.removeAction(self.actions()[-1])
+      
+
 class MainWindow(QMainWindow):
     def __init__(self):
-        # set up UI window
-        QMainWindow.__init__(self)
+        super().__init__()
+
         loadUi("ui/main.ui", self)
-        self.setWindowTitle("JAB Bacteria Networks Detector")
-        self.addToolBar(NavigationToolbar2QT(self.MplWidget.canvas, self))
+        self.setWindowTitle("JAB Bacteria Network Detector")
+        self.addToolBar(NavigationToolbar(self.MplWidget.canvas, self))
 
         self.labeling_buttons = (self.BaddCell, self.BaddEdge, self.BchangeClass)
 
