@@ -1,5 +1,6 @@
 import subprocess
 from bio_object import BioObject
+import os
 
 DARKNET_BINARY_PATH = "darknet/darknet"
 DATA_PATH = "models/model_4/obj.data"
@@ -8,11 +9,20 @@ WEIGHTS_PATH = "models/model_4/model_4.weights"
 YOLO_OPTIONS = ["-ext_output", "-dont_show"]
 
 def run_yolo_on_images(filenames):
-    return subprocess.run([DARKNET_BINARY_PATH, "detector", "test", DATA_PATH, CFG_PATH, WEIGHTS_PATH, *YOLO_OPTIONS],
-                          stdout=subprocess.PIPE,
-                          stderr=subprocess.DEVNULL,
-                          encoding="UTF-8",
-                          input="\n".join(filenames)).stdout
+    # Run yolo
+    output =  subprocess.run([DARKNET_BINARY_PATH, "detector", "test", DATA_PATH, CFG_PATH, WEIGHTS_PATH, *YOLO_OPTIONS],
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.DEVNULL,
+                             encoding="UTF-8",
+                             input="\n".join(filenames)).stdout
+
+    # Remove the garbage files that yolo makes
+    if os.path.exists("bad.list"):
+        os.remove("bad.list")
+    if os.path.exists("predictions.jpg"):
+        os.remove("predictions.jpg")
+
+    return output
 
 def parse_yolo_input(label_file, classes_file, image):
     """ Reads from a yolo training file and returns a list of BoundingBox objects.

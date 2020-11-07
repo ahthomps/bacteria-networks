@@ -1,2 +1,10 @@
+Function:
+	Batch processing of images
+	Progress bar for running YOLO
+	Progerss bar in batch processing
+	Install script for Mac
+	Implement manual labeling
+
 Form:
-    Update docstrings and headers
+	Update docstrings and headers
+	Polish UI
