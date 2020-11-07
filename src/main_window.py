@@ -1,17 +1,13 @@
+from sys import path
+path.insert(1, "ui")
+
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QMainWindow, QFileDialog, QShortcut
 from PyQt5.QtGui import QKeySequence
 from PyQt5.uic import loadUi
-from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
+from toolbar import CustomToolbar
 from program_manager import ProgramManager
 import pickle
-
-class NavigationToolbar(NavigationToolbar2QT):
-    def __init__(self, canvas, main_window):
-        super().__init__(canvas, main_window)
-        for _ in range(5):
-            self.removeAction(self.actions()[-1])
-      
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -19,7 +15,7 @@ class MainWindow(QMainWindow):
 
         loadUi("ui/main.ui", self)
         self.setWindowTitle("JAB Bacteria Network Detector")
-        self.addToolBar(NavigationToolbar(self.MplWidget.canvas, self))
+        self.addToolBar(CustomToolbar(self.MplWidget.canvas, self))
 
         self.labeling_buttons = (self.BaddCell, self.BaddEdge, self.BchangeClass)
 
