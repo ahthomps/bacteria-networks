@@ -1,5 +1,6 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QMainWindow, QFileDialog
+from PyQt5.QtWidgets import QMainWindow, QFileDialog, QShortcut
+from PyQt5.QtGui import QKeySequence
 from PyQt5.uic import loadUi
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
 from program_manager import ProgramManager
@@ -13,17 +14,15 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("JAB Bacteria Networks Detector")
         self.addToolBar(NavigationToolbar2QT(self.MplWidget.canvas, self))
 
-        self.labeling_buttons = [self.BaddCell, self.BaddEdge, self.BchangeClass]
+        self.labeling_buttons = (self.BaddCell, self.BaddEdge, self.BchangeClass)
 
         # set up ProgramManager
         self.program_manager = ProgramManager()
         self.set_default_enablements()
 
-        # set up all button presses
+        # Connect the buttons to their corresponding actions
         self.actionClear.triggered.connect(self.clear_all_data_and_reset_window)
-
         self.actionImage.triggered.connect(self.open_image_file_and_display)
-
         self.actionSave.triggered.connect(self.save)
         self.actionSave_As.triggered.connect(self.save_as)
         self.actionExport_to_Gephi.triggered.connect(self.convert_to_gephi_and_export)
@@ -34,6 +33,14 @@ class MainWindow(QMainWindow):
         self.actionRun_All.triggered.connect(self.run_yolo_and_edge_detection_and_display)
 
         self.MplWidget.canvas.mpl_connect("button_press_event", self.on_canvas_press)
+
+        # Keyboard shortcuts for **__POWER USERS__**
+        QShortcut(QKeySequence("Ctrl+S"), self).activated.connect(lambda: self.actionSave.isEnabled() and \
+                                                                          self.save())
+        QShortcut(QKeySequence("Ctrl+R"), self).activated.connect(lambda: self.actionRun_All.isEnabled() and \
+                                                                          self.run_yolo_and_edge_detection_and_display())
+        QShortcut(QKeySequence("Ctrl+O"), self).activated.connect(lambda: self.actionImage.isEnabled() and \
+                                                                          self.open_image_file_and_display())
 
     def set_default_enablements(self):
         self.actionSave.setEnabled(False)
@@ -70,12 +77,8 @@ class MainWindow(QMainWindow):
         # self.MplWidget.draw_point(event.xdata, event.ydata)
 
     def toggle_labeling_buttons(self, on):
-        if on:
-            for button in self.labeling_buttons:
-                button.setVisible(True)
-        else:
-            for button in self.labeling_buttons:
-                button.setVisible(False)
+        for button in self.labeling_buttons:
+            button.setVisible(on)
 
     def open_image_file_and_display(self):
         self.program_manager.open_image_file_and_crop_if_necessary()
