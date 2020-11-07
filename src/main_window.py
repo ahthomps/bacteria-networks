@@ -42,6 +42,7 @@ class MainWindow(QMainWindow):
         QShortcut(QKeySequence("Ctrl+O"), self).activated.connect(lambda: self.actionImage.isEnabled() and \
                                                                           self.open_image_file_and_display())
 
+        # Hide the progress bar
         self.progressBar.setVisible(False)
 
     def set_default_enablements(self):
