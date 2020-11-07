@@ -5,13 +5,14 @@ from PyQt5.uic import loadUi
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
 from program_manager import ProgramManager
 import pickle
+import networkx as nx
 
 class NavigationToolbar(NavigationToolbar2QT):
     def __init__(self, canvas, main_window):
         super().__init__(canvas, main_window)
         for _ in range(5):
             self.removeAction(self.actions()[-1])
-      
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -155,6 +156,22 @@ class MainWindow(QMainWindow):
 
     """------------------ UTILITIES -----------------------------"""
 
+    def generate_automated_graph(self):
+        # initialize graph
+        self.graph = nx.Graph()
+
+        # add all nodes
+        for bioObject in self.program_manager.bio_objs:
+            if bioObject.is_cell():
+                x, y = bioObject.center()
+                self.graph.add_node(bioObject.id, xpos = x, ypos = y)
+
+        # add all edges
+        for bioObject in self.program_manager.bio_objs:
+            if bioObject.is_cell():
+                for adj_cell in bioObject.adj_list:
+                    self.graph.add_edge(bioObject.id, adj_cell.id)
+
     def get_cell_count(self):
         return sum(bio_object.is_cell() for bio_object in self.program_manager.bio_objs)
 
@@ -169,21 +186,8 @@ class MainWindow(QMainWindow):
         if path[-5:] != ".gexf":
             path = path + ".gexf"
 
-        # initialize graph
-        G = nx.Graph()
-        # snag the cells
-        cells = self.program_manager.bio_objs
-
-        # add all nodes
-        for bioObject in cells:
-            if bioObject.is_cell():
-                G.add_node(bioObject.id)
-                # add all edges
-                for adj_cell in bioObject.adj_list:
-                    G.add_edge(bioObject.id, adj_cell.id)
-
         # write the final output to the file
-        nx.write_gexf(G, path)
+        nx.write_gexf(self.graph, path)
 
     def save(self):
         if self.program_manager.filename is None:
