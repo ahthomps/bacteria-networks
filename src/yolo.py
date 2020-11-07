@@ -8,13 +8,29 @@ CFG_PATH = "models/model_4/test.cfg"
 WEIGHTS_PATH = "models/model_4/model_4.weights"
 YOLO_OPTIONS = ["-ext_output", "-dont_show"]
 
-def run_yolo_on_images(filenames):
-    # Run yolo
-    output =  subprocess.run([DARKNET_BINARY_PATH, "detector", "test", DATA_PATH, CFG_PATH, WEIGHTS_PATH, *YOLO_OPTIONS],
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.DEVNULL,
-                             encoding="UTF-8",
-                             input="\n".join(filenames)).stdout
+def run_yolo_on_images(img_paths, update_progress_bar):
+    """ img_paths:           A list of image image paths to be run through YOLO.
+        update_progress_bar: A function to update the progress bar. """
+    proc = subprocess.Popen([DARKNET_BINARY_PATH, "detector", "test", DATA_PATH, CFG_PATH, WEIGHTS_PATH, *YOLO_OPTIONS],
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.DEVNULL,
+                            stdin=subprocess.PIPE,
+                            encoding="UTF-8")
+
+    proc.stdin.write("\n".join(img_paths))
+    proc.stdin.close()
+
+    total_output = ""
+    total_images_processed = 0
+    while proc.poll() is None:
+        # We have to read it line by line because reading as many as we can amounts to waiting for the process to finish
+        current_output = proc.stdout.readline()
+        total_output += current_output
+        current_images_processed = current_output.count("Enter Image Path:")
+        if current_images_processed != 0:
+            total_images_processed += current_images_processed
+            update_progress_bar(min(100, int(total_images_processed / len(img_paths) * 100)))
+        # It felt like I should put a sleep in here, but I timed it and it makes no difference.
 
     # Remove the garbage files that yolo makes
     if os.path.exists("bad.list"):
@@ -22,7 +38,7 @@ def run_yolo_on_images(filenames):
     if os.path.exists("predictions.jpg"):
         os.remove("predictions.jpg")
 
-    return output
+    return total_output
 
 def parse_yolo_input(label_file, classes_file, image):
     """ Reads from a yolo training file and returns a list of BoundingBox objects.

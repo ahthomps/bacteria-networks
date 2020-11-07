@@ -75,7 +75,7 @@ class ProgramManager:
             return
         return path
 
-    def compute_bounding_boxes(self):
+    def compute_bounding_boxes(self, update_progress_bar):
         if not self.made_crops:
             image_filename = self.image_path
             slash_index = -1
@@ -94,7 +94,7 @@ class ProgramManager:
             top_left_corners = list(map(int, path[:path.rfind(".")].split("_")[-2:]) for path in paths)
 
         # This is a list of lists of cells, each list corresponding to a crop.
-        yolo_output = run_yolo_on_images(paths)
+        yolo_output = run_yolo_on_images(paths, update_progress_bar)
         cell_lists = parse_yolo_output(yolo_output)
 
         if len(cell_lists) > 1:

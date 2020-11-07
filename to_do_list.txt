@@ -1,8 +1,8 @@
 Function:
-	Batch processing of images
-	Progress bar for running YOLO
-	Progerss bar in batch processing
-	Install script for Mac
+	Batch processing of images (with progress bar)
+		- Does this mean we should be automatically outputting gephi graphs, or pickling, or both? Or images?
+	Test install script
+	Make the install script download the model
 	Implement manual labeling
 
 Form:

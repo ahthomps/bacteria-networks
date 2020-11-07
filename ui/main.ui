@@ -67,7 +67,7 @@
     <widget class="QPushButton" name="BchangeClass">
      <property name="geometry">
       <rect>
-       <x>10</x>
+       <x>20</x>
        <y>430</y>
        <width>151</width>
        <height>26</height>
@@ -80,14 +80,14 @@
     <widget class="QLabel" name="CellCounter">
      <property name="geometry">
       <rect>
-       <x>10</x>
+       <x>0</x>
        <y>590</y>
-       <width>191</width>
+       <width>201</width>
        <height>31</height>
       </rect>
      </property>
      <property name="text">
-      <string>Cell Count: NUMBER</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Cell Count: NUMBER&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
     </widget>
    </widget>
@@ -129,6 +129,19 @@
      </property>
      <property name="toolTip">
       <string comment="standard node"/>
+     </property>
+    </widget>
+    <widget class="QProgressBar" name="progressBar">
+     <property name="geometry">
+      <rect>
+       <x>-3</x>
+       <y>640</y>
+       <width>601</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="value">
+      <number>0</number>
      </property>
     </widget>
    </widget>
@@ -285,7 +298,7 @@
    <extends>QWidget</extends>
    <header>ui/mplwidget.h</header>
    <container>1</container>
-</customwidget>
+  </customwidget>
  </customwidgets>
  <resources/>
  <connections/>

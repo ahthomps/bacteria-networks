@@ -42,6 +42,8 @@ class MainWindow(QMainWindow):
         QShortcut(QKeySequence("Ctrl+O"), self).activated.connect(lambda: self.actionImage.isEnabled() and \
                                                                           self.open_image_file_and_display())
 
+        self.progressBar.setVisible(False)
+
     def set_default_enablements(self):
         self.actionSave.setEnabled(False)
         self.actionSave_As.setEnabled(False)
@@ -54,7 +56,6 @@ class MainWindow(QMainWindow):
 
         self.CellCounter.setVisible(False)
         self.toggle_labeling_buttons(False)
-
 
         self.actionBounding_Boxes.setEnabled(False)
         self.actionBounding_Boxes.setChecked(False)
@@ -94,8 +95,10 @@ class MainWindow(QMainWindow):
     def run_yolo_and_edge_detection_and_display(self):
         self.actionRun_All.setEnabled(False)
 
+        self.progressBar.setVisible(True)
+
         # run yolo
-        self.program_manager.compute_bounding_boxes()
+        self.program_manager.compute_bounding_boxes(self.progressBar.setValue)
 
         self.MplWidget.draw_image(self.program_manager.image)
         self.MplWidget.draw_cell_bounding_boxes(self.program_manager.bio_objs)
@@ -125,6 +128,8 @@ class MainWindow(QMainWindow):
 
         self.actionSave.setEnabled(True)
         self.actionSave_As.setEnabled(True)
+
+        self.progressBar.setVisible(False)
 
     """ ---------------------- IMAGE PROCESSSING ---------------------------- """
 
