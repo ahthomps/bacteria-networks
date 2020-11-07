@@ -2,7 +2,8 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QMainWindow, QFileDialog, QShortcut
 from PyQt5.QtGui import QKeySequence
 from PyQt5.uic import loadUi
-from toolbar import CustomToolbar
+#from toolbar import CustomToolbar
+from toolbar import *
 from program_manager import ProgramManager
 import pickle
 import networkx as nx
@@ -109,7 +110,9 @@ class MainWindow(QMainWindow):
 
         # allow user to view cell counts
         self.MplWidget.draw_cell_bounding_boxes(self.program_manager.bio_objs)
-        self.cellCounter.setText('Cell Count: ' + str(self.get_cell_count()))
+
+        self.cellCount = sum(bio_object.is_cell() for bio_object in self.program_manager.bio_objs)
+        self.cellCounter.setText('Cell Count: ' + str(self.cellCount))
         self.cellCounter.setVisible(True)
 
         self.program_manager.compute_bbox_overlaps_and_cell_centers()
@@ -117,11 +120,13 @@ class MainWindow(QMainWindow):
 
         # run edge_detection
         self.program_manager.compute_cell_network_edges(self.MplWidget.canvas)
+        self.program_manager.generate_automated_graph()
         self.MplWidget.remove_cell_bounding_boxes()
         self.MplWidget.draw_cell_network_edges(self.program_manager.bio_objs)
 
         self.actionSave.setEnabled(True)
         self.actionSaveAs.setEnabled(True)
+        self.actionExportToGephi.setEnabled(True)
 
         self.progressBar.setVisible(False)
 
@@ -141,24 +146,13 @@ class MainWindow(QMainWindow):
 
     """------------------ UTILITIES -----------------------------"""
 
-    def generate_automated_graph(self):
-        # initialize graph
-        self.graph = nx.Graph()
+    def inc_cell_count(self):
+        self.cellCount += 1
+        self.cellCounter.setText('Cell Count: ' + str(self.cellCount))
 
-        # add all nodes
-        for bioObject in self.program_manager.bio_objs:
-            if bioObject.is_cell():
-                x, y = bioObject.center()
-                self.graph.add_node(bioObject.id, xpos = x, ypos = y)
-
-        # add all edges
-        for bioObject in self.program_manager.bio_objs:
-            if bioObject.is_cell():
-                for adj_cell in bioObject.adj_list:
-                    self.graph.add_edge(bioObject.id, adj_cell.id)
-
-    def get_cell_count(self):
-        return sum(bio_object.is_cell() for bio_object in self.program_manager.bio_objs)
+    def dec_cell_count(self):
+        self.cellCount -+ 1
+        self.cellCounter.setText('Cell Count: ' + str(self.cellCount))
 
     def get_save_loc(self, ext):
         path, _ = QFileDialog.getSaveFileName(None, 'Save File', "", ext)
@@ -175,7 +169,7 @@ class MainWindow(QMainWindow):
             path = path + ".gexf"
 
         # write the final output to the file
-        nx.write_gexf(self.graph, path)
+        nx.write_gexf(self.program_manager.graph, path)
 
     def save(self):
         if self.program_manager.filename is None:
@@ -211,7 +205,6 @@ class MainWindow(QMainWindow):
         self.actionViewBoundingBoxes.setEnabled(True)
         self.actionViewBoundingBoxes.setChecked(False)
 
-        self.cellCounter.setText('Cell Count: ' + str(self.get_cell_count()))
         self.cellCounter.setVisible(True)
         self.actionViewContour.setEnabled(True)
         self.actionViewContour.setChecked(False)

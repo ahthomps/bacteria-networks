@@ -27,6 +27,7 @@ class ProgramManager:
 
         self.image_path = ""
         self.filename = None
+        self.graph = None
 
     def open_image_file_and_crop_if_necessary(self, image_path):
         self.image_path = image_path
@@ -113,3 +114,19 @@ class ProgramManager:
     def compute_cell_network_edges(self, canvas):
         compute_cell_contact(self.bio_objs, self.image)
         compute_nanowire_edges(self.bio_objs, canvas, self.image)
+
+    def generate_automated_graph(self):
+        # initialize graph
+        self.graph = nx.MultiGraph()
+
+        # add all nodes
+        for bioObject in self.bio_objs:
+            if bioObject.is_cell():
+                x, y = bioObject.center()
+                self.graph.add_node(bioObject.id, x = x, y = y)
+
+        # add all edges
+        for bioObject in self.bio_objs:
+            if bioObject.is_cell():
+                for adj_cell in bioObject.adj_list:
+                    self.graph.add_edge(bioObject.id, adj_cell.id)
