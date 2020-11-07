@@ -22,7 +22,7 @@ class ProgramManager:
         self.image = np.array([])
         self.original_image = np.array([])
         self.bio_objs = []
-
+        self.cellCount = 0
         self.made_crops = False
 
         self.image_path = ""
@@ -115,7 +115,10 @@ class ProgramManager:
         compute_cell_contact(self.bio_objs, self.image)
         compute_nanowire_edges(self.bio_objs, canvas, self.image)
 
-    def generate_automated_graph(self):
+    def get_cell_count_from_bioObjs(self):
+        self.cellCount = sum(bio_object.is_cell() for bio_object in self.bio_objs)
+
+    def generate_automated_graph_from_bioObjs(self):
         # initialize graph
         self.graph = nx.MultiGraph()
 
