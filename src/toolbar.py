@@ -17,7 +17,7 @@ class _Mode(str, Enum):
         return self.name if self is not _Mode.NONE else None
 
 class CustomToolbar(NavigationToolbar2QT):
-    def __init__(self, canvas, parent):
+    def __init__(self, canvas, graph, parent):
         self.toolitems = (
             ('Home', 'Reset original view', 'home', 'home'),
             ('Back', 'Back to  previous view', 'back', 'back'),
@@ -27,10 +27,12 @@ class CustomToolbar(NavigationToolbar2QT):
             ('Zoom', 'Zoom to rectangle', 'zoom_to_rect', 'zoom'),
             (None, None, None, None)
             )
-        NavigationToolbar2QT.__init__(self, canvas, parent)
+        super().__init__(canvas, parent)
 
         self.addAction(QIcon("ui/standard_node.svg"), "Add Cell", self.cell).setToolTip("Add a cell")
         self.addAction(QIcon("ui/standard_edge.svg"), "Add Edge", self.edge).setToolTip("Add an edge")
+
+        self.graph = graph
 
     def mouse_move(self, event):
         pass
@@ -59,6 +61,8 @@ class CustomToolbar(NavigationToolbar2QT):
 
     def release_cell(self, event):
         print("add_cell to: ({}, {})".format(event.x, event.y))
+        self.graph.add_node(max(self.graph.nodes) + 1, x=event.x, y=event.y)
+        print(type(self.parent))
         # self.canvas.add_cell()
         # parent i believe is the main window
 
