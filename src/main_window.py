@@ -112,7 +112,7 @@ class MainWindow(QMainWindow):
 
         # run edge_detection
         self.program_manager.compute_cell_network_edges(self.MplWidget.canvas)
-        self.program_manager.generate_automated_graph_from_bioObjs()
+        self.program_manager.compute_initial_graph()
         self.MplWidget.remove_cell_bounding_boxes()
         self.MplWidget.draw_cell_network_edges(self.program_manager.bio_objs)
 

@@ -114,7 +114,7 @@ class ProgramManager:
     def compute_cell_count(self):
         self.cell_count = sum(bio_object.is_cell() for bio_object in self.bio_objs)
 
-    def compute_graph(self):
+    def compute_initial_graph(self):
         # initialize graph
         self.graph = nx.MultiGraph()
 
