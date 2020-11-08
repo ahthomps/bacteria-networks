@@ -107,6 +107,7 @@ class MainWindow(QMainWindow):
         self.MplWidget.remove_cell_bounding_boxes()
         self.MplWidget.draw_cell_network_edges(self.program_manager.bio_objs)
 
+        self.actionViewBoundingBoxes.setEnabled(True)
         self.actionSave.setEnabled(True)
         self.actionSaveAs.setEnabled(True)
         self.actionExportToGephi.setEnabled(True)
