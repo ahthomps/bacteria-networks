@@ -16,7 +16,8 @@ class MainWindow(QMainWindow):
 
         loadUi("ui/main.ui", self)
         self.setWindowTitle("JAB Bacteria Network Detector")
-        self.addToolBar(CustomToolbar(self.MplWidget.canvas, self.program_manager.graph, self))
+        self.toolbar = CustomToolbar(self.MplWidget.canvas, self.program_manager.graph, self)
+        self.addToolBar(self.toolbar)
 
         # Set some default options
         self.set_default_enablements()
@@ -112,6 +113,7 @@ class MainWindow(QMainWindow):
         self.actionViewNetworkEdges.setEnabled(True)
         self.actionViewNetworkEdges.setChecked(True)
         self.MplWidget.draw_network_edges(self.program_manager.bio_objs)
+        self.toolbar.add_network_tools()
 
         self.actionViewBoundingBoxes.setEnabled(True)
         self.actionViewContour.setEnabled(True)

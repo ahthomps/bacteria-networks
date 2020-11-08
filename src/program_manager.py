@@ -22,7 +22,7 @@ class ProgramManager:
         self.made_crops = False
 
         self.image_path = ""
-        self.pickle_path = ""
+        self.pickle_path = None
         self.graph = nx.MultiGraph()
 
     def open_image_file_and_crop_if_necessary(self, image_path):

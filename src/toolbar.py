@@ -18,21 +18,16 @@ class _Mode(str, Enum):
 
 class CustomToolbar(NavigationToolbar2QT):
     def __init__(self, canvas, graph, parent):
-        self.toolitems = (
-            ('Home', 'Reset original view', 'home', 'home'),
-            ('Back', 'Back to  previous view', 'back', 'back'),
-            ('Forward', 'Forward to next view', 'forward', 'forward'),
-            (None, None, None, None),
-            ('Pan', 'Pan axes with left mouse, zoom with right', 'move', 'pan'),
-            ('Zoom', 'Zoom to rectangle', 'zoom_to_rect', 'zoom'),
-            (None, None, None, None)
-            )
         super().__init__(canvas, parent)
-
-        self.addAction(QIcon("ui/standard_node.svg"), "Add Cell", self.cell).setToolTip("Add a cell")
-        self.addAction(QIcon("ui/standard_edge.svg"), "Add Edge", self.edge).setToolTip("Add an edge")
+        for _ in range(5):
+            self.removeAction(self.actions()[-1])
 
         self.graph = graph
+
+    def add_network_tools(self):
+        self.addSeparator()
+        self.addAction(QIcon("ui/standard_node.svg"), "Add Cell", self.cell).setToolTip("Add a cell")
+        self.addAction(QIcon("ui/standard_edge.svg"), "Add Edge", self.edge).setToolTip("Add an edge")
 
     def mouse_move(self, event):
         pass
