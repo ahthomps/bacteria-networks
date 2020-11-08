@@ -3,9 +3,9 @@ from bio_object import BioObject
 import os
 
 DARKNET_BINARY_PATH = "darknet/darknet"
-DATA_PATH = "models/model_4/obj.data"
-CFG_PATH = "models/model_4/test.cfg"
-WEIGHTS_PATH = "models/model_4/model_4.weights"
+DATA_PATH = "models/model_5/obj.data"
+CFG_PATH = "models/model_5/test.cfg"
+WEIGHTS_PATH = "models/model_5/model_5.weights"
 YOLO_OPTIONS = ["-ext_output", "-dont_show"]
 
 def run_yolo_on_images(img_paths, update_progress_bar):

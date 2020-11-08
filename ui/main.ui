@@ -119,6 +119,7 @@
     </property>
     <addaction name="actionViewBoundingBoxes"/>
     <addaction name="actionViewContour"/>
+    <addaction name="actionViewNetworkEdges"/>
    </widget>
    <widget class="QMenu" name="menuRun">
     <property name="title">
@@ -181,6 +182,14 @@
   <action name="actionRunAll">
    <property name="text">
     <string>Run All</string>
+   </property>
+  </action>
+  <action name="actionViewNetworkEdges">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Network Edges</string>
    </property>
   </action>
  </widget>

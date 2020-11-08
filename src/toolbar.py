@@ -17,7 +17,7 @@ class _Mode(str, Enum):
         return self.name if self is not _Mode.NONE else None
 
 class CustomToolbar(NavigationToolbar2QT):
-    def __init__(self, canvas, parent):
+    def __init__(self, canvas, graph, parent):
         self.toolitems = (
             ('Home', 'Reset original view', 'home', 'home'),
             ('Back', 'Back to  previous view', 'back', 'back'),
@@ -32,6 +32,8 @@ class CustomToolbar(NavigationToolbar2QT):
 
         self.addAction(QIcon("ui/standard_node.svg"), "Add Cell", self.cell).setToolTip("Add a cell")
         self.addAction(QIcon("ui/standard_edge.svg"), "Add Edge", self.edge).setToolTip("Add an edge")
+
+        self.graph = graph
 
     def mouse_move(self, event):
         pass
