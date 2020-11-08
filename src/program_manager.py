@@ -18,7 +18,6 @@ class ProgramManager:
         self.image = np.array([])
         self.original_image = np.array([])
         self.bio_objs = []
-        self.cell_count = 0
         self.made_crops = False
 
         self.image_path = ""
@@ -111,8 +110,8 @@ class ProgramManager:
         compute_cell_contact(self.bio_objs, self.image)
         compute_nanowire_edges(self.bio_objs, canvas, self.image)
 
-    def compute_cell_count(self):
-        self.cell_count = sum(bio_object.is_cell() for bio_object in self.bio_objs)
+    def get_cell_count(self):
+        return len(self.graph.nodes) - 1
 
     def compute_initial_graph(self):
         # add all nodes

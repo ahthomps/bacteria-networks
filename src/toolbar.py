@@ -55,11 +55,12 @@ class CustomToolbar(NavigationToolbar2QT):
         self.set_message(self.mode)
 
     def release_cell(self, event):
+        graph = self.dispmgr.program_manager.graph
         print("add_cell to: ({}, {})".format(event.x, event.y))
-        self.graph.add_node(max(self.graph.nodes) + 1, x=event.x, y=event.y)
-        print(type(self.parent))
-        # self.canvas.add_cell()
-        # parent i believe is the main window
+        graph.add_node(max(graph.nodes)+1,x=event.x,y=event.y)
+        print('we now have' + str(len(graph.nodes)) + 'nodes')
+        self.dispmgr.cellCounter.setText('Cell Count: ' + str(self.dispmgr.program_manager.get_cell_count()))
+        #TODO: add in viewing the node
 
     def edge(self):
         if self.mode == _Mode.EDGE:

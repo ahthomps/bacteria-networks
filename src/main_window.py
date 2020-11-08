@@ -92,10 +92,7 @@ class MainWindow(QMainWindow):
         # run yolo
         self.program_manager.compute_bounding_boxes(self.progressBar.setValue)
 
-        # allow user to view cell counts
-        self.program_manager.compute_cell_count()
-        self.cellCounter.setText('Cell Count: ' + str(self.program_manager.cell_count))
-        self.cellCounter.setVisible(True)
+        self.MplWidget.draw_image(self.program_manager.image)
 
         self.program_manager.compute_bbox_overlaps_and_cell_centers()
         self.MplWidget.draw_cell_centers(self.program_manager.bio_objs)
@@ -104,22 +101,20 @@ class MainWindow(QMainWindow):
         self.program_manager.compute_cell_network_edges(self.MplWidget.canvas)
         self.program_manager.compute_initial_graph()
 
-        self.actionViewBoundingBoxes.setEnabled(True)
-        self.actionViewBoundingBoxes.setChecked(False)
-
-        self.actionViewContour.setEnabled(True)
-        self.actionViewContour.setChecked(False)
+        self.cellCounter.setText('Cell Count: ' + str(self.program_manager.get_cell_count()))
+        self.cellCounter.setVisible(True)
 
         self.actionViewNetworkEdges.setEnabled(True)
         self.actionViewNetworkEdges.setChecked(True)
         self.MplWidget.draw_network_edges(self.program_manager.bio_objs)
         self.toolbar.add_network_tools()
 
-        self.actionViewBoundingBoxes.setEnabled(True)
-        self.actionViewContour.setEnabled(True)
+
         self.actionSave.setEnabled(True)
         self.actionSaveAs.setEnabled(True)
         self.actionExportToGephi.setEnabled(True)
+        self.actionViewBoundingBoxes.setEnabled(True)
+        self.actionViewContour.setEnabled(True)
 
         self.progressBar.setVisible(False)
 
@@ -194,7 +189,7 @@ class MainWindow(QMainWindow):
         self.actionViewBoundingBoxes.setEnabled(True)
         self.actionViewBoundingBoxes.setChecked(False)
 
-        self.cellCounter.setText('Cell Count: ' + str(self.program_manager.cell_count))
+        self.cellCounter.setText('Cell Count: ' + str(self.program_manager.get_cell_count()))
         self.cellCounter.setVisible(True)
         self.actionViewContour.setEnabled(True)
         self.actionViewContour.setChecked(False)
