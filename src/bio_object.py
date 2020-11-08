@@ -104,7 +104,7 @@ def compute_contour(bio_obj, image):
 
 
 class BioObject:
-    def __init__(self, x1, y1, x2, y2, id_no, classification="cell"):
+    def __init__(self, x1, y1, x2, y2, id_no, classification):
         """ Represents an object found by YOLO. (and also the electrode)
             x1, y1, x2, y2: px coordinates of xmin xmax ymin ymax of bounding box.
             classification: the classification of this object. This will eventually have to change. """
