@@ -3,6 +3,10 @@ import numpy as np
 from skimage import measure, filters, morphology, color
 import matplotlib.pyplot as plt
 
+# This is the allowable distance betwen objects to count them as overlapping
+# Having it as a hardcoded value is really just asking for trouble, but we're doing it for now.
+OVERLAP_TOLERANCE = 10
+
 def compute_all_cell_bbox_overlaps(bio_objects):
     """ Computes the overlaps of the bounding boxes containing cells. """
     for i in range(len(bio_objects) - 1):
@@ -70,18 +74,13 @@ def compute_subimage_labels_and_region_data(bio_obj, image):
     # creates an np.array image of just the current bbox
     subimage = np.asarray(image[bio_obj.y1:bio_obj.y2 + 1, bio_obj.x1:bio_obj.x2 + 1])
     plt.imshow(subimage, cmap='gray')
-    # plt.show()
     # makes the image binary using li thresholding method
     threshold = filters.threshold_li(subimage) # we should test if li is actually the best method in all lighting environments
     subimage = subimage > threshold
-    # plt.imshow(subimage, cmap='gray')
-    # plt.show()
     if bio_obj.is_cell():
         subimage = morphology.erosion(subimage)
         subimage = morphology.dilation(subimage)
     subimage_labels = measure.label(subimage, connectivity=2)
-    # plt.imshow(subimage_labels, cmap='gray')
-    # plt.show()
     subimage_regions = measure.regionprops(subimage_labels)
 
     return subimage_labels, subimage_regions
@@ -159,10 +158,10 @@ class BioObject:
     def bbox_overlaps_with_other_bbox(self, other):
         """ Returns True if the bboxes of self and other overlap, False otherwise """
 
-        x1 = self.x1 - 5
-        x2 = self.x2 + 5
-        y1 = self.y1 - 5
-        y2 = self.y2 + 5
+        x1 = self.x1 - OVERLAP_TOLERANCE
+        x2 = self.x2 + OVERLAP_TOLERANCE
+        y1 = self.y1 - OVERLAP_TOLERANCE
+        y2 = self.y2 + OVERLAP_TOLERANCE
 
         for point in other.compute_corners():
             x, y = point
