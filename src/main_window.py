@@ -16,7 +16,7 @@ class MainWindow(QMainWindow):
 
         loadUi("ui/main.ui", self)
         self.setWindowTitle("JAB Bacteria Network Detector")
-        self.toolbar = CustomToolbar(self.MplWidget.canvas, self.program_manager.graph, self)
+        self.toolbar = CustomToolbar(self.MplWidget.canvas, self)
         self.addToolBar(self.toolbar)
 
         # Set some default options

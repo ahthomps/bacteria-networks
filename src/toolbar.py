@@ -17,12 +17,11 @@ class _Mode(str, Enum):
         return self.name if self is not _Mode.NONE else None
 
 class CustomToolbar(NavigationToolbar2QT):
-    def __init__(self, canvas, graph, parent):
+    def __init__(self, canvas, parent):
+        self.dispmgr = parent
         super().__init__(canvas, parent)
         for _ in range(5):
             self.removeAction(self.actions()[-1])
-
-        self.graph = graph
 
     def add_network_tools(self):
         self.addSeparator()
@@ -56,11 +55,10 @@ class CustomToolbar(NavigationToolbar2QT):
 
     def release_cell(self, event):
         graph = self.dispmgr.program_manager.graph
-        print("add_cell to: ({}, {})".format(event.x, event.y))
-        graph.add_node(max(graph.nodes)+1,x=event.x,y=event.y)
-        print('we now have' + str(len(graph.nodes)) + 'nodes')
+        graph.add_node(max(graph.nodes)+1,x=event.xdata,y=event.ydata)
         self.dispmgr.cellCounter.setText('Cell Count: ' + str(self.dispmgr.program_manager.get_cell_count()))
-        #TODO: add in viewing the node
+        self.canvas.axes.plot(event.xdata, event.ydata, color="red", marker="o", gid="cell_center")
+        self.canvas.draw()
 
     def edge(self):
         if self.mode == _Mode.EDGE:
