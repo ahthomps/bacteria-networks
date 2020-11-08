@@ -2,18 +2,10 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QMainWindow, QFileDialog, QShortcut
 from PyQt5.QtGui import QKeySequence
 from PyQt5.uic import loadUi
-#from toolbar import CustomToolbar
-from toolbar import *
+from toolbar import CustomToolbar
 from program_manager import ProgramManager
 import pickle
 import networkx as nx
-
-class NavigationToolbar(NavigationToolbar2QT):
-    def __init__(self, canvas, main_window):
-        super().__init__(canvas, main_window)
-        for _ in range(5):
-            self.removeAction(self.actions()[-1])
-
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -111,8 +103,8 @@ class MainWindow(QMainWindow):
         # allow user to view cell counts
         self.MplWidget.draw_cell_bounding_boxes(self.program_manager.bio_objs)
 
-        self.program_manager.get_cell_count_from_bioObjs()
-        self.cellCounter.setText('Cell Count: ' + str(self.program_manager.cellCount))
+        self.program_manager.compute_cell_count()
+        self.cellCounter.setText('Cell Count: ' + str(self.program_manager.cell_count))
         self.cellCounter.setVisible(True)
 
         self.program_manager.compute_bbox_overlaps_and_cell_centers()
@@ -197,7 +189,7 @@ class MainWindow(QMainWindow):
         self.actionViewBoundingBoxes.setEnabled(True)
         self.actionViewBoundingBoxes.setChecked(False)
 
-        self.cellCounter.setText('Cell Count: ' + str(self.program_manager.cellCount))
+        self.cellCounter.setText('Cell Count: ' + str(self.program_manager.cell_count))
         self.cellCounter.setVisible(True)
         self.actionViewContour.setEnabled(True)
         self.actionViewContour.setChecked(False)

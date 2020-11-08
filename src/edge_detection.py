@@ -1,7 +1,6 @@
 import numpy as np
-from skimage import morphology, filters, exposure, segmentation, restoration, color, util, measure
+from skimage import morphology
 from bio_object import compute_contour, compute_cell_center
-import matplotlib.pyplot as plt
 
 class NetworkEdge:
     def __init__(self, tail, head, nanowire=None):
@@ -87,30 +86,6 @@ def compute_nanowire_edges(bio_objects, canvas, image):
             cell1.edge_list[-1].set_type_as_cell_to_surface()
             surface.edge_list[-1].set_type_as_cell_to_surface()
         else:
-            # # find subimage containing the nanowire
-            # subimage = np.asarray(image[nanowire.y1:nanowire.y2 + 1, nanowire.x1:nanowire.x2 + 1])
-            # image_plot = plt.imshow(subimage, cmap='gray')
-            # plt.show()
-            # # use li thresholding to compute a binary image of the subimage (from original image)
-            # threshold = filters.threshold_li(subimage)
-            # subimage = subimage > threshold
-            # image_binary_plot = plt.imshow(subimage, cmap='gray')
-            # plt.show()
-            # # find different regions in the subimage
-            # labels_mask = measure.label(subimage, connectivity=2)
-            # image_labels_plt = plt.imshow(labels_mask, cmap='gray')
-            # plt.show()
-            # # find properties of the different regions
-            # regions = measure.regionprops(labels_mask)
-            # # since this subimage corresponds to the bounding box of the nanowire,
-            # # we can assume that the region with the largest bounding box is the nanowire
-            # regions.sort(key=lambda x: x.bbox_area, reverse=True)
-            # nanowire_image = regions[0].image
-            # nanowire_image_plt = plt.imshow(nanowire_image, cmap='gray')
-            # plt.show()
-            # nanowire_contour = np.zeros(image.shape, dtype=np.uint8)
-            # nanowire_contour[nanowire.y1:nanowire.y1 + len(nanowire_image), nanowire.x1:nanowire.x1 + len(nanowire_image[0])] = nanowire_image
-            # nanowire_contour = morphology.dilation(nanowire_contour)
             compute_contour(nanowire, image)
 
             intersections = []
