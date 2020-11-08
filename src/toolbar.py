@@ -18,10 +18,14 @@ class _Mode(str, Enum):
 
 class CustomToolbar(NavigationToolbar2QT):
     def __init__(self, canvas, parent):
-        self.dispmgr = parent
+        self.main_window = parent
         super().__init__(canvas, parent)
         for _ in range(5):
             self.removeAction(self.actions()[-1])
+        self._id_press = self.canvas.mpl_connect(
+            'button_press_event', self._zoom_pan_handler)
+        self._id_release = self.canvas.mpl_connect(
+            'button_release_event', self._zoom_pan_handler)
 
     def add_network_tools(self):
         self.addSeparator()
@@ -36,7 +40,7 @@ class CustomToolbar(NavigationToolbar2QT):
         if self.mode == _Mode.CELL:
             if event.name == "button_release_event":
                 self.release_cell(event)
-        if self.mode == _Mode.EDGE:
+        elif self.mode == _Mode.EDGE:
             if  event.name == "button_press_event":
                 self.press_edge(event)
             elif event.name == "button_release_event":
@@ -54,21 +58,21 @@ class CustomToolbar(NavigationToolbar2QT):
         self.set_message(self.mode)
 
     def release_cell(self, event):
-        graph = self.dispmgr.program_manager.graph
+        graph = self.main_window.program_manager.graph
         graph.add_node(max(graph.nodes)+1,x=event.xdata,y=event.ydata)
-        self.dispmgr.cellCounter.setText('Cell Count: ' + str(self.dispmgr.program_manager.get_cell_count()))
+        self.main_window.cellCounter.setText('Cell Count: ' + str(self.main_window.program_manager.get_cell_count()))
         self.canvas.axes.plot(event.xdata, event.ydata, color="red", marker="o", gid="cell_center")
         self.canvas.draw()
 
     def edge(self):
         if self.mode == _Mode.EDGE:
             self.mode = _Mode.NONE
-            self.canvas.widgetlock.release(self)
+            # self.canvas.widgetlock.release(self)
         else:
             self.mode = _Mode.EDGE
-            self.canvas.widgetlock(self)
-        for a in self.canvas.figure.get_axes():
-            a.set_navigate_mode(self.mode._navigate_mode)
+            # self.canvas.widgetlock(self)
+        # for a in self.canvas.figure.get_axes():
+        #     a.set_navigate_mode(self.mode._navigate_mode)
         self.set_message(self.mode)
 
     def press_edge(self, event):
