@@ -11,12 +11,12 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
+        # set up ProgramManager
+        self.program_manager = ProgramManager()
+
         loadUi("ui/main.ui", self)
         self.setWindowTitle("JAB Bacteria Network Detector")
         self.addToolBar(CustomToolbar(self.MplWidget.canvas, self))
-
-        # set up ProgramManager
-        self.program_manager = ProgramManager()
 
         # Set some default options
         self.set_default_enablements()
@@ -89,14 +89,6 @@ class MainWindow(QMainWindow):
         self.program_manager.compute_bounding_boxes(self.progressBar.setValue)
 
         self.MplWidget.draw_image(self.program_manager.image)
-        self.MplWidget.draw_cell_bounding_boxes(self.program_manager.bio_objs)
-
-        # allow user to view cell counts
-        self.MplWidget.draw_cell_bounding_boxes(self.program_manager.bio_objs)
-
-        self.program_manager.compute_cell_count()
-        self.cellCounter.setText('Cell Count: ' + str(self.program_manager.cell_count))
-        self.cellCounter.setVisible(True)
 
         self.program_manager.compute_bbox_overlaps_and_cell_centers()
         self.MplWidget.draw_cell_centers(self.program_manager.bio_objs)
@@ -104,12 +96,17 @@ class MainWindow(QMainWindow):
         # run edge_detection
         self.program_manager.compute_cell_network_edges(self.MplWidget.canvas)
         self.program_manager.compute_initial_graph()
-        self.MplWidget.remove_cell_bounding_boxes()
+
         self.MplWidget.draw_cell_network_edges(self.program_manager.bio_objs)
+
+        self.cellCounter.setText('Cell Count: ' + str(self.program_manager.get_cell_count()))
+        self.cellCounter.setVisible(True)
 
         self.actionSave.setEnabled(True)
         self.actionSaveAs.setEnabled(True)
         self.actionExportToGephi.setEnabled(True)
+        self.actionViewBoundingBoxes.setEnabled(True)
+        self.actionViewContour.setEnabled(True)
 
         self.progressBar.setVisible(False)
 
@@ -140,27 +137,28 @@ class MainWindow(QMainWindow):
         if path is None:
             return
 
-        if path[-5:] != ".gexf":
-            path = path + ".gexf"
+        if not path.endswith(".gexf"):
+            path += ".gexf"
 
         # write the final output to the file
         nx.write_gexf(self.program_manager.graph, path)
 
     def save(self):
-        if self.program_manager.filename is None:
+        if self.program_manager.pickle_path == "":
             self.save_as()
         else:
-            pickle.dump( self.program_manager, open(self.program_manager.filename, "wb"))
+            pickle.dump( self.program_manager, open(self.program_manager.pickle_path, "wb"))
 
     def save_as(self):
         path = self.get_save_loc('Pickle Files (*.p)')
 
-        if not path:
+        if path is None:
             return
-        if path[-2:] != '.p':
-            path = path +'.p'
 
-        self.program_manager.filename = path
+        if not path.endswith('.p'):
+            path += path +'.p'
+
+        self.program_manager.pickle_path = path
 
         self.save()
 
@@ -180,7 +178,7 @@ class MainWindow(QMainWindow):
         self.actionViewBoundingBoxes.setEnabled(True)
         self.actionViewBoundingBoxes.setChecked(False)
 
-        self.cellCounter.setText('Cell Count: ' + str(self.program_manager.cell_count))
+        self.cellCounter.setText('Cell Count: ' + str(self.program_manager.get_cell_count()))
         self.cellCounter.setVisible(True)
         self.actionViewContour.setEnabled(True)
         self.actionViewContour.setChecked(False)
