@@ -101,7 +101,7 @@ class MainWindow(QMainWindow):
         self.program_manager.compute_cell_network_edges(self.MplWidget.canvas)
         self.program_manager.compute_initial_graph()
 
-        self.cellCounter.setText('Cell Count: ' + str(self.program_manager.get_cell_count()))
+        self.cellCounter.setText("Cell Count: " + str(self.program_manager.get_cell_count()))
         self.cellCounter.setVisible(True)
 
         self.actionViewNetworkEdges.setEnabled(True)
@@ -139,11 +139,11 @@ class MainWindow(QMainWindow):
     """------------------ UTILITIES -----------------------------"""
 
     def get_save_loc(self, ext):
-        path, _ = QFileDialog.getSaveFileName(None, 'Save File', "", ext)
+        path, _ = QFileDialog.getSaveFileName(None, "Save File", "", ext)
         return path
 
     def convert_to_gephi_and_export(self):
-        path = self.get_save_loc('Gephi Graphs (*.gexf)')
+        path = self.get_save_loc("Gephi Graphs (*.gexf)")
 
         # If they cancelled the operation
         if path is None:
@@ -162,12 +162,12 @@ class MainWindow(QMainWindow):
             pickle.dump( self.program_manager, open(self.program_manager.pickle_path, "wb"))
 
     def save_as(self):
-        path = self.get_save_loc('Pickle Files (*.p)')
+        path = self.get_save_loc("Pickle Files (*.p)")
 
         if path is None:
             return
-        if not path.endswith('.p'):
-            path +='.p'
+        if not path.endswith(".p"):
+            path += ".p"
 
         self.program_manager.pickle_path = path
 
@@ -189,7 +189,7 @@ class MainWindow(QMainWindow):
         self.actionViewBoundingBoxes.setEnabled(True)
         self.actionViewBoundingBoxes.setChecked(False)
 
-        self.cellCounter.setText('Cell Count: ' + str(self.program_manager.get_cell_count()))
+        self.cellCounter.setText("Cell Count: " + str(self.program_manager.get_cell_count()))
         self.cellCounter.setVisible(True)
         self.actionViewContour.setEnabled(True)
         self.actionViewContour.setChecked(False)

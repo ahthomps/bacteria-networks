@@ -4,10 +4,16 @@
 # but it needs more testing and it needs to be able to get the model.
 
 # If homebrew isn't installed, then install it.
-which -s brew || /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+which -s brew
+if [ $? ]; then
+    brew update
+    brew upgrade
+else
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+fi
 
 # Install our brew dependencies
-brew install python3 gcc git libomp pyqt5
+brew install python3 gcc git pyqt5
 # bsd make comes with the xcode tools that get installed alongside homebrew, and darknet doesn't use
 # any of the gnu make features, so we don't need to brew install make.
 
@@ -26,7 +32,10 @@ sed -i "" "s/OPENMP=0/OPENMP=1/" darknet/Makefile # Enables multicore support fo
 sed -i "" "s/AVX=0/AVX=1/" darknet/Makefile # Enables vector instructions for running the neural network.
 
 # Install our pip dependencies
-pip3 install numpy matplotlib scikit-image networkx
+pip3 install --user numpy matplotlib scikit-image networkx
+
+# We do this last because otherwise some of the pip packages will try to build using openmp and get blocked because clang doesn't support it.
+brew install libomp
 
 # Now, we need to get the model. We need a place to host it that isn't Google Drive so it can be downloaded from this script.
 # Ideally, we'd get a cs server to host it, and we can host this script there too.
