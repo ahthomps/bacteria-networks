@@ -6,190 +6,93 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1256</width>
-    <height>978</height>
+    <width>800</width>
+    <height>600</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>JAB Bacteria Networks</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <property name="sizePolicy">
-    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-     <horstretch>0</horstretch>
-     <verstretch>0</verstretch>
-    </sizepolicy>
+   <property name="layoutDirection">
+    <enum>Qt::LeftToRight</enum>
    </property>
-   <widget class="QWidget" name="ToolbarContainer" native="true">
-    <property name="geometry">
-     <rect>
-      <x>1</x>
-      <y>1</y>
-      <width>200</width>
-      <height>831</height>
-     </rect>
-    </property>
-    <property name="sizePolicy">
-     <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-      <horstretch>0</horstretch>
-      <verstretch>0</verstretch>
-     </sizepolicy>
-    </property>
-    <property name="minimumSize">
-     <size>
-      <width>200</width>
-      <height>0</height>
-     </size>
-    </property>
-    <property name="maximumSize">
-     <size>
-      <width>16777215</width>
-      <height>16777215</height>
-     </size>
-    </property>
-    <property name="autoFillBackground">
-     <bool>false</bool>
-    </property>
-    <widget class="QPushButton" name="BaddCell">
-     <property name="geometry">
-      <rect>
-       <x>50</x>
-       <y>310</y>
-       <width>80</width>
-       <height>26</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Add Cells</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="BaddEdge">
-     <property name="geometry">
-      <rect>
-       <x>50</x>
-       <y>370</y>
-       <width>80</width>
-       <height>26</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Add Edges</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="BchangeClass">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>430</y>
-       <width>151</width>
-       <height>26</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Change Classification</string>
-     </property>
-    </widget>
-    <widget class="QLabel" name="CellCounter">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>750</y>
-       <width>201</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <property name="autoFillBackground">
-      <bool>false</bool>
-     </property>
-     <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Cell Count: NUMBER&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-     </property>
-    </widget>
-   </widget>
-   <widget class="QWidget" name="MplWidgetContainer" native="true">
-    <property name="geometry">
-     <rect>
-      <x>271</x>
-      <y>40</y>
-      <width>841</width>
-      <height>800</height>
-     </rect>
-    </property>
-    <property name="minimumSize">
-     <size>
-      <width>600</width>
-      <height>0</height>
-     </size>
-    </property>
-    <property name="maximumSize">
-     <size>
-      <width>10000</width>
-      <height>10000</height>
-     </size>
-    </property>
-    <property name="styleSheet">
-     <string notr="true"/>
-    </property>
-    <widget class="MplWidget" name="MplWidget" native="true">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>0</y>
-       <width>841</width>
-       <height>801</height>
-      </rect>
-     </property>
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>600</width>
-       <height>600</height>
-      </size>
-     </property>
-     <property name="toolTip">
-      <string comment="standard node"/>
-     </property>
-     <property name="styleSheet">
-      <string notr="true"/>
-     </property>
-    </widget>
-   </widget>
-   <widget class="QWidget" name="layoutWidget">
-    <property name="geometry">
-     <rect>
-      <x>0</x>
-      <y>0</y>
-      <width>2</width>
-      <height>2</height>
-     </rect>
-    </property>
-    <layout class="QHBoxLayout" name="horizontalLayout"/>
-   </widget>
-   <widget class="QProgressBar" name="progressBar">
-    <property name="geometry">
-     <rect>
-      <x>390</x>
-      <y>850</y>
-      <width>601</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="value">
-     <number>0</number>
-    </property>
-   </widget>
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <item>
+     <widget class="QWidget" name="SideBar" native="true">
+      <property name="minimumSize">
+       <size>
+        <width>200</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>200</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <property name="autoFillBackground">
+       <bool>true</bool>
+      </property>
+      <property name="styleSheet">
+       <string notr="true"/>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QProgressBar" name="progressBar">
+         <property name="value">
+          <number>24</number>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="CellCounter">
+         <property name="text">
+          <string>Cell Count: NUMBER </string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="MplWidget" name="MplWidget" native="true">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>200</width>
+        <height>0</height>
+       </size>
+      </property>
+     </widget>
+    </item>
+   </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1256</width>
+     <width>800</width>
      <height>22</height>
     </rect>
    </property>
@@ -215,7 +118,7 @@
      <string>View</string>
     </property>
     <addaction name="actionBounding_Boxes"/>
-    <addaction name="actionContour_view"/>
+    <addaction name="actionContour"/>
    </widget>
    <widget class="QMenu" name="menuRun">
     <property name="title">
@@ -239,65 +142,6 @@
     <string>Save</string>
    </property>
   </action>
-  <action name="actionClear">
-   <property name="text">
-    <string>Clear</string>
-   </property>
-  </action>
-  <action name="actionBinary_Image">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Binary Image</string>
-   </property>
-  </action>
-  <action name="actionBounding_Boxes">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Bounding Boxes</string>
-   </property>
-  </action>
-  <action name="actionContour_view">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Contour</string>
-   </property>
-  </action>
-  <action name="actionProcess_Image">
-   <property name="text">
-    <string>Process Image</string>
-   </property>
-  </action>
-  <action name="actionYOLO">
-   <property name="text">
-    <string>YOLO</string>
-   </property>
-  </action>
-  <action name="actionContour_run">
-   <property name="text">
-    <string>Contour</string>
-   </property>
-  </action>
-  <action name="actionEdge_Detection">
-   <property name="text">
-    <string>Edge Detection</string>
-   </property>
-  </action>
-  <action name="actionCrop">
-   <property name="text">
-    <string>Crop</string>
-   </property>
-  </action>
-  <action name="actionReunify">
-   <property name="text">
-    <string>Reunify</string>
-   </property>
-  </action>
   <action name="actionSave_As">
    <property name="text">
     <string>Save As...</string>
@@ -311,6 +155,27 @@
   <action name="actionLoad_Project">
    <property name="text">
     <string>Load Project</string>
+   </property>
+  </action>
+  <action name="actionClear">
+   <property name="text">
+    <string>Clear</string>
+   </property>
+  </action>
+  <action name="actionBounding_Boxes">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Bounding Boxes</string>
+   </property>
+  </action>
+  <action name="actionContour">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Contour</string>
    </property>
   </action>
   <action name="actionRun_All">

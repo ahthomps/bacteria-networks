@@ -17,7 +17,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("JAB Bacteria Network Detector")
         self.addToolBar(CustomToolbar(self.MplWidget.canvas, self))
 
-        self.labeling_buttons = (self.BaddCell, self.BaddEdge, self.BchangeClass)
+        # self.labeling_buttons = (self.BaddCell, self.BaddEdge, self.BchangeClass)
 
         # set up ProgramManager
         self.program_manager = ProgramManager()
@@ -32,7 +32,7 @@ class MainWindow(QMainWindow):
         self.actionLoad_Project.triggered.connect(self.load)
 
         self.actionBounding_Boxes.triggered.connect(self.handle_cell_bounding_boxes_view_press)
-        self.actionContour_view.triggered.connect(self.handle_cell_contours_view_press)
+        self.actionContour.triggered.connect(self.handle_cell_contours_view_press)
         self.actionRun_All.triggered.connect(self.run_yolo_and_edge_detection_and_display)
 
         self.MplWidget.canvas.mpl_connect("button_press_event", self.on_canvas_press)
@@ -59,12 +59,12 @@ class MainWindow(QMainWindow):
         self.actionRun_All.setEnabled(False)
 
         self.CellCounter.setVisible(False)
-        self.toggle_labeling_buttons(False)
+        # self.toggle_labeling_buttons(False)
 
         self.actionBounding_Boxes.setEnabled(False)
         self.actionBounding_Boxes.setChecked(False)
-        self.actionContour_view.setEnabled(False)
-        self.actionContour_view.setChecked(False)
+        self.actionContour.setEnabled(False)
+        self.actionContour.setChecked(False)
 
     def clear_all_data_and_reset_window(self):
         self.program_manager = ProgramManager()
@@ -100,7 +100,6 @@ class MainWindow(QMainWindow):
         self.actionRun_All.setEnabled(False)
 
         self.progressBar.setVisible(True)
-
         # run yolo
         self.program_manager.compute_bounding_boxes(self.progressBar.setValue)
 
@@ -110,10 +109,6 @@ class MainWindow(QMainWindow):
         # enable toggling bbox display
         self.actionBounding_Boxes.setEnabled(True)
         self.actionBounding_Boxes.setChecked(True)
-        # enable image processing
-        # self.actionProcess_Image.setEnabled(True)
-        # enable edge detection
-        self.actionEdge_Detection.setEnabled(True)
 
         # allow user to view cell counts
         self.MplWidget.draw_cell_bounding_boxes(self.program_manager.bio_objs)
@@ -128,10 +123,11 @@ class MainWindow(QMainWindow):
         self.MplWidget.remove_cell_bounding_boxes()
         self.MplWidget.draw_cell_network_edges(self.program_manager.bio_objs)
 
-        self.toggle_labeling_buttons(True)
+        # self.toggle_labeling_buttons(True)
 
         self.actionSave.setEnabled(True)
         self.actionSave_As.setEnabled(True)
+        self.actionExport_to_Gephi.setEnabled(True)
 
         self.progressBar.setVisible(False)
 
@@ -144,7 +140,7 @@ class MainWindow(QMainWindow):
             self.MplWidget.remove_cell_bounding_boxes()
 
     def handle_cell_contours_view_press(self):
-        if self.actionContour_view.isChecked():
+        if self.actionContour.isChecked():
             self.MplWidget.draw_cell_contours(self.program_manager.bio_objs)
         else:
             self.MplWidget.remove_cell_contours()
@@ -217,8 +213,8 @@ class MainWindow(QMainWindow):
 
         self.CellCounter.setText('Cell Count: ' + str(self.get_cell_count()))
         self.CellCounter.setVisible(True)
-        self.actionContour_view.setEnabled(True)
-        self.actionContour_view.setChecked(False)
+        self.actionContour.setEnabled(True)
+        self.actionContour.setChecked(False)
         self.MplWidget.draw_cell_centers(self.program_manager.bio_objs)
         self.actionExport_to_Gephi.setEnabled(True)
         self.MplWidget.draw_cell_network_edges(self.program_manager.bio_objs)
