@@ -106,9 +106,9 @@ class ProgramManager:
             for tile in make_tiles(Image.open(f"{directory}/{filename}"), filename[:filename.rfind(".")]):
                 tile.save(directory=CROP_DIR)
 
-    def compute_cell_network_edges(self, canvas):
-        compute_cell_contact(self.bio_objs, self.image)
-        compute_nanowire_edges(self.bio_objs, canvas, self.image)
+    def compute_cell_network_edges(self, canvas, update_progress_bar):
+        compute_cell_contact(self.bio_objs, self.image, update_progress_bar)
+        compute_nanowire_edges(self.bio_objs, canvas, self.image, update_progress_bar)
 
     def get_cell_count(self):
         return len(self.graph.nodes) - 1

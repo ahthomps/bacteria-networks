@@ -98,7 +98,7 @@ class MainWindow(QMainWindow):
         self.MplWidget.draw_cell_centers(self.program_manager.bio_objs)
 
         # run edge_detection
-        self.program_manager.compute_cell_network_edges(self.MplWidget.canvas)
+        self.program_manager.compute_cell_network_edges(self.MplWidget.canvas, self.progressBar.setValue)
         self.program_manager.compute_initial_graph()
 
         self.cellCounter.setText("Cell Count: " + str(self.program_manager.get_cell_count()))

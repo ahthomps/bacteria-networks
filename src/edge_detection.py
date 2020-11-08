@@ -38,7 +38,7 @@ def add_edge(obj1, obj2, nanowire=None):
     obj2.edge_list.append(NetworkEdge(obj2, obj1, nanowire))
 
 
-def compute_cell_contact(bio_objects, image):
+def compute_cell_contact(bio_objects, image, update_progress_bar):
     """ Computes all cell-to-cell contacts and adds to adj_list attribute of the cell objects"""
 
     # filter out non-cells and cells that don't have contours (no possible cell contact)
@@ -49,10 +49,11 @@ def compute_cell_contact(bio_objects, image):
             cells.append(obj)
             compute_contour(obj, image)
 
-    for i in range(len(cells) - 1):
-        cell1 = cells[i]
-        for j in range(i + 1, len(cells)):
-            cell2 = cells[j]
+    for i, cell1 in enumerate(cells):
+        update_progress_bar(int(i / len(bio_objects) * 100))
+        for cell2 in cell1.overlapping_bboxes:
+            if cell2.id > cell1.id:
+                continue
             cell1_contour_dilated = morphology.dilation(cell1.contour)
             # if the intersections of the np arrays has 1s then they overlap
             if (np.logical_and(cell1.contour, cell2.contour, dtype=np.int8).any() or
@@ -62,16 +63,13 @@ def compute_cell_contact(bio_objects, image):
                 cell2.edge_list[-1].set_type_as_cell_contact()
 
 
-def compute_nanowire_edges(bio_objects, canvas, image):
-
-    nanowires = []
-    for obj in bio_objects:
-        if obj.is_nanowire():
-            nanowires.append(obj)
-
+def compute_nanowire_edges(bio_objects, canvas, image, update_progress_bar):
     surface = bio_objects[0]
+    num_cells = sum(bio_obj.is_cell() for bio_obj in bio_objects)
+    nanowires = filter(lambda b: b.is_nanowire(), bio_objects)
 
-    for nanowire in nanowires:
+    for i, nanowire in enumerate(nanowires):
+        update_progress_bar(int((num_cells + i) / len(bio_objects) * 100))
         if len(nanowire.overlapping_bboxes) == 0:
             continue
         elif len(nanowire.overlapping_bboxes) == 2:
@@ -95,7 +93,6 @@ def compute_nanowire_edges(bio_objects, canvas, image):
                 if np.logical_and(cell.contour, nanowire.contour, dtype=np.uint8).any():
                     intersections.append(cell)
 
-            print("intersections length: ", len(intersections))
             if len(intersections) == 2:
                 cell1, cell2 = intersections
                 add_edge(cell1, cell2, nanowire)
