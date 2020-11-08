@@ -1,6 +1,3 @@
-from sys import path
-path.append("ui")
-
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QMainWindow, QFileDialog, QShortcut
 from PyQt5.QtGui import QKeySequence
