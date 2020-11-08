@@ -91,10 +91,6 @@ class MainWindow(QMainWindow):
         self.MplWidget.draw_image(self.program_manager.image)
         self.MplWidget.draw_cell_bounding_boxes(self.program_manager.bio_objs)
 
-        # enable toggling bbox display
-        self.actionViewBoundingBoxes.setEnabled(True)
-        self.actionViewBoundingBoxes.setChecked(True)
-
         # allow user to view cell counts
         self.MplWidget.draw_cell_bounding_boxes(self.program_manager.bio_objs)
 
