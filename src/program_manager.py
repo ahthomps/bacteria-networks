@@ -1,13 +1,9 @@
 from skimage.color import rgb2gray
 from PIL import Image
 import numpy as np
-import random
 import matplotlib.pyplot as plt
-import subprocess
 import os
 import networkx as nx
-import pickle
-import collections
 
 from bio_object import BioObject, compute_all_cell_bbox_overlaps, compute_nanowire_to_cell_bbox_overlaps, compute_cell_center
 from crop_processing import Tile, make_tiles, IMAGE_EXTENSIONS, reunify_tiles
@@ -22,7 +18,7 @@ class ProgramManager:
         self.image = np.array([])
         self.original_image = np.array([])
         self.bio_objs = []
-        self.cellCount = 0
+        self.cell_count = 0
         self.made_crops = False
 
         self.image_path = ""
@@ -115,21 +111,21 @@ class ProgramManager:
         compute_cell_contact(self.bio_objs, self.image)
         compute_nanowire_edges(self.bio_objs, canvas, self.image)
 
-    def get_cell_count_from_bioObjs(self):
-        self.cellCount = sum(bio_object.is_cell() for bio_object in self.bio_objs)
+    def compute_cell_count(self):
+        self.cell_count = sum(bio_object.is_cell() for bio_object in self.bio_objs)
 
-    def generate_automated_graph_from_bioObjs(self):
+    def compute_initial_graph(self):
         # initialize graph
         self.graph = nx.MultiGraph()
 
         # add all nodes
-        for bioObject in self.bio_objs:
-            if bioObject.is_cell():
-                x, y = bioObject.center()
-                self.graph.add_node(bioObject.id, x = x, y = y)
+        for bio_object in self.bio_objs:
+            if bio_object.is_cell():
+                x, y = bio_object.center()
+                self.graph.add_node(bio_object.id, x=x, y=y)
 
         # add all edges
-        for bioObject in self.bio_objs:
-            if bioObject.is_cell():
-                for adj_cell in bioObject.adj_list:
-                    self.graph.add_edge(bioObject.id, adj_cell.id)
+        for bio_object in self.bio_objs:
+            if bio_object.is_cell():
+                for adj_cell in bio_object.adj_list:
+                    self.graph.add_edge(bio_object.id, adj_cell.id)

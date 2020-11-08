@@ -2,10 +2,8 @@
     Here, we define some functions for dealing with Tiles. This will probably get merged into something else as the project grows.
 """
 
-import sys
 from PIL import Image
 from copy import deepcopy
-from os import listdir
 
 TILE_OVERLAP = 3 # 2 -> 50% overlap, 3 -> 33% overlap, etc.
 TILE_SIZE = 416
