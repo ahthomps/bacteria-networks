@@ -22,8 +22,8 @@ class ProgramManager:
         self.made_crops = False
 
         self.image_path = ""
-        self.filename = None
-        self.graph = None
+        self.pickle_path = None
+        self.graph = nx.MultiGraph()
 
     def open_image_file_and_crop_if_necessary(self, image_path):
         self.image_path = image_path
@@ -115,9 +115,6 @@ class ProgramManager:
         self.cell_count = sum(bio_object.is_cell() for bio_object in self.bio_objs)
 
     def compute_initial_graph(self):
-        # initialize graph
-        self.graph = nx.MultiGraph()
-
         # add all nodes
         for bio_object in self.bio_objs:
             if bio_object.is_cell():

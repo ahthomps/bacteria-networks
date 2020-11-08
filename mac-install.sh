@@ -26,7 +26,7 @@ sed -i "" "s/OPENMP=0/OPENMP=1/" darknet/Makefile # Enables multicore support fo
 sed -i "" "s/AVX=0/AVX=1/" darknet/Makefile # Enables vector instructions for running the neural network.
 
 # Install our pip dependencies
-pip3 install matplotlib scikit-image numpy networkx # numpy and networkx are dependencies of mpl, but no harm done.
+pip3 install numpy matplotlib scikit-image networkx
 
 # Now, we need to get the model. We need a place to host it that isn't Google Drive so it can be downloaded from this script.
 # Ideally, we'd get a cs server to host it, and we can host this script there too.
