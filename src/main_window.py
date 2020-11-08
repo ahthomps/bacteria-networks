@@ -16,8 +16,6 @@ class MainWindow(QMainWindow):
 
         loadUi("ui/main.ui", self)
         self.setWindowTitle("JAB Bacteria Network Detector")
-        self.toolbar = CustomToolbar(self.MplWidget.canvas, self)
-        self.addToolBar(self.toolbar)
 
         # Set some default options
         self.set_default_enablements()
@@ -47,6 +45,8 @@ class MainWindow(QMainWindow):
     def set_default_visibilities(self):
         self.progressBar.setVisible(False)
         self.cellCounter.setVisible(False)
+        self.toolbar = CustomToolbar(self.MplWidget.canvas, self)
+        self.addToolBar(self.toolbar)
 
     def set_default_enablements(self):
         self.actionSave.setEnabled(False)
@@ -68,6 +68,7 @@ class MainWindow(QMainWindow):
     def clear_all_data_and_reset_window(self):
         self.program_manager = ProgramManager()
         self.MplWidget.clear_canvas()
+        self.removeToolBar(self.toolbar)
         self.set_default_visibilities()
         self.set_default_enablements()
 
