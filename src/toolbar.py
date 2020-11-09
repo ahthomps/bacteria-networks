@@ -25,6 +25,8 @@ class CustomToolbar(NavigationToolbar2QT):
             self.removeAction(self.actions()[-1])
         self.addAction(self.message_display)
 
+        self.canvas.mpl_connect('pick_event', self.object_clicked)
+
     def add_network_tools(self):
         self.removeAction(self.actions()[-1])
         self.addSeparator()
@@ -34,6 +36,9 @@ class CustomToolbar(NavigationToolbar2QT):
 
     def mouse_move(self, event):
         pass
+
+    def object_clicked(self, event):
+        print("you clicked an object!")
 
     def _zoom_pan_handler(self, event):
         super()._zoom_pan_handler(event)
