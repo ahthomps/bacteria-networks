@@ -6,6 +6,7 @@ from toolbar import CustomToolbar
 from program_manager import ProgramManager
 import pickle
 import networkx as nx
+from post_processing import PostProcessingManager
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -13,6 +14,7 @@ class MainWindow(QMainWindow):
 
         # set up ProgramManager
         self.program_manager = ProgramManager()
+        self.post_processor = None
 
         loadUi("ui/main.ui", self)
         self.setWindowTitle("JAB Bacteria Network Detector")
@@ -102,16 +104,11 @@ class MainWindow(QMainWindow):
         # run edge_detection
         self.progressBar.setFormat("Computing cell network...")
         self.program_manager.compute_cell_network_edges(self.MplWidget.canvas, self.progressBar.setValue)
-        self.program_manager.compute_initial_graph()
-
-        self.cellCounter.setText("Cell Count: " + str(self.program_manager.get_cell_count()))
-        self.cellCounter.setVisible(True)
 
         self.actionViewNetworkEdges.setEnabled(True)
         self.actionViewNetworkEdges.setChecked(True)
         self.MplWidget.draw_network_edges(self.program_manager.bio_objs)
         self.toolbar.add_network_tools()
-
 
         self.actionSave.setEnabled(True)
         self.actionSaveAs.setEnabled(True)
@@ -120,6 +117,12 @@ class MainWindow(QMainWindow):
         self.actionViewContour.setEnabled(True)
 
         self.progressBar.setVisible(False)
+
+        self.post_processor = PostProcessingManager(self.program_manager.bio_objs)
+        self.toolbar.set_post_processor(self.post_processor)
+
+        self.update_cell_counter()
+        self.cellCounter.setVisible(True)
 
     def handle_cell_bounding_boxes_view_press(self):
         if self.actionViewBoundingBoxes.isChecked():
@@ -138,6 +141,9 @@ class MainWindow(QMainWindow):
             self.MplWidget.draw_network_edges(self.program_manager.bio_objs)
         else:
             self.MplWidget.remove_network_edges()
+
+    def update_cell_counter(self):
+        self.cellCounter.setText("Cell Count: " + str(self.post_processor.get_cell_count()))
 
     """------------------ UTILITIES -----------------------------"""
 
@@ -192,7 +198,7 @@ class MainWindow(QMainWindow):
         self.actionViewBoundingBoxes.setEnabled(True)
         self.actionViewBoundingBoxes.setChecked(False)
 
-        self.cellCounter.setText("Cell Count: " + str(self.program_manager.get_cell_count()))
+        self.update_cell_counter()
         self.cellCounter.setVisible(True)
         self.actionViewContour.setEnabled(True)
         self.actionViewContour.setChecked(False)
