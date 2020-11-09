@@ -37,6 +37,8 @@ def run_yolo_on_images(img_paths, update_progress_bar):
             update_progress_bar(min(100, int(total_images_processed / len(img_paths) * 100)))
         # It felt like I should put a sleep in here, but I timed it and it makes no difference.
 
+    total_output += "".join(proc.stdout.readlines())
+
     # Remove the garbage files that yolo makes
     if os.path.exists("bad.list"):
         os.remove("bad.list")
