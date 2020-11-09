@@ -64,7 +64,10 @@ class CustomToolbar(NavigationToolbar2QT):
 
     def release_cell(self, event):
         graph = self.main_window.program_manager.graph
-        graph.add_node(max(graph.nodes)+1,x=event.xdata,y=event.ydata)
+        id = max(graph.nodes) + 1
+        graph.add_node(id,x=event.xdata,y=event.ydata)
+        self.main_window.program_manager.cell_data.append([id,event.xdata,event.ydata])
+        self.main_window.program_manager.refreshKDtree()
         self.main_window.cellCounter.setText('Cell Count: ' + str(self.main_window.program_manager.get_cell_count()))
         self.canvas.axes.plot(event.xdata, event.ydata, color="red", marker="o", gid="cell_center")
         self.canvas.draw()
@@ -82,6 +85,7 @@ class CustomToolbar(NavigationToolbar2QT):
 
     def press_edge(self, event):
         print("edge started")
+        self.n1 = self.main_window.program_manager.get_closest_node(event.xdata,event.ydata)
         self.canvas.mpl_disconnect(self._id_drag)
         self._id_drag = self.canvas.mpl_connect('motion_notify_event', self.drag_edge)
 
@@ -90,5 +94,14 @@ class CustomToolbar(NavigationToolbar2QT):
 
     def release_edge(self, event):
         print("edge finished")
+        self.n2 = self.main_window.program_manager.get_closest_node(event.xdata,event.ydata)
+        if not self.n1[0] == self.n2[0]:
+            center1 = [self.n1[1], self.n1[2]]
+            center2 = [self.n2[1], self.n2[2]]
+            print('adding edge from', center1, 'to', center2)
+            self.canvas.axes.plot([self.n1[1],self.n2[1]], [self.n1[2],self.n2[2]], \
+                center2, color="green", linestyle="dashed", marker="o", gid="edge")
+            self.canvas.draw()
+            self.main_window.program_manager.graph.add_edge(self.n1[0],self.n2[0])
         self.canvas.mpl_disconnect(self._id_drag)
         self._id_drag = self.canvas.mpl_connect('motion_notify_event', self.mouse_move)

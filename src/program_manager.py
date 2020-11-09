@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 import networkx as nx
+from scipy.spatial import KDTree
 
 from bio_object import BioObject, compute_all_cell_bbox_overlaps, compute_nanowire_to_cell_bbox_overlaps, compute_cell_center
 from crop_processing import Tile, make_tiles, IMAGE_EXTENSIONS, reunify_tiles
@@ -110,14 +111,19 @@ class ProgramManager:
         compute_cell_contact(self.bio_objs, self.image, update_progress_bar)
         compute_nanowire_edges(self.bio_objs, canvas, self.image, update_progress_bar)
 
+    def refreshKDtree(self):
+        self.tree = KDTree([[cell[1],cell[2]] for cell in self.cell_data])
+
     def get_cell_count(self):
         return len(self.graph.nodes) - 1
 
     def compute_initial_graph(self):
         # add all nodes
+        self.cell_data = []
         for bio_object in self.bio_objs:
             if bio_object.is_cell():
-                x, y = bio_object.center()
+                x, y = bio_object.cell_center
+                self.cell_data.append([bio_object.id, x, y])
                 self.graph.add_node(bio_object.id, x=x, y=y)
 
         # add all edges
@@ -125,3 +131,9 @@ class ProgramManager:
             if bio_object.is_cell():
                 for adj_cell in bio_object.adj_list:
                     self.graph.add_edge(bio_object.id, adj_cell.id)
+
+        self.refreshKDtree()
+
+    def get_closest_node(self, x, y):
+        dist, index = self.tree.query([x,y])
+        return self.cell_data[index]
