@@ -4,6 +4,7 @@
 from PyQt5.QtWidgets import *
 from matplotlib.backends.backend_qt5agg import FigureCanvas
 from matplotlib.figure import Figure
+from matplotlib.lines import Line2D
 from PyQt5 import QtCore
 
 BACKGROUND_COLOR = "#EFEFEF"
@@ -14,7 +15,7 @@ CELL_BBOX_COLOR = "blue"
 BBOX_GID = "bbox"
 CONTOUR_GID = "contour"
 CELL_CENTER_GID = "cell_center"
-NETWORK_EDGE = "edge"
+NETWORK_EDGE_GID = "edge"
 
 class MplWidget(QWidget):
     def __init__(self, parent):
@@ -50,10 +51,15 @@ class MplWidget(QWidget):
             self.canvas.axes.plot([obj.x1, obj.x2], [obj.y2, obj.y2], color=color, linestyle="dashed", marker="o", gid=BBOX_GID)
             self.canvas.axes.plot([obj.x1, obj.x1], [obj.y1, obj.y2], color=color, linestyle="dashed", marker="o", gid=BBOX_GID)
             self.canvas.axes.plot([obj.x2, obj.x2], [obj.y1, obj.y2], color=color, linestyle="dashed", marker="o", gid=BBOX_GID)
+
         self.canvas.draw()
 
     def draw_point(self, x, y):
-        self.canvas.axes.plot(x, y, color="red", marker="o", gid=CELL_CENTER_GID)
+        point_obj = Line2D([x], [y], color="red", marker="o", gid=CELL_CENTER_GID)
+        point_obj.set_picker(True)
+        self.canvas.axes.add_line(point_obj)
+        self.canvas.draw()
+        # self.canvas.axes.plot(x, y, color="red", marker="o", gid=CELL_CENTER_GID)
 
     def draw_cell_centers(self, bio_objects):
         for obj in bio_objects:
@@ -66,7 +72,6 @@ class MplWidget(QWidget):
             if not cell.has_contour():
                 continue
 
-            self.canvas.axes.plot(cell.cell_center[0], cell.cell_center[1], color="red", marker="o", gid=CONTOUR_GID)
             contour = cell.contour
             contour_set = self.canvas.axes.contour(contour, [0.75], colors=CONTOUR_COLORS[count % len(CONTOUR_COLORS)])
             count += 1
@@ -84,17 +89,21 @@ class MplWidget(QWidget):
                 elif edge.type_is_cell_to_surface():
                     if edge.nanowire.x2 - edge.nanowire.x1 > edge.nanowire.y2 - edge.nanowire.y1:
                         y_mid = (edge.nanowire.y2 + edge.nanowire.y1) // 2
-                        self.canvas.axes.plot([edge.nanowire.x1, edge.nanowire.x2], [y_mid, y_mid], color="blue", marker="o", gid=NETWORK_EDGE)
+                        network_edge_line = Line2D([edge.nanowire.x1, edge.nanowire.x2], [y_mid, y_mid], color="blue", marker="o", gid=NETWORK_EDGE_GID)
+                        # self.canvas.axes.plot([edge.nanowire.x1, edge.nanowire.x2], [y_mid, y_mid], color="blue", marker="o", gid=NETWORK_EDGE_GID)
                     else:
                         x_mid = (edge.nanowire.x2 + edge.nanowire.x1) // 2
-                        self.canvas.axes.plot([x_mid, x_mid], [edge.nanowire.y1, edge.nanowire.y2], color="blue", marker="o", gid=NETWORK_EDGE)
+                        network_edge_line = Line2D([x_mid, x_mid], [edge.nanowire.y1, edge.nanowire.y2], color="blue", marker="o", gid=NETWORK_EDGE_GID)
+                        # self.canvas.axes.plot([x_mid, x_mid], [edge.nanowire.y1, edge.nanowire.y2], color="blue", marker="o", gid=NETWORK_EDGE_GID)
                 else:
                     x1, y1 = obj.cell_center
                     x2, y2 = edge.head.cell_center
-                    plot_kwargs = {"color": "green", "linestyle": "dashed", "marker": "o", "gid": NETWORK_EDGE} if edge.type_is_cell_to_cell() \
-                             else {"color": "red", "marker": "o", "gid": NETWORK_EDGE}
-
-                    self.canvas.axes.plot([x1, x2], [y1, y2], **plot_kwargs)
+                    plot_kwargs = {"color": "blue", "linestyle": "dashed", "marker": "o", "gid": NETWORK_EDGE_GID} if edge.type_is_cell_to_cell() \
+                             else {"color": "blue", "marker": "o", "gid": NETWORK_EDGE_GID}
+                    network_edge_line = Line2D([x1, x2], [y1, y2], **plot_kwargs)
+                    # self.canvas.axes.plot([x1, x2], [y1, y2], **plot_kwargs)
+                network_edge_line.set_picker(True)
+                self.canvas.axes.add_line(network_edge_line)
 
         self.canvas.draw()
 
@@ -112,6 +121,6 @@ class MplWidget(QWidget):
 
     def remove_network_edges(self):
         for child in self.canvas.axes.get_children():
-            if hasattr(child, "_gid") and child._gid == NETWORK_EDGE:
+            if hasattr(child, "_gid") and child._gid == NETWORK_EDGE_GID:
                 child.remove()
         self.canvas.draw()
