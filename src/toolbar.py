@@ -1,6 +1,7 @@
 from PyQt5.QtGui import QIcon
 from enum import Enum
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
+from matplotlib.lines import Line2D
 
 class _Mode(str, Enum):
     NONE = ""
@@ -17,15 +18,18 @@ class _Mode(str, Enum):
         return self.name if self is not _Mode.NONE else None
 
 class CustomToolbar(NavigationToolbar2QT):
-    def __init__(self, canvas, parent):
+    def __init__(self, MplWidget, parent):
         self.main_window = parent
-        super().__init__(canvas, parent)
+        self.MplWidget = MplWidget
+        super().__init__(self.MplWidget.canvas, parent)
         self.message_display = self.actions()[-1]
         for _ in range(5):
             self.removeAction(self.actions()[-1])
         self.addAction(self.message_display)
 
-        self.canvas.mpl_connect('pick_event', self.object_clicked)
+        self.building_edge_data = None
+
+        # self.canvas.mpl_connect('pick_event', self.object_clicked)
 
     def add_network_tools(self):
         self.removeAction(self.actions()[-1])
@@ -75,33 +79,42 @@ class CustomToolbar(NavigationToolbar2QT):
     def edge(self):
         if self.mode == _Mode.EDGE:
             self.mode = _Mode.NONE
-            # self.canvas.widgetlock.release(self)
+            self.canvas.widgetlock.release(self)
         else:
             self.mode = _Mode.EDGE
-            # self.canvas.widgetlock(self)
-        # for a in self.canvas.figure.get_axes():
-        #     a.set_navigate_mode(self.mode._navigate_mode)
+            self.canvas.widgetlock(self)
+        for a in self.canvas.figure.get_axes():
+            a.set_navigate_mode(self.mode._navigate_mode)
         self.set_message(self.mode)
 
     def press_edge(self, event):
-        print("edge started")
-        self.n1 = self.main_window.program_manager.get_closest_node(event.xdata,event.ydata)
+        assert(self.building_edge_data is None)
+        self.building_edge_data = {}
+        self.building_edge_data['node_begin'] = self.main_window.program_manager.get_closest_node(event.xdata,event.ydata)
+        self.building_edge_data['edge_line'] = None
         self.canvas.mpl_disconnect(self._id_drag)
         self._id_drag = self.canvas.mpl_connect('motion_notify_event', self.drag_edge)
 
     def drag_edge(self, event):
-        print("dragging!")
+        node_begin = self.building_edge_data['node_begin']
+        if self.building_edge_data['edge_line'] is not None:
+            self.building_edge_data['edge_line'].remove()
+        self.building_edge_data['edge_line'] = self.MplWidget.draw_line((node_begin[1], node_begin[2]), (event.xdata, event.ydata))
 
     def release_edge(self, event):
         print("edge finished")
-        self.n2 = self.main_window.program_manager.get_closest_node(event.xdata,event.ydata)
-        if not self.n1[0] == self.n2[0]:
-            center1 = [self.n1[1], self.n1[2]]
-            center2 = [self.n2[1], self.n2[2]]
+        if self.building_edge_data['edge_line'] is not None:
+            self.building_edge_data['edge_line'].remove()
+        node_end = self.main_window.program_manager.get_closest_node(event.xdata,event.ydata)
+        node_begin = self.building_edge_data['node_begin']
+        if not node_begin[0] == node_end[0]:
+            center1 = [node_begin[1], node_begin[2]]
+            center2 = [node_end[1], node_end[2]]
             print('adding edge from', center1, 'to', center2)
-            self.canvas.axes.plot([self.n1[1],self.n2[1]], [self.n1[2],self.n2[2]], \
-                center2, color="green", linestyle="dashed", marker="o", gid="edge")
-            self.canvas.draw()
-            self.main_window.program_manager.graph.add_edge(self.n1[0],self.n2[0])
+            self.MplWidget.draw_line(center1, center2)
+            # self.canvas.axes.plot([node_begin[1],node_end[1]], [node_begin[2],node_end[2]], color="green", linestyle="dashed", marker="o", gid="edge")
+            # self.canvas.draw()
+            self.main_window.program_manager.graph.add_edge(node_begin[0],node_end[0])
         self.canvas.mpl_disconnect(self._id_drag)
         self._id_drag = self.canvas.mpl_connect('motion_notify_event', self.mouse_move)
+        self.building_edge_data = None

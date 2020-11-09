@@ -61,6 +61,15 @@ class MplWidget(QWidget):
         self.canvas.draw()
         # self.canvas.axes.plot(x, y, color="red", marker="o", gid=CELL_CENTER_GID)
 
+        return point_obj
+
+    def draw_line(self, center1, center2):
+        line_obj = Line2D([center1[0], center2[0]], [center1[1], center2[1]], color="green", linestyle="dashed", marker="o", gid="edge")
+        self.canvas.axes.add_line(line_obj)
+        self.canvas.draw()
+
+        return line_obj
+
     def draw_cell_centers(self, bio_objects):
         for obj in bio_objects:
             if obj.is_cell():

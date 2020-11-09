@@ -45,7 +45,7 @@ class MainWindow(QMainWindow):
     def set_default_visibilities(self):
         self.progressBar.setVisible(False)
         self.cellCounter.setVisible(False)
-        self.toolbar = CustomToolbar(self.MplWidget.canvas, self)
+        self.toolbar = CustomToolbar(self.MplWidget, self)
         self.addToolBar(self.toolbar)
 
     def set_default_enablements(self):
