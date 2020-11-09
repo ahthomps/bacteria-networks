@@ -91,6 +91,7 @@ class MainWindow(QMainWindow):
         self.progressBar.setVisible(True)
 
         # run yolo
+        self.progressBar.setFormat("Computing bounding boxes...")
         self.program_manager.compute_bounding_boxes(self.progressBar.setValue)
 
         self.MplWidget.draw_image(self.program_manager.image)
@@ -99,6 +100,7 @@ class MainWindow(QMainWindow):
         self.MplWidget.draw_cell_centers(self.program_manager.bio_objs)
 
         # run edge_detection
+        self.progressBar.setFormat("Computing cell network...")
         self.program_manager.compute_cell_network_edges(self.MplWidget.canvas, self.progressBar.setValue)
         self.program_manager.compute_initial_graph()
 
