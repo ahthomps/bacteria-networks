@@ -20,13 +20,17 @@ class CustomToolbar(NavigationToolbar2QT):
     def __init__(self, canvas, parent):
         self.dispmgr = parent
         super().__init__(canvas, parent)
+        self.message_display = self.actions()[-1]
         for _ in range(5):
             self.removeAction(self.actions()[-1])
+        self.addAction(self.message_display)
 
     def add_network_tools(self):
+        self.removeAction(self.actions()[-1])
         self.addSeparator()
         self.addAction(QIcon("ui/standard_node.svg"), "Add Cell", self.cell).setToolTip("Add a cell")
         self.addAction(QIcon("ui/standard_edge.svg"), "Add Edge", self.edge).setToolTip("Add an edge")
+        self.addAction(self.message_display)
 
     def mouse_move(self, event):
         pass
