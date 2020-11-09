@@ -11,6 +11,11 @@ YOLO_OPTIONS = ["-ext_output", "-dont_show"]
 def run_yolo_on_images(img_paths, update_progress_bar):
     """ img_paths:           A list of image image paths to be run through YOLO.
         update_progress_bar: A function to update the progress bar. """
+
+    for path in [DARKNET_BINARY_PATH, DATA_PATH, CFG_PATH, WEIGHTS_PATH]:
+        if not os.path.exists(path):
+            raise FileNotFoundError(f"Can't open {path}: No such file.")
+
     proc = subprocess.Popen([DARKNET_BINARY_PATH, "detector", "test", DATA_PATH, CFG_PATH, WEIGHTS_PATH, *YOLO_OPTIONS],
                             stdout=subprocess.PIPE,
                             stderr=subprocess.DEVNULL,
