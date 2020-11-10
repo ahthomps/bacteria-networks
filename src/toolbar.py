@@ -71,13 +71,13 @@ class CustomToolbar(NavigationToolbar2QT):
         self.set_message(self.mode)
 
     def release_cell(self, event):
-        graph = self.post_processor.graph
-        id = max(graph.nodes) + 1
-        graph.add_node(id,x=event.xdata,y=event.ydata)
+        id = max(self.post_processor.graph.nodes) + 1
+        self.post_processor.graph.add_node(id,x=event.xdata,y=event.ydata)
+        self.MplWidget.draw_node(id, self.post_processor.graph.nodes[id])
         self.post_processor.build_KDTree()
         self.main_window.update_cell_counter()
-        self.canvas.axes.plot(event.xdata, event.ydata, color="red", marker="o", gid="cell_center")
-        self.canvas.draw()
+        # self.canvas.axes.plot(event.xdata, event.ydata, color="red", marker="o", gid="cell_center")
+        # self.canvas.draw()
 
     def edge(self):
         if self.mode == _Mode.EDGE:
@@ -94,8 +94,6 @@ class CustomToolbar(NavigationToolbar2QT):
         assert(self.building_edge_data is None)
         self.building_edge_data = {'node_begin': None, 'edge_line': None}
         self.building_edge_data['node_begin'] = self.post_processor.get_closest_node(event.xdata,event.ydata)
-        print('IM PRINTING KEYS HERE')
-        print(self.building_edge_data.keys())
         self.canvas.mpl_disconnect(self._id_drag)
         self._id_drag = self.canvas.mpl_connect('motion_notify_event', self.drag_edge)
 
@@ -103,22 +101,22 @@ class CustomToolbar(NavigationToolbar2QT):
         node_begin = self.building_edge_data['node_begin']
         if self.building_edge_data['edge_line'] is not None:
             self.building_edge_data['edge_line'].remove()
+            self.building_edge_data['edge_line'] = None
         self.building_edge_data['edge_line'] = self.MplWidget.draw_line((node_begin[1]['x'], node_begin[1]['y']), (event.xdata, event.ydata))
 
     def release_edge(self, event):
         print("edge finished")
         if self.building_edge_data['edge_line'] is not None:
             self.building_edge_data['edge_line'].remove()
-        node_end = self.post_processor.get_closest_node(event.xdata,event.ydata)
-        node_begin = self.building_edge_data['node_begin']
-        if not node_begin[0] == node_end[0]:
-            center1 = [node_begin[1]['x'], node_begin[1]['y']]
-            center2 = [node_end[1]['x'], node_end[1]['y']]
-            print('adding edge from', center1, 'to', center2)
-            self.MplWidget.draw_line(center1, center2)
-            # self.canvas.axes.plot([node_begin[1],node_end[1]], [node_begin[2],node_end[2]], color="green", linestyle="dashed", marker="o", gid="edge")
-            # self.canvas.draw()
-            self.post_processor.graph.add_edge(node_begin[0],node_end[0])
+            self.building_edge_data['edge_line'] = None
+        node1_id, node1_data = self.post_processor.get_closest_node(event.xdata,event.ydata)
+        node2_id, node2_data = self.building_edge_data['node_begin']
+        if node1_id == node2_id:
+            return
+        print('adding edge from', [node1_data['x'], node1_data['y']], 'to', [node2_data['x'], node2_data['y']])
+        key = self.post_processor.graph.new_edge_key(node1_id, node2_id)
+        self.post_processor.graph.add_edge(node1_id, node2_id, key=key, type="cell_to_cell")
+        self.MplWidget.draw_edge(node1_id, node2_id, node1_data, node2_data, key, self.post_processor.graph[node1_id][node2_id][key])
         self.canvas.mpl_disconnect(self._id_drag)
         self._id_drag = self.canvas.mpl_connect('motion_notify_event', self.mouse_move)
         self.building_edge_data = None

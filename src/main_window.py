@@ -32,7 +32,6 @@ class MainWindow(QMainWindow):
         self.actionLoadProject.triggered.connect(self.load)
 
         self.actionViewBoundingBoxes.triggered.connect(self.handle_cell_bounding_boxes_view_press)
-        self.actionViewContour.triggered.connect(self.handle_cell_contours_view_press)
         self.actionViewNetworkEdges.triggered.connect(self.handle_network_edges_view_press)
         self.actionRunAll.triggered.connect(self.run_yolo_and_edge_detection_and_display)
 
@@ -96,25 +95,19 @@ class MainWindow(QMainWindow):
         self.progressBar.setFormat("Computing bounding boxes...")
         self.program_manager.compute_bounding_boxes(self.progressBar.setValue)
 
-        self.MplWidget.draw_image(self.program_manager.image)
-
         self.program_manager.compute_bbox_overlaps_and_cell_centers()
-        self.MplWidget.draw_cell_centers(self.program_manager.bio_objs)
 
         # run edge_detection
         self.progressBar.setFormat("Computing cell network...")
-        self.program_manager.compute_cell_network_edges(self.MplWidget.canvas, self.progressBar.setValue)
+        self.program_manager.compute_cell_network_edges(self.progressBar.setValue)
 
-        self.actionViewNetworkEdges.setEnabled(True)
-        self.actionViewNetworkEdges.setChecked(True)
-        self.MplWidget.draw_network_edges(self.program_manager.bio_objs)
         self.toolbar.add_network_tools()
 
         self.actionSave.setEnabled(True)
         self.actionSaveAs.setEnabled(True)
         self.actionExportToGephi.setEnabled(True)
         self.actionViewBoundingBoxes.setEnabled(True)
-        self.actionViewContour.setEnabled(True)
+        self.actionViewBoundingBoxes.setChecked(False)
 
         self.progressBar.setVisible(False)
 
@@ -124,21 +117,21 @@ class MainWindow(QMainWindow):
         self.update_cell_counter()
         self.cellCounter.setVisible(True)
 
+        self.MplWidget.draw_network_nodes(self.post_processor.graph)
+
+        self.actionViewNetworkEdges.setEnabled(True)
+        self.actionViewNetworkEdges.setChecked(True)
+        self.MplWidget.draw_network_edges(self.post_processor.graph)
+
     def handle_cell_bounding_boxes_view_press(self):
         if self.actionViewBoundingBoxes.isChecked():
             self.MplWidget.draw_cell_bounding_boxes(self.program_manager.bio_objs)
         else:
             self.MplWidget.remove_cell_bounding_boxes()
 
-    def handle_cell_contours_view_press(self):
-        if self.actionViewContour.isChecked():
-            self.MplWidget.draw_cell_contours(self.program_manager.bio_objs)
-        else:
-            self.MplWidget.remove_cell_contours()
-
     def handle_network_edges_view_press(self):
         if self.actionViewNetworkEdges.isChecked():
-            self.MplWidget.draw_network_edges(self.program_manager.bio_objs)
+            self.MplWidget.draw_network_edges(self.post_processor.graph)
         else:
             self.MplWidget.remove_network_edges()
 
@@ -202,6 +195,6 @@ class MainWindow(QMainWindow):
         self.cellCounter.setVisible(True)
         self.actionViewContour.setEnabled(True)
         self.actionViewContour.setChecked(False)
-        self.MplWidget.draw_cell_centers(self.program_manager.bio_objs)
-        self.actionExportToGephi.setEnabled(True)
-        self.MplWidget.draw_network_edges(self.program_manager.bio_objs)
+        # self.MplWidget.draw_cell_centers(self.program_manager.bio_objs)
+        # self.actionExportToGephi.setEnabled(True)
+        # self.MplWidget.draw_network_edges(self.program_manager.bio_objs)

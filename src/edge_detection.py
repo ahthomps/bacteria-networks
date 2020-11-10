@@ -2,6 +2,10 @@ import numpy as np
 from skimage import morphology
 from bio_object import compute_contour, compute_cell_center
 
+CELL_CONTACT_EDGE = "cell_contact"
+CELL_TO_CELL_EDGE = "cell_to_cell"
+CELL_TO_SURFACE_EDGE = "cell_to_surface"
+
 class NetworkEdge:
     def __init__(self, tail, head, nanowire=None):
         self.tail = tail
@@ -10,22 +14,22 @@ class NetworkEdge:
         self.nanowire = nanowire
 
     def set_type_as_cell_contact(self):
-        self.type = "cell_contact"
+        self.type = CELL_CONTACT_EDGE
 
     def set_type_as_cell_to_cell(self):
-        self.type = "cell_to_cell"
+        self.type = CELL_TO_CELL_EDGE
 
     def set_type_as_cell_to_surface(self):
-        self.type = "cell_to_surface"
+        self.type = CELL_TO_SURFACE_EDGE
 
     def type_is_cell_contact(self):
-        return self.type == "cell_contact"
+        return self.type == CELL_CONTACT_EDGE
 
     def type_is_cell_to_cell(self):
-        return self.type == "cell_to_cell"
+        return self.type == CELL_TO_CELL_EDGE
 
     def type_is_cell_to_surface(self):
-        return self.type == "cell_to_surface"
+        return self.type == CELL_TO_SURFACE_EDGE
 
     def __str__(self):
         return f"{self.type}: {self.tail.id} {self.head.id}"
@@ -63,7 +67,7 @@ def compute_cell_contact(bio_objects, image, update_progress_bar):
                 cell2.edge_list[-1].set_type_as_cell_contact()
 
 
-def compute_nanowire_edges(bio_objects, canvas, image, update_progress_bar):
+def compute_nanowire_edges(bio_objects, image, update_progress_bar):
     surface = bio_objects[0]
     num_cells = sum(bio_obj.is_cell() for bio_obj in bio_objects)
     nanowires = filter(lambda b: b.is_nanowire(), bio_objects)
