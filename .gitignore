@@ -9,3 +9,4 @@ bad.list
 *.tif
 *.tiff
 backup
+*.gexf
