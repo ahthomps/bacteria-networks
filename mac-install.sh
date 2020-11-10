@@ -6,9 +6,9 @@
 # If homebrew isn't installed, then install it.
 which -s brew
 if [ $? ]; then
-    brew upgrade
-else
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+else
+    brew upgrade
 fi
 
 # Install our brew dependencies
