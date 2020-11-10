@@ -31,7 +31,7 @@ if [ -z "$(ls darknet)" ]; then
     curl -L https://github.com/AlexeyAB/darknet/archive/master.zip -o darknet.zip
     unzip darknet.zip
     rm darknet.zip
-    mv darknet_master darknet
+    mv darknet-master darknet
 fi
 
 # Because Apple sucks, they symlink gcc to clang. So the version of gcc brew installs has to be installed as gcc-10.
