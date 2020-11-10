@@ -39,7 +39,7 @@ class CustomToolbar(NavigationToolbar2QT):
         self.removeAction(self.actions()[-1])
         self.addSeparator()
         self.addAction(QIcon("ui/standard_node.svg"), "Add Cell", self.cell).setToolTip("Add a cell")
-        self.addAction(QIcon("ui/standard_edge.svg"), "Add Edge", self.edge).setToolTip("Add an edge")
+        self.addAction(QIcon("ui/standard_edge.svg"), "Add Cell Contact Edge", self.edge).setToolTip("Add cell to cell contact edge")
         self.addAction(self.message_display)
 
     def mouse_move(self, event):
@@ -76,8 +76,6 @@ class CustomToolbar(NavigationToolbar2QT):
         self.MplWidget.draw_node(id, self.post_processor.graph.nodes[id])
         self.post_processor.build_KDTree()
         self.main_window.update_cell_counter()
-        # self.canvas.axes.plot(event.xdata, event.ydata, color="red", marker="o", gid="cell_center")
-        # self.canvas.draw()
 
     def edge(self):
         if self.mode == _Mode.EDGE:
@@ -98,17 +96,15 @@ class CustomToolbar(NavigationToolbar2QT):
         self._id_drag = self.canvas.mpl_connect('motion_notify_event', self.drag_edge)
 
     def drag_edge(self, event):
-        node_begin = self.building_edge_data['node_begin']
+        _, node_data = self.building_edge_data['node_begin']
         if self.building_edge_data['edge_line'] is not None:
             self.building_edge_data['edge_line'].remove()
-            self.building_edge_data['edge_line'] = None
-        self.building_edge_data['edge_line'] = self.MplWidget.draw_line((node_begin[1]['x'], node_begin[1]['y']), (event.xdata, event.ydata))
+        self.building_edge_data['edge_line'] = self.MplWidget.draw_line((node_data['x'], node_data['y']), (event.xdata, event.ydata))
 
     def release_edge(self, event):
         print("edge finished")
         if self.building_edge_data['edge_line'] is not None:
             self.building_edge_data['edge_line'].remove()
-            self.building_edge_data['edge_line'] = None
         node1_id, node1_data = self.post_processor.get_closest_node(event.xdata,event.ydata)
         node2_id, node2_data = self.building_edge_data['node_begin']
         if node1_id == node2_id:

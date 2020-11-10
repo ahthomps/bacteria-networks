@@ -17,8 +17,14 @@ class PostProcessingManager:
                 for edge in bio_object.edge_list:
                     if bio_object.id > edge.head.id:
                         continue
-                    self.graph.add_edge(bio_object.id, edge.head.id, type=edge.type)
+                    key = self.graph.new_edge_key(bio_object.id, edge.head.id)
+                    if edge.type_is_cell_to_surface():
+                        surface_point = {'x': (edge.nanowire.x1 + edge.nanowire.x2) // 2, 'y': (edge.nanowire.y1 + edge.nanowire.y2) // 2}
+                        self.graph.add_edge(bio_object.id, edge.head.id, key=key, type=edge.type, surface_point=surface_point)
+                    else:
+                        self.graph.add_edge(bio_object.id, edge.head.id, key=key, type=edge.type)
         self.build_KDTree()
+
 
     def build_KDTree(self):
         self.tree = KDTree([[node[1]['x'], node[1]['y']] for node in self.graph.nodes(data=True)])
