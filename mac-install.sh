@@ -13,8 +13,7 @@ fi
 
 # Install our brew dependencies
 brew install gcc libomp
-# bsd make comes with the xcode tools that get installed alongside homebrew, and darknet doesn't use
-# any of the gnu make features, so we don't need to brew install make.
+# Installing brew installs the developer tools, which include python3 and make, so we don't need to get those.
 
 # If this is being run from within this repo, then great! Otherwise, we should go clone the repo.
 # Maybe we should come up with a better way of checking whether we're in the repo than the directory name.
@@ -25,7 +24,9 @@ if [ "$(basename $(pwd))" != "bacteria-networks" ]; then
     mv bacteria-networks-master bacteria-networks
     cd bacteria-networks
 fi
-fi [ -z "$(ls darknet)" ]; then
+
+# Grab darknet if we need it.
+if [ -z "$(ls darknet)" ]; then
     rmdir darknet
     curl -L https://github.com/AlexeyAB/darknet/archive/master.zip -o darknet.zip
     unzip darknet.zip
