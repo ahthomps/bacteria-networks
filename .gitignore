@@ -1,7 +1,5 @@
 **/__pycache__
 .crops
-all_cell_images
-**/images
 *.weights
 *.backup
 predictions.jpg
