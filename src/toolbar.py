@@ -42,9 +42,9 @@ class CustomToolbar(NavigationToolbar2QT):
         self.removeAction(self.actions()[-1])
         self.addSeparator()
         self.addAction(QIcon("ui/standard_node.svg"), "Add Cell", self.cell).setToolTip("Add a cell")
-        self.addAction(QIcon("ui/standard_edge.svg"), "Add Cell to Cell Edge", self.cell_to_cell_edge).setToolTip("Add cell to cell  edge")
-        self.addAction(QIcon("ui/celltosurface_edge.svg"), "Add Cell to Surface Edge", self.cell_to_surface_edge).setToolTip("Add cell to surface edge")
-        self.addAction(QIcon("ui/standard_edge.svg"), "Add Cell Contact Edge", self.cell_contact_edge).setToolTip("Add cell contact edge")
+        self.addAction(QIcon("ui/standard_edge.svg"), "Add Cell to Cell Edge", lambda: self.edge(_Mode.CELLTOCELLEDGE)).setToolTip("Add cell to cell  edge")
+        self.addAction(QIcon("ui/celltosurface_edge.svg"), "Add Cell to Surface Edge", lambda: self.edge(_Mode.CELLTOSURFACEEDGE)).setToolTip("Add cell to surface edge")
+        self.addAction(QIcon("ui/standard_edge.svg"), "Add Cell Contact Edge", lambda: self.edge(_Mode.CELLCONTACTEDGE)).setToolTip("Add cell contact edge")
         self.addAction(QIcon("ui/eraser.svg"), "Erase Network Object", self.eraser).setToolTip("Erase node or edge")
         self.addAction(self.message_display)
 
@@ -91,23 +91,12 @@ class CustomToolbar(NavigationToolbar2QT):
             a.set_navigate_mode(self.mode._navigate_mode)
         self.set_message(self.mode)
 
-    def cell_to_surface_edge(self):
-        if self.mode == _Mode.CELLTOSURFACEEDGE:
+    def edge(self, mode):
+        if self.mode == mode:
             self.mode = _Mode.NONE
             self.canvas.widgetlock.release(self)
         else:
-            self.mode = _Mode.CELLTOSURFACEEDGE
-            self.canvas.widgetlock(self)
-        for a in self.canvas.figure.get_axes():
-            a.set_navigate_mode(self.mode._navigate_mode)
-        self.set_message(self.mode)
-
-    def cell_to_cell_edge(self):
-        if self.mode == _Mode.CELLTOCELLEDGE:
-            self.mode = _Mode.NONE
-            self.canvas.widgetlock.release(self)
-        else:
-            self.mode = _Mode.CELLTOCELLEDGE
+            self.mode = mode
             self.canvas.widgetlock(self)
         for a in self.canvas.figure.get_axes():
             a.set_navigate_mode(self.mode._navigate_mode)
