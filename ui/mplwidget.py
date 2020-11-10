@@ -41,6 +41,8 @@ class MplWidget(QWidget):
         self.canvas.axes.axis("off")
 
         self.current_gid = 0
+        # cells have {"network_type": "node", "node_id": <their graph node id>}
+        # edges have {"network_type": "edge", "edge_head": <first node of edge>, "edge_tail": <second node of edge>, "edge_key": <unique key for edge>}
         self.artist_data = {}
 
     def clear_canvas(self):
@@ -51,7 +53,10 @@ class MplWidget(QWidget):
     def return_artist_data(self, gid):
         return self.artist_data[gid]
 
-    def draw_line(self, point1, point2, color="green"):
+    def draw_line(self, point1, point2, type=CELL_TO_CELL_EDGE):
+        color = CELL_CONTACT_COLOR if type == CELL_CONTACT_EDGE else \
+                CELL_TO_CELL_COLOR if type == CELL_TO_CELL_EDGE else \
+                CELL_TO_SURFACE_COLOR
         line_obj = Line2D([point1[0], point2[0]], [point1[1], point2[1]], color=color, linestyle="dashed")
         self.canvas.axes.add_line(line_obj)
         self.canvas.draw()
@@ -92,6 +97,7 @@ class MplWidget(QWidget):
         edge_end = edge_data['surface_point'] if node2 == 0 else node2_data
         self.artist_data[str(self.current_gid)] = {"network_type": NETWORK_EDGE_GID, "edge_head": node1, "edge_tail": node2, "edge_key": edge_key}
         line_obj = Line2D([edge_start['x'], edge_end['x']], [edge_start['y'], edge_end['y']], color=color, linestyle="dashed", gid=str(self.current_gid))
+        line_obj.set_picker(True)
         self.current_gid += 1
         self.canvas.axes.add_line(line_obj)
         self.canvas.draw()

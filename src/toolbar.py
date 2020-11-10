@@ -42,11 +42,12 @@ class CustomToolbar(NavigationToolbar2QT):
         self.removeAction(self.actions()[-1])
         self.addSeparator()
         self.addAction(QIcon("ui/standard_node.svg"), "Add Cell", self.cell).setToolTip("Add a cell")
-        self.addAction(QIcon("ui/standard_edge.svg"), "Add Cell to Cell Edge", lambda: self.edge(_Mode.CELLTOCELLEDGE)).setToolTip("Add cell to cell  edge")
-        self.addAction(QIcon("ui/celltosurface_edge.svg"), "Add Cell to Surface Edge", lambda: self.edge(_Mode.CELLTOSURFACEEDGE)).setToolTip("Add cell to surface edge")
-        self.addAction(QIcon("ui/standard_edge.svg"), "Add Cell Contact Edge", lambda: self.edge(_Mode.CELLCONTACTEDGE)).setToolTip("Add cell contact edge")
+        self.addAction(QIcon("ui/cell_to_cell.svg"), "Add Cell to Cell Edge", lambda: self.edge(_Mode.CELLTOCELLEDGE)).setToolTip("Add cell to cell  edge")
+        self.addAction(QIcon("ui/cell_to_surface.svg"), "Add Cell to Surface Edge", lambda: self.edge(_Mode.CELLTOSURFACEEDGE)).setToolTip("Add cell to surface edge")
+        self.addAction(QIcon("ui/cell_contact.svg"), "Add Cell Contact Edge", lambda: self.edge(_Mode.CELLCONTACTEDGE)).setToolTip("Add cell contact edge")
         self.addAction(QIcon("ui/eraser.svg"), "Erase Network Object", self.eraser).setToolTip("Erase node or edge")
         self.addAction(self.message_display)
+        self.addSeparator()
 
     def mouse_move(self, event):
         pass
