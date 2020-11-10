@@ -4,12 +4,8 @@
 # but it needs more testing and it needs to be able to get the model.
 
 # If homebrew isn't installed, then install it.
-which -s brew
-if [ $? ]; then
-    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
-else
-    brew upgrade
-fi
+which -s brew || /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+brew upgrade
 
 # Install our brew dependencies
 brew install gcc libomp
