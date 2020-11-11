@@ -26,9 +26,7 @@ class MainWindow(QMainWindow):
         # Connect the buttons to their corresponding actions
         self.actionClear.triggered.connect(self.clear_all_data_and_reset_window)
         self.actionOpenImage.triggered.connect(self.open_image_file_and_display)
-        self.actionSave.triggered.connect(self.save)
-        self.actionSaveAs.triggered.connect(self.save_as)
-        self.actionExportToGephi.triggered.connect(self.convert_to_gephi_and_export)
+        self.actionExportToGephi.triggered.connect(self.export_to_gephi)
         self.actionLoadProject.triggered.connect(self.load)
 
         self.actionViewBoundingBoxes.triggered.connect(self.handle_cell_bounding_boxes_view_press)
@@ -36,8 +34,8 @@ class MainWindow(QMainWindow):
         self.actionRunAll.triggered.connect(self.run_yolo_and_edge_detection_and_display)
 
         # Keyboard shortcuts for **__POWER USERS__**
-        QShortcut(QKeySequence("Ctrl+S"), self).activated.connect(lambda: self.actionSave.isEnabled() and \
-                                                                          self.save())
+        QShortcut(QKeySequence("Ctrl+S"), self).activated.connect(lambda: self.actionExportToGephi.isEnabled() and \
+                                                                          self.export_to_gephi())
         QShortcut(QKeySequence("Ctrl+R"), self).activated.connect(lambda: self.actionRunAll.isEnabled() and \
                                                                           self.run_yolo_and_edge_detection_and_display())
         QShortcut(QKeySequence("Ctrl+O"), self).activated.connect(lambda: self.actionOpenImage.isEnabled() and \
@@ -50,8 +48,6 @@ class MainWindow(QMainWindow):
         self.addToolBar(self.toolbar)
 
     def set_default_enablements(self):
-        self.actionSave.setEnabled(False)
-        self.actionSaveAs.setEnabled(False)
         self.actionExportToGephi.setEnabled(False)
         self.actionLoadProject.setEnabled(True)
         self.actionClear.setEnabled(True)
@@ -103,8 +99,6 @@ class MainWindow(QMainWindow):
 
         self.toolbar.add_network_tools()
 
-        self.actionSave.setEnabled(True)
-        self.actionSaveAs.setEnabled(True)
         self.actionExportToGephi.setEnabled(True)
         self.actionViewBoundingBoxes.setEnabled(True)
         self.actionViewBoundingBoxes.setChecked(False)
@@ -140,61 +134,36 @@ class MainWindow(QMainWindow):
 
     """------------------ UTILITIES -----------------------------"""
 
-    def get_save_loc(self, ext):
-        path, _ = QFileDialog.getSaveFileName(None, "Save File", "", ext)
-        return path
-
-    def convert_to_gephi_and_export(self):
-        path = self.get_save_loc("Gephi Graphs (*.gexf)")
-
-        # If they cancelled the operation
-        if path is None:
-            return
-
-        if not path.endswith(".gexf"):
-            path += ".gexf"
-
-        # write the final output to the file
-        nx.write_gexf(self.program_manager.graph, path)
-
-    def save(self):
-        if self.program_manager.pickle_path == "":
-            self.save_as()
-        else:
-            pickle.dump( self.program_manager, open(self.program_manager.pickle_path, "wb"))
-
-    def save_as(self):
-        path = self.get_save_loc("Pickle Files (*.p)")
-
-        if path is None:
-            return
-        if not path.endswith(".p"):
-            path += ".p"
-
-        self.program_manager.pickle_path = path
-
-        self.save()
+    def export_to_gephi(self):
+        nx.write_gexf(self.post_processor.graph, self.program_manager.image_path + '.gexf')
 
     def load(self):
-        path, _ = QFileDialog.getOpenFileName(None, "Select image", "", "Pickle Files (*.p)")
-        if path is None:
-            return
-        self.program_manager = pickle.load(open(path,"rb"))
+        file_path, _ = QFileDialog.getOpenFileName(None, "Select Gephi File", "", "Gephi Files (*.gexf)")
 
-        # in order to save, there must have been an image loaded, so load the image
-        # allow them to save, etc
+        if not file_path:
+            return
+
+        image_path = file_path[:-5]
+
+        self.program_manager.open_image_file_and_crop_if_necessary(image_path)
         self.MplWidget.draw_image(self.program_manager.image)
         self.actionOpenImage.setEnabled(False)
-        self.actionSave.setEnabled(True)
-        self.actionSaveAs.setEnabled(True)
 
-        self.actionViewBoundingBoxes.setEnabled(True)
-        self.actionViewBoundingBoxes.setChecked(False)
+        graph = nx.read_gexf(file_path)
+        self.post_processor = PostProcessingManager(graph=graph)
+        print('printing post_processor.graph.nodes & .edges to prove its here')
+        print(self.post_processor.graph.nodes(data=True))
+        print(self.post_processor.graph.edges(data=True, keys=True))
+
+        self.toolbar.add_network_tools()
+        self.toolbar.set_post_processor(self.post_processor)
+
+        self.MplWidget.draw_network_nodes(self.post_processor.graph)
+
+        self.actionViewNetworkEdges.setEnabled(True)
+        self.actionViewNetworkEdges.setChecked(True)
+        self.MplWidget.draw_network_edges(self.post_processor.graph)
 
         self.update_cell_counter()
         self.cellCounter.setVisible(True)
-        self.actionViewContour.setEnabled(True)
-        self.actionViewContour.setChecked(False)
-        # self.MplWidget.draw_cell_centers(self.program_manager.bio_objs)
-        # self.actionExportToGephi.setEnabled(True)
-        # self.MplWidget.draw_network_edges(self.program_manager.bio_objs)
+        self.actionExportToGephi.setEnabled(True)

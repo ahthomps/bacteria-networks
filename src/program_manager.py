@@ -18,9 +18,7 @@ class ProgramManager:
         self.original_image = np.array([])
         self.bio_objs = []
         self.made_crops = False
-
         self.image_path = ""
-        self.pickle_path = None
 
     def open_image_file_and_crop_if_necessary(self, image_path):
         self.image_path = image_path
