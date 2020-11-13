@@ -86,8 +86,6 @@
     </property>
     <addaction name="actionOpenImage"/>
     <addaction name="separator"/>
-    <addaction name="actionSave"/>
-    <addaction name="actionSaveAs"/>
     <addaction name="actionExportToGephi"/>
     <addaction name="actionLoadProject"/>
    </widget>
@@ -120,16 +118,6 @@
   <action name="actionOpenImage">
    <property name="text">
     <string>Open Image</string>
-   </property>
-  </action>
-  <action name="actionSave">
-   <property name="text">
-    <string>Save</string>
-   </property>
-  </action>
-  <action name="actionSaveAs">
-   <property name="text">
-    <string>Save As...</string>
    </property>
   </action>
   <action name="actionExportToGephi">
