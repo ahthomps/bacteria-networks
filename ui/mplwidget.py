@@ -93,8 +93,9 @@ class MplWidget(QWidget):
         color = CELL_CONTACT_COLOR if edge_data["type"] == CELL_CONTACT_EDGE \
                 else CELL_TO_CELL_COLOR if edge_data["type"] == CELL_TO_CELL_EDGE \
                 else CELL_TO_SURFACE_COLOR
-        edge_start = edge_data['surface_point'] if node1 == 0 else node1_data
-        edge_end = edge_data['surface_point'] if node2 == 0 else node2_data
+        edge_placement_adjustment = -edge_key if edge_key % 2 == 0 else edge_key + 1
+        edge_start = edge_data['surface_point'] if node1 == 0 else {'x': node1_data['x'] + edge_placement_adjustment, 'y': node1_data['y'] + edge_placement_adjustment}
+        edge_end = edge_data['surface_point'] if node2 == 0 else {'x': node2_data['x'] + edge_placement_adjustment, 'y': node2_data['y'] + edge_placement_adjustment}
         self.artist_data[str(self.current_gid)] = {"network_type": NETWORK_EDGE_GID, "edge_head": node1, "edge_tail": node2, "edge_key": edge_key}
         line_obj = Line2D([edge_start['x'], edge_end['x']], [edge_start['y'], edge_end['y']], color=color, linestyle="dashed", gid=str(self.current_gid))
         line_obj.set_picker(True)

@@ -81,17 +81,6 @@ class CustomToolbar(NavigationToolbar2QT):
         self.post_processor.build_KDTree()
         self.main_window.update_cell_counter()
 
-    def cell_contact_edge(self):
-        if self.mode == _Mode.CELLCONTACTEDGE:
-            self.mode = _Mode.NONE
-            self.canvas.widgetlock.release(self)
-        else:
-            self.mode = _Mode.CELLCONTACTEDGE
-            self.canvas.widgetlock(self)
-        for a in self.canvas.figure.get_axes():
-            a.set_navigate_mode(self.mode._navigate_mode)
-        self.set_message(self.mode)
-
     def edge(self, mode):
         if self.mode == mode:
             self.mode = _Mode.NONE
@@ -132,6 +121,9 @@ class CustomToolbar(NavigationToolbar2QT):
             node1_id, node1_data = self.post_processor.get_closest_node(event.xdata,event.ydata)
         node2_id, node2_data = self.building_edge_data['node_begin']
         if node1_id == node2_id:
+            self.canvas.mpl_disconnect(self._id_drag)
+            self._id_drag = self.canvas.mpl_connect('motion_notify_event', self.mouse_move)
+            self.building_edge_data = None
             return
         print('adding edge from', [node1_data['x'], node1_data['y']], 'to', [node2_data['x'], node2_data['y']])
         key = self.post_processor.graph.new_edge_key(node1_id, node2_id)
