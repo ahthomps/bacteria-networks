@@ -108,6 +108,7 @@
      <string>Run</string>
     </property>
     <addaction name="actionRunAll"/>
+    <addaction name="actionManual"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -154,6 +155,11 @@
   <action name="actionRunAll">
    <property name="text">
     <string>Run All</string>
+   </property>
+  </action>
+  <action name="actionManual">
+   <property name="text">
+    <string>Manual Labeling</string>
    </property>
   </action>
   <action name="actionViewNetworkEdges">

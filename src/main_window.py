@@ -32,6 +32,7 @@ class MainWindow(QMainWindow):
         self.actionViewBoundingBoxes.triggered.connect(self.handle_cell_bounding_boxes_view_press)
         self.actionViewNetworkEdges.triggered.connect(self.handle_network_edges_view_press)
         self.actionRunAll.triggered.connect(self.run_yolo_and_edge_detection_and_display)
+        self.actionManual.triggered.connect(self.allow_manual_labelling)
 
         # Keyboard shortcuts for **__POWER USERS__**
         QShortcut(QKeySequence("Ctrl+S"), self).activated.connect(lambda: self.actionExportToGephi.isEnabled() and \
@@ -54,6 +55,7 @@ class MainWindow(QMainWindow):
 
         self.actionOpenImage.setEnabled(True)
         self.actionRunAll.setEnabled(False)
+        self.actionManual.setEnabled(False)
 
         self.actionViewBoundingBoxes.setEnabled(False)
         self.actionViewBoundingBoxes.setChecked(False)
@@ -80,11 +82,14 @@ class MainWindow(QMainWindow):
 
         # disable importing new images
         self.actionOpenImage.setEnabled(False)
-        # enable finding bboxes
+        # enable running automatic network detection
         self.actionRunAll.setEnabled(True)
+        # enable manual labeling option
+        self.actionManual.setEnabled(True)
 
     def run_yolo_and_edge_detection_and_display(self):
         self.actionRunAll.setEnabled(False)
+        self.actionManual.setEnabled(False)
         self.progressBar.setVisible(True)
 
         # run yolo
@@ -111,11 +116,23 @@ class MainWindow(QMainWindow):
         self.update_cell_counter()
         self.cellCounter.setVisible(True)
 
-        self.MplWidget.draw_network_nodes(self.post_processor.graph)
-
         self.actionViewNetworkEdges.setEnabled(True)
         self.actionViewNetworkEdges.setChecked(True)
         self.MplWidget.draw_network_edges(self.post_processor.graph)
+
+    def allow_manual_labelling(self):
+        self.actionRunAll.setEnabled(False)
+        self.actionManual.setEnabled(False)
+
+        self.post_processor = PostProcessingManager(self.program_manager.bio_objs)
+        self.toolbar.set_post_processor(self.post_processor)
+        self.toolbar.add_network_tools()
+
+        self.update_cell_counter()
+        self.cellCounter.setVisible(True)
+
+        self.actionViewNetworkEdges.setEnabled(True)
+        self.actionViewNetworkEdges.setChecked(True)
 
     def handle_cell_bounding_boxes_view_press(self):
         if self.actionViewBoundingBoxes.isChecked():

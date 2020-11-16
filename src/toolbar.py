@@ -67,6 +67,8 @@ class CustomToolbar(NavigationToolbar2QT):
                 self.release_edge(event)
 
     def cell(self):
+        if self.mode == _Mode.ERASER or self.mode == _Mode.EDITOR:
+            self.canvas.mpl_disconnect(self._id_pick)
         if self.mode == _Mode.CELL:
             self.mode = _Mode.NONE
             self.canvas.widgetlock.release(self)
@@ -85,6 +87,8 @@ class CustomToolbar(NavigationToolbar2QT):
         self.main_window.update_cell_counter()
 
     def edge(self, mode):
+        if self.mode == _Mode.ERASER or self.mode == _Mode.EDITOR:
+            self.canvas.mpl_disconnect(self._id_pick)
         if self.mode == mode:
             self.mode = _Mode.NONE
             self.canvas.widgetlock.release(self)
@@ -145,6 +149,8 @@ class CustomToolbar(NavigationToolbar2QT):
         self._id_drag = self.canvas.mpl_connect('motion_notify_event', self.mouse_move)
 
     def editor(self):
+        if self.mode == _Mode.ERASER:
+            self.canvas.mpl_disconnect(self._id_pick)
         if self.mode == _Mode.EDITOR:
             self.mode = _Mode.NONE
             self.canvas.mpl_disconnect(self._id_pick)
@@ -166,6 +172,8 @@ class CustomToolbar(NavigationToolbar2QT):
         self.MplWidget.update_node_color(event.artist, next_node_type)
 
     def eraser(self):
+        if self.mode == _Mode.EDITOR:
+            self.canvas.mpl_disconnect(self._id_pick)
         if self.mode == _Mode.ERASER:
             self.mode = _Mode.NONE
             self.canvas.mpl_disconnect(self._id_pick)
