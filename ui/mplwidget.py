@@ -11,6 +11,7 @@ from matplotlib.lines import Line2D
 from matplotlib.patches import Rectangle
 from PyQt5 import QtCore
 from edge_detection import CELL_TO_CELL_EDGE, CELL_TO_SURFACE_EDGE, CELL_CONTACT_EDGE
+from post_processing import NORMAL, SPHEROPLAST, CURVED, FILAMENT
 
 BACKGROUND_COLOR = "#EFEFEF"
 CONTOUR_COLORS = ["red", "orange", "yellow", "green", "blue", "indigo", "violet"]
@@ -19,6 +20,10 @@ CELL_BBOX_COLOR = "blue"
 CELL_CONTACT_COLOR = "red"
 CELL_TO_CELL_COLOR = "green"
 CELL_TO_SURFACE_COLOR = "blue"
+NORMAL_COLOR = "red"
+SPHEROPLAST_COLOR = "purple"
+CURVED_COLOR = "green"
+FILAMENT_COLOR = "blue"
 
 BBOX_GID = "bbox"
 CONTOUR_GID = "contour"
@@ -79,9 +84,21 @@ class MplWidget(QWidget):
 
         self.canvas.draw()
 
+    def update_node_color(self, artist, cell_classification):
+        color = NORMAL_COLOR if cell_classification == NORMAL else \
+                FILAMENT_COLOR if cell_classification == FILAMENT else \
+                SPHEROPLAST_COLOR if cell_classification == SPHEROPLAST else \
+                CURVED_COLOR
+        artist.set_color(color)
+        self.canvas.draw()
+
     def draw_node(self, node_id, node_data):
+        color = NORMAL_COLOR if node_data["node_type"] == NORMAL else \
+                FILAMENT_COLOR if node_data["node_type"] == FILAMENT else \
+                SPHEROPLAST_COLOR if node_data["node_type"] == SPHEROPLAST else \
+                CURVED_COLOR
         self.artist_data[str(self.current_gid)] = {"network_type": NETWORK_NODE_GID, "node_id": node_id}
-        point_obj = Line2D([node_data['x']], [node_data['y']], color="red", marker="o", gid=str(self.current_gid))
+        point_obj = Line2D([node_data['x']], [node_data['y']], color=color, marker="o", gid=str(self.current_gid))
         self.current_gid += 1
         point_obj.set_picker(True)
         self.canvas.axes.add_line(point_obj)

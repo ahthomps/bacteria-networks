@@ -1,6 +1,11 @@
 import networkx as nx
 from scipy.spatial import KDTree
 
+NORMAL = "normal"
+SPHEROPLAST = "sphereoplast"
+CURVED = "curved"
+FILAMENT = "filament"
+
 class PostProcessingManager:
     def __init__(self, bio_objs=None, graph=None):
         if graph is not None:
@@ -12,7 +17,7 @@ class PostProcessingManager:
             for bio_object in bio_objs:
                 if not bio_object.is_nanowire():
                     x, y = bio_object.cell_center
-                    self.graph.add_node(bio_object.id, x=x, y=y)
+                    self.graph.add_node(bio_object.id, x=x, y=y, node_type=NORMAL)
 
             # add all edges
             for bio_object in bio_objs:
