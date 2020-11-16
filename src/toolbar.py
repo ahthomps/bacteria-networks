@@ -121,6 +121,7 @@ class CustomToolbar(NavigationToolbar2QT):
         if self.building_edge_data['edge_line'] is not None:
             self.building_edge_data['edge_line'].remove()
             self.building_edge_data['edge_line'] = None
+            self.canvas.draw()
         if _Mode.CELLTOSURFACEEDGE == self.mode:
             node1_id = 0
             node1_data = {'x': event.xdata, 'y': event.ydata}
@@ -128,9 +129,6 @@ class CustomToolbar(NavigationToolbar2QT):
             node1_id, node1_data = self.post_processor.get_closest_node(event.xdata,event.ydata)
         node2_id, node2_data = self.building_edge_data['node_begin']
         if node1_id == node2_id:
-            if self.building_edge_data['edge_line'] is not None:
-                self.building_edge_data['edge_line'].remove()
-                self.building_edge_data['edge_line'] = None
             self.building_edge_data = None
             self.canvas.mpl_disconnect(self._id_drag)
             self._id_drag = self.canvas.mpl_connect('motion_notify_event', self.mouse_move)
