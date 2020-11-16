@@ -107,12 +107,12 @@ class MplWidget(QWidget):
         return point_obj
 
     def draw_edge(self, node1, node2, node1_data, node2_data, edge_key, edge_data):
-        color = CELL_CONTACT_COLOR if edge_data["type"] == CELL_CONTACT_EDGE \
-                else CELL_TO_CELL_COLOR if edge_data["type"] == CELL_TO_CELL_EDGE \
+        color = CELL_CONTACT_COLOR if edge_data["edge_type"] == CELL_CONTACT_EDGE \
+                else CELL_TO_CELL_COLOR if edge_data["edge_type"] == CELL_TO_CELL_EDGE \
                 else CELL_TO_SURFACE_COLOR
         edge_placement_adjustment = -edge_key if edge_key % 2 == 0 else edge_key + 1
-        edge_start = edge_data['surface_point'] if node1 == 0 else {'x': node1_data['x'] + edge_placement_adjustment, 'y': node1_data['y'] + edge_placement_adjustment}
-        edge_end = edge_data['surface_point'] if node2 == 0 else {'x': node2_data['x'] + edge_placement_adjustment, 'y': node2_data['y'] + edge_placement_adjustment}
+        edge_start = edge_data['surface_point'] if int(node1) == 0 else {'x': node1_data['x'] + edge_placement_adjustment, 'y': node1_data['y'] + edge_placement_adjustment}
+        edge_end = edge_data['surface_point'] if int(node2) == 0 else {'x': node2_data['x'] + edge_placement_adjustment, 'y': node2_data['y'] + edge_placement_adjustment}
         self.artist_data[str(self.current_gid)] = {"network_type": NETWORK_EDGE_GID, "edge_head": node1, "edge_tail": node2, "edge_key": edge_key}
         line_obj = Line2D([edge_start['x'], edge_end['x']], [edge_start['y'], edge_end['y']], color=color, linestyle="dashed", gid=str(self.current_gid))
         line_obj.set_picker(True)
@@ -124,7 +124,7 @@ class MplWidget(QWidget):
 
     def draw_network_nodes(self, graph):
         for node_id, node_data in graph.nodes(data=True):
-            if node_data['x'] == 0 and node_data['y'] == 0:
+            if int(node_id) == 0:
                 continue
             self.draw_node(node_id, node_data)
 

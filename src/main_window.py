@@ -50,7 +50,7 @@ class MainWindow(QMainWindow):
 
     def set_default_enablements(self):
         self.actionExportToGephi.setEnabled(False)
-        self.actionLoadProject.setEnabled(True)
+        self.actionLoadProject.setEnabled(False)
         self.actionClear.setEnabled(True)
 
         self.actionOpenImage.setEnabled(True)
@@ -82,6 +82,8 @@ class MainWindow(QMainWindow):
 
         # disable importing new images
         self.actionOpenImage.setEnabled(False)
+        # allow loading of saved project
+        self.actionLoadProject.setEnabled(True)
         # enable running automatic network detection
         self.actionRunAll.setEnabled(True)
         # enable manual labeling option
@@ -91,6 +93,7 @@ class MainWindow(QMainWindow):
         self.actionRunAll.setEnabled(False)
         self.actionManual.setEnabled(False)
         self.progressBar.setVisible(True)
+        self.actionLoadProject.setEnabled(False)
 
         # run yolo
         self.progressBar.setFormat("Computing bounding boxes...")
@@ -123,6 +126,8 @@ class MainWindow(QMainWindow):
     def allow_manual_labelling(self):
         self.actionRunAll.setEnabled(False)
         self.actionManual.setEnabled(False)
+        self.actionLoadProject.setEnabled(False)
+        self.actionExportToGephi.setEnabled(True)
 
         self.post_processor = PostProcessingManager(self.program_manager.bio_objs)
         self.toolbar.set_post_processor(self.post_processor)
@@ -165,12 +170,22 @@ class MainWindow(QMainWindow):
         self.program_manager.open_image_file_and_crop_if_necessary(image_path)
         self.MplWidget.draw_image(self.program_manager.image)
         self.actionOpenImage.setEnabled(False)
+        self.actionLoadProject.setEnabled(False)
+        self.actionRunAll.setEnabled(False)
+        self.actionManual.setEnabled(False)
 
         graph = nx.read_gexf(file_path)
         self.post_processor = PostProcessingManager(graph=graph)
-        print('printing post_processor.graph.nodes & .edges to prove its here')
-        print(self.post_processor.graph.nodes(data=True))
-        print(self.post_processor.graph.edges(data=True, keys=True))
+
+        for node1, node2, edge_key, edge_data in self.post_processor.graph.edges(data=True, keys=True):
+            if node1 != '0' and node2 != '0':
+                continue
+            surface_point_list = edge_data['surface_point'][1:-1].split(',')
+            surface_point = {}
+            for attribute in surface_point_list:
+                key, value = attribute.split(':')
+                surface_point[key[key.index("'") + 1:key.rfind("'")]] = int(value)
+            self.post_processor.graph[node1][node2][edge_key]["surface_point"] = surface_point
 
         self.toolbar.add_network_tools()
         self.toolbar.set_post_processor(self.post_processor)

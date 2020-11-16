@@ -80,8 +80,8 @@ class CustomToolbar(NavigationToolbar2QT):
         self.set_message(self.mode)
 
     def release_cell(self, event):
-        id = max(self.post_processor.graph.nodes) + 1
-        self.post_processor.graph.add_node(id,x=event.xdata,y=event.ydata, node_type=NORMAL)
+        id = max([int(node) for node in self.post_processor.graph.nodes]) + 1
+        self.post_processor.graph.add_node(id,x=int(event.xdata),y=int(event.ydata), node_type=NORMAL)
         self.MplWidget.draw_node(id, self.post_processor.graph.nodes[id])
         self.post_processor.build_KDTree()
         self.main_window.update_cell_counter()
@@ -102,7 +102,7 @@ class CustomToolbar(NavigationToolbar2QT):
     def press_edge(self, event):
         assert(self.building_edge_data is None)
         self.building_edge_data = {'node_begin': None, 'edge_line': None}
-        self.building_edge_data['node_begin'] = self.post_processor.get_closest_node(event.xdata,event.ydata)
+        self.building_edge_data['node_begin'] = self.post_processor.get_closest_node(event.xdata, event.ydata)
         self.canvas.mpl_disconnect(self._id_drag)
         self._id_drag = self.canvas.mpl_connect('motion_notify_event', self.drag_edge)
 
@@ -124,7 +124,7 @@ class CustomToolbar(NavigationToolbar2QT):
             self.canvas.draw()
         if _Mode.CELLTOSURFACEEDGE == self.mode:
             node1_id = 0
-            node1_data = {'x': event.xdata, 'y': event.ydata}
+            node1_data = {'x': int(event.xdata), 'y': int(event.ydata)}
         else:
             node1_id, node1_data = self.post_processor.get_closest_node(event.xdata,event.ydata)
         node2_id, node2_data = self.building_edge_data['node_begin']
@@ -138,9 +138,9 @@ class CustomToolbar(NavigationToolbar2QT):
                CELL_TO_SURFACE_EDGE if self.mode == _Mode.CELLTOSURFACEEDGE else \
                CELL_TO_CELL_EDGE
         if _Mode.CELLTOSURFACEEDGE == self.mode:
-            self.post_processor.graph.add_edge(node1_id, node2_id, key=key, type=type, surface_point=node1_data)
+            self.post_processor.graph.add_edge(node1_id, node2_id, key=key, edge_type=type, surface_point=node1_data)
         else:
-            self.post_processor.graph.add_edge(node1_id, node2_id, key=key, type=type)
+            self.post_processor.graph.add_edge(node1_id, node2_id, key=key, edge_type=type)
         self.MplWidget.draw_edge(node1_id, node2_id, node1_data, node2_data, key, self.post_processor.graph[node1_id][node2_id][key])
         self.building_edge_data = None
         self.canvas.mpl_disconnect(self._id_drag)
