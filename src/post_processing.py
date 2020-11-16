@@ -2,7 +2,7 @@ import networkx as nx
 from scipy.spatial import KDTree
 
 NORMAL = "normal"
-SPHEROPLAST = "sphereoplast"
+SPHEROPLAST = "spheroplast"
 CURVED = "curved"
 FILAMENT = "filament"
 
@@ -38,7 +38,24 @@ class PostProcessingManager:
         self.tree = KDTree([[node[1]['x'], node[1]['y']] for node in self.graph.nodes(data=True)])
 
     def get_cell_count(self):
-        return len(self.graph.nodes(data=True)) - 1
+        total_count = 0
+        normal_count = 0
+        spheroplast_count = 0
+        filament_count = 0
+        curved_count = 0
+        for node_id, node_data in self.graph.nodes(data=True):
+            if int(node_id) == 0:
+                continue
+            total_count += 1
+            if node_data["node_type"] == NORMAL:
+                normal_count += 1
+            elif node_data["node_type"] == SPHEROPLAST:
+                spheroplast_count += 1
+            elif node_data["node_type"] == FILAMENT:
+                filament_count += 1
+            elif node_data["node_type"] == CURVED:
+                curved_count += 1
+        return total_count, normal_count, spheroplast_count, filament_count, curved_count
 
     def get_closest_node(self, x, y):
         dist, index = self.tree.query([x,y])

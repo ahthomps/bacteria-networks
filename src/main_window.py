@@ -44,7 +44,7 @@ class MainWindow(QMainWindow):
 
     def set_default_visibilities(self):
         self.progressBar.setVisible(False)
-        self.cellCounter.setVisible(False)
+        self.LegendAndCounts.setVisible(False)
         self.toolbar = CustomToolbar(self.MplWidget, self)
         self.addToolBar(self.toolbar)
 
@@ -116,11 +116,12 @@ class MainWindow(QMainWindow):
         self.post_processor = PostProcessingManager(self.program_manager.bio_objs)
         self.toolbar.set_post_processor(self.post_processor)
 
-        self.update_cell_counter()
-        self.cellCounter.setVisible(True)
+        self.update_cell_counters()
+        self.LegendAndCounts.setVisible(True)
 
         self.actionViewNetworkEdges.setEnabled(True)
         self.actionViewNetworkEdges.setChecked(True)
+        self.MplWidget.draw_network_nodes(self.post_processor.graph)
         self.MplWidget.draw_network_edges(self.post_processor.graph)
 
     def allow_manual_labelling(self):
@@ -133,8 +134,8 @@ class MainWindow(QMainWindow):
         self.toolbar.set_post_processor(self.post_processor)
         self.toolbar.add_network_tools()
 
-        self.update_cell_counter()
-        self.cellCounter.setVisible(True)
+        self.update_cell_counters()
+        self.LegendAndCounts.setVisible(True)
 
         self.actionViewNetworkEdges.setEnabled(True)
         self.actionViewNetworkEdges.setChecked(True)
@@ -151,8 +152,14 @@ class MainWindow(QMainWindow):
         else:
             self.MplWidget.remove_network_edges()
 
-    def update_cell_counter(self):
-        self.cellCounter.setText("Cell Count: " + str(self.post_processor.get_cell_count()))
+    def update_cell_counters(self):
+        total_count, normal_count, spheroplast_count, filament_count, curved_count = self.post_processor.get_cell_count()
+        self.LegendAndCounts.update_total_count(total_count)
+        self.LegendAndCounts.update_normal_count(normal_count)
+        self.LegendAndCounts.update_spheroplast_count(spheroplast_count)
+        self.LegendAndCounts.update_filament_count(filament_count)
+        self.LegendAndCounts.update_curved_count(curved_count)
+        self.MplWidget.canvas.draw()
 
     """------------------ UTILITIES -----------------------------"""
 
@@ -196,6 +203,6 @@ class MainWindow(QMainWindow):
         self.actionViewNetworkEdges.setChecked(True)
         self.MplWidget.draw_network_edges(self.post_processor.graph)
 
-        self.update_cell_counter()
-        self.cellCounter.setVisible(True)
+        self.update_cell_counters()
+        self.LegendAndCounts.setVisible(True)
         self.actionExportToGephi.setEnabled(True)

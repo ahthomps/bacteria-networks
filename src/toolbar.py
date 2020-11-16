@@ -43,12 +43,12 @@ class CustomToolbar(NavigationToolbar2QT):
     def add_network_tools(self):
         self.removeAction(self.actions()[-1])
         self.addSeparator()
-        self.addAction(QIcon("ui/standard_node.svg"), "Add Cell", self.cell).setToolTip("Add a cell")
-        self.addAction(QIcon("ui/cell_to_cell.svg"), "Add Cell to Cell Edge", lambda: self.edge(_Mode.CELLTOCELLEDGE)).setToolTip("Add cell to cell  edge")
-        self.addAction(QIcon("ui/cell_to_surface.svg"), "Add Cell to Surface Edge", lambda: self.edge(_Mode.CELLTOSURFACEEDGE)).setToolTip("Add cell to surface edge")
-        self.addAction(QIcon("ui/cell_contact.svg"), "Add Cell Contact Edge", lambda: self.edge(_Mode.CELLCONTACTEDGE)).setToolTip("Add cell contact edge")
-        self.addAction(QIcon("ui/editor.svg"), "Edit Cell Classification", self.editor).setToolTip("Edit cell classification")
-        self.addAction(QIcon("ui/eraser.svg"), "Erase Network Object", self.eraser).setToolTip("Erase node or edge")
+        self.addAction(QIcon("ui/icons/standard_node.svg"), "Add Cell", self.cell).setToolTip("Add a cell")
+        self.addAction(QIcon("ui/icons/cell_to_cell.svg"), "Add Cell to Cell Edge", lambda: self.edge(_Mode.CELLTOCELLEDGE)).setToolTip("Add cell to cell  edge")
+        self.addAction(QIcon("ui/icons/cell_to_surface.svg"), "Add Cell to Surface Edge", lambda: self.edge(_Mode.CELLTOSURFACEEDGE)).setToolTip("Add cell to surface edge")
+        self.addAction(QIcon("ui/icons/cell_contact.svg"), "Add Cell Contact Edge", lambda: self.edge(_Mode.CELLCONTACTEDGE)).setToolTip("Add cell contact edge")
+        self.addAction(QIcon("ui/icons/editor.svg"), "Edit Cell Classification", self.editor).setToolTip("Edit cell classification")
+        self.addAction(QIcon("ui/icons/eraser.svg"), "Erase Network Object", self.eraser).setToolTip("Erase node or edge")
         self.addAction(self.message_display)
         self.addSeparator()
 
@@ -84,7 +84,7 @@ class CustomToolbar(NavigationToolbar2QT):
         self.post_processor.graph.add_node(id,x=int(event.xdata),y=int(event.ydata), node_type=NORMAL)
         self.MplWidget.draw_node(id, self.post_processor.graph.nodes[id])
         self.post_processor.build_KDTree()
-        self.main_window.update_cell_counter()
+        self.main_window.update_cell_counters()
 
     def edge(self, mode):
         if self.mode == _Mode.ERASER or self.mode == _Mode.EDITOR:
@@ -168,6 +168,7 @@ class CustomToolbar(NavigationToolbar2QT):
         next_node_type = self.cell_classifications[(self.cell_classifications.index(current_node_type) + 1) % len(self.cell_classifications)]
         self.post_processor.graph.nodes[object_data["node_id"]]['node_type'] = next_node_type
         self.MplWidget.update_node_color(event.artist, next_node_type)
+        self.main_window.update_cell_counters()
 
     def eraser(self):
         if self.mode == _Mode.EDITOR:
@@ -188,7 +189,7 @@ class CustomToolbar(NavigationToolbar2QT):
         object_data = self.MplWidget.artist_data[event.artist._gid]
         if object_data["network_type"] == "node":
             graph.remove_node(object_data["node_id"])
-            self.main_window.update_cell_counter()
+            self.main_window.update_cell_counters()
             self.post_processor.build_KDTree()
         elif object_data["network_type"] == "edge" and graph.has_edge(object_data["edge_head"], object_data["edge_tail"], key=object_data["edge_key"]):
             graph.remove_edge(object_data["edge_head"], object_data["edge_tail"], key=object_data["edge_key"])
