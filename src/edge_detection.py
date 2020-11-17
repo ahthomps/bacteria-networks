@@ -67,6 +67,20 @@ def compute_cell_contact(bio_objects, image, update_progress_bar):
                 cell1.edge_list[-1].set_type_as_cell_contact()
                 cell2.edge_list[-1].set_type_as_cell_contact()
 
+def add_edge_based_on_intersection_set(surface, nanowire, intersection_set):
+    if len(intersection_set) == 1:
+        cell1 = intersection_set[0]
+        add_edge(cell1, surface, nanowire)
+        cell1.edge_list[-1].set_type_as_cell_to_surface()
+        surface.edge_list[-1].set_type_as_cell_to_surface()
+    elif len(intersection_set) == 2:
+        cell1, cell2 = intersection_set
+        add_edge(cell1, cell2, nanowire)
+        cell1.edge_list[-1].set_type_as_cell_to_cell()
+        cell2.edge_list[-1].set_type_as_cell_to_cell()
+    elif len(intersection_set) != 0:
+        return False
+    return True
 
 def compute_nanowire_edges(bio_objects, image, update_progress_bar):
     surface = bio_objects[0]
@@ -76,20 +90,8 @@ def compute_nanowire_edges(bio_objects, image, update_progress_bar):
     for i, nanowire in enumerate(nanowires):
         if update_progress_bar is not None:
             update_progress_bar(int((num_cells + i) / len(bio_objects) * 100))
-        if len(nanowire.overlapping_bboxes) == 0:
-            continue
-        elif len(nanowire.overlapping_bboxes) == 2:
-            cell1, cell2 = nanowire.overlapping_bboxes
-            add_edge(cell1, cell2, nanowire)
-            cell1.edge_list[-1].set_type_as_cell_to_cell()
-            cell2.edge_list[-1].set_type_as_cell_to_cell()
-
-        elif len(nanowire.overlapping_bboxes) == 1:
-            cell1 = nanowire.overlapping_bboxes[0]
-            add_edge(cell1, surface, nanowire)
-            cell1.edge_list[-1].set_type_as_cell_to_surface()
-            surface.edge_list[-1].set_type_as_cell_to_surface()
-        else:
+            found_edge = add_edge_based_on_intersection_set(surface, nanowire, nanowire.overlapping_bboxes)
+        if not found_edge:
             compute_contour(nanowire, image)
 
             intersections = []
@@ -99,12 +101,4 @@ def compute_nanowire_edges(bio_objects, image, update_progress_bar):
                 if np.logical_and(cell.contour, nanowire.contour, dtype=np.uint8).any():
                     intersections.append(cell)
 
-            if len(intersections) == 2:
-                cell1, cell2 = intersections
-                add_edge(cell1, cell2, nanowire)
-                cell1.edge_list[-1].set_type_as_cell_to_cell()
-                cell2.edge_list[-1].set_type_as_cell_to_cell()
-            elif len(intersections) == 1:
-                cell1 = intersections[0]
-                add_edge(cell1, surface, nanowire)
-                cell1.edge_list[-1].set_type_as_cell_to_surface()
+            add_edge_based_on_intersection_set(surface, nanowire, intersections)
