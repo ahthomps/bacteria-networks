@@ -118,7 +118,7 @@
     <addaction name="actionOpenImage"/>
     <addaction name="actionOpenImageDirectory"/>
     <addaction name="separator"/>
-    <addaction name="actionLoadProject"/>
+    <addaction name="actionImportFromGephi"/>
     <addaction name="actionExportToGephi"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
@@ -159,9 +159,9 @@
     <string>Export to Gephi</string>
    </property>
   </action>
-  <action name="actionLoadProject">
+  <action name="actionImportFromGephi">
    <property name="text">
-    <string>Load Project</string>
+    <string>Import from Gephi</string>
    </property>
   </action>
   <action name="actionClear">
