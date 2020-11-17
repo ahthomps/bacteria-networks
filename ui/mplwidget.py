@@ -51,6 +51,11 @@ class MplWidget(QWidget):
         self.artist_data = {}
 
     def clear_canvas(self):
+        self.remove_network_nodes()
+        self.remove_network_edges()
+        self.remove_cell_bounding_boxes()
+        self.artist_data = {}
+        self.current_gid = 0
         self.canvas.axes.cla()
         self.canvas.axes.axis("off")
         self.canvas.draw()
@@ -141,5 +146,11 @@ class MplWidget(QWidget):
     def remove_network_edges(self):
         for child in self.canvas.axes.get_children():
             if hasattr(child, "_gid") and child._gid is not None and self.artist_data[child._gid]["network_type"] == NETWORK_EDGE_GID:
+                child.remove()
+        self.canvas.draw()
+
+    def remove_network_nodes(self):
+        for child in self.canvas.axes.get_children():
+            if hasattr(child, "_gid") and child._gid is not None and self.artist_data[child._gid]["network_type"] == NETWORK_NODE_GID:
                 child.remove()
         self.canvas.draw()
