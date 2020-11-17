@@ -104,23 +104,21 @@ class MainWindow(QMainWindow):
         # run edge_detection
         self.progressBar.setFormat("Computing cell network...")
         self.program_manager.compute_cell_network_edges(self.progressBar.setValue)
-
         self.toolbar.add_network_tools()
 
         self.actionExportToGephi.setEnabled(True)
         self.actionViewBoundingBoxes.setEnabled(True)
         self.actionViewBoundingBoxes.setChecked(False)
-
         self.progressBar.setVisible(False)
-
+        self.actionViewNetworkEdges.setEnabled(True)
+        self.actionViewNetworkEdges.setChecked(True)
+        self.LegendAndCounts.setVisible(True)
+        
         self.post_processor = PostProcessingManager(self.program_manager.bio_objs)
         self.toolbar.set_post_processor(self.post_processor)
 
         self.update_cell_counters()
-        self.LegendAndCounts.setVisible(True)
 
-        self.actionViewNetworkEdges.setEnabled(True)
-        self.actionViewNetworkEdges.setChecked(True)
         self.MplWidget.draw_network_nodes(self.post_processor.graph)
         self.MplWidget.draw_network_edges(self.post_processor.graph)
 

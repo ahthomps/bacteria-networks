@@ -71,7 +71,4 @@ def parse_yolo_output(yolo_output):
             bio_objs[-1].append(BioObject(xmin, ymin, xmin + width, ymin + height, bio_obj_id, classification))
             bio_obj_id += 1
 
-    if len(bio_objs) > 0 and bio_objs[-1] == []:
-        bio_objs.pop()
-
     return bio_objs
