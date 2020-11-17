@@ -102,7 +102,6 @@ class MplWidget(QWidget):
         self.current_gid += 1
         point_obj.set_picker(True)
         self.canvas.axes.add_line(point_obj)
-        self.canvas.draw()
 
         return point_obj
 
@@ -118,7 +117,6 @@ class MplWidget(QWidget):
         line_obj.set_picker(True)
         self.current_gid += 1
         self.canvas.axes.add_line(line_obj)
-        self.canvas.draw()
 
         return line_obj
 
@@ -127,10 +125,12 @@ class MplWidget(QWidget):
             if int(node_id) == 0:
                 continue
             self.draw_node(node_id, node_data)
+        self.canvas.draw()
 
     def draw_network_edges(self, graph):
         for node1,node2,edge_key,edge_data in graph.edges(data=True, keys=True):
             self.draw_edge(node1, node2, graph.nodes[node1], graph.nodes[node2], edge_key, edge_data)
+        self.canvas.draw()
 
     def remove_cell_bounding_boxes(self):
         for child in self.canvas.axes.get_children():

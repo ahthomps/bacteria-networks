@@ -37,23 +37,49 @@ class CustomToolbar(NavigationToolbar2QT):
         self.building_edge_data = None
         self.cell_classifications = [NORMAL, SPHEROPLAST, CURVED, FILAMENT]
 
+        self.toolbar_items = ((QIcon("ui/icons/standard_node.svg"), "add_cell", self.add_cell_button_press, "Add a cell", True),
+                              (QIcon("ui/icons/cell_to_cell.svg"), "add_cell_to_cell_edge", lambda: self.add_edge_button_press(_Mode.CELLTOCELLEDGE), "Add cell to cell  edge", True),
+                              (QIcon("ui/icons/cell_to_surface.svg"), "add_cell_to_surface_edge", lambda: self.add_edge_button_press(_Mode.CELLTOSURFACEEDGE), "Add cell to surface edge", True),
+                              (QIcon("ui/icons/cell_contact.svg"), "add_cell_contact_edge", lambda: self.add_edge_button_press(_Mode.CELLCONTACTEDGE), "Add cell contact edge", True),
+                              (QIcon("ui/icons/editor.svg"), "edit_cell_classification", self.editor_button_press, "Edit cell classification", True),
+                              (QIcon("ui/icons/eraser.svg"), "erase", self.eraser_button_press, "Erase node or edge", True))
+
     def set_post_processor(self, post_processor):
         self.post_processor = post_processor
 
     def add_network_tools(self):
         self.removeAction(self.actions()[-1])
         self.addSeparator()
-        self.addAction(QIcon("ui/icons/standard_node.svg"), "Add Cell", self.cell).setToolTip("Add a cell")
-        self.addAction(QIcon("ui/icons/cell_to_cell.svg"), "Add Cell to Cell Edge", lambda: self.edge(_Mode.CELLTOCELLEDGE)).setToolTip("Add cell to cell  edge")
-        self.addAction(QIcon("ui/icons/cell_to_surface.svg"), "Add Cell to Surface Edge", lambda: self.edge(_Mode.CELLTOSURFACEEDGE)).setToolTip("Add cell to surface edge")
-        self.addAction(QIcon("ui/icons/cell_contact.svg"), "Add Cell Contact Edge", lambda: self.edge(_Mode.CELLCONTACTEDGE)).setToolTip("Add cell contact edge")
-        self.addAction(QIcon("ui/icons/editor.svg"), "Edit Cell Classification", self.editor).setToolTip("Edit cell classification")
-        self.addAction(QIcon("ui/icons/eraser.svg"), "Erase Network Object", self.eraser).setToolTip("Erase node or edge")
+
+        for icon, name, function, tooltip, checkable in self.toolbar_items:
+            action = self.addAction(icon, name, function)
+            action.setToolTip(tooltip)
+            action.setCheckable(checkable)
+
         self.addAction(self.message_display)
         self.addSeparator()
 
     def mouse_move(self, event):
-        pass
+        return
+
+    def _update_buttons_checked(self):
+        # sync button checkstates to match active mode
+        self.uncheck_buttons()
+        super()._update_buttons_checked()
+        for action in self.actions():
+            if action.text() == 'add_cell':
+                action.setChecked(self.mode == _Mode.CELL)
+            if action.text() == "add_cell_to_cell_edge":
+                action.setChecked(self.mode == _Mode.CELLTOCELLEDGE)
+            if action.text() == "add_cell_to_surface_edge":
+                action.setChecked(self.mode == _Mode.CELLTOSURFACEEDGE)
+            if action.text() == "add_cell_contact_edge":
+                action.setChecked(self.mode == _Mode.CELLCONTACTEDGE)
+            if action.text() == "edit_cell_classification":
+                action.setChecked(self.mode == _Mode.EDITOR)
+            if action.text() == "erase":
+                action.setChecked(self.mode == _Mode.ERASER)
+
 
     def _zoom_pan_handler(self, event):
         super()._zoom_pan_handler(event)
@@ -66,7 +92,12 @@ class CustomToolbar(NavigationToolbar2QT):
             elif event.name == "button_release_event":
                 self.release_edge(event)
 
-    def cell(self):
+    def uncheck_buttons(self):
+        for action in self.actions():
+            if action.isChecked():
+                action.setChecked(False)
+
+    def add_cell_button_press(self):
         if self.mode == _Mode.ERASER or self.mode == _Mode.EDITOR:
             self.canvas.mpl_disconnect(self._id_pick)
         if self.mode == _Mode.CELL:
@@ -79,14 +110,20 @@ class CustomToolbar(NavigationToolbar2QT):
             a.set_navigate_mode(self.mode._navigate_mode)
         self.set_message(self.mode)
 
+        self._update_buttons_checked()
+        
     def release_cell(self, event):
-        id = max([int(node) for node in self.post_processor.graph.nodes]) + 1
-        self.post_processor.graph.add_node(id,x=int(event.xdata),y=int(event.ydata), node_type=NORMAL)
-        self.MplWidget.draw_node(id, self.post_processor.graph.nodes[id])
+        if event.xdata is None or event.ydata is None:
+            return
+
+        node_id = max([int(node) for node in self.post_processor.graph.nodes]) + 1
+        self.post_processor.graph.add_node(node_id,x=int(event.xdata),y=int(event.ydata), node_type=NORMAL)
+        self.MplWidget.draw_node(node_id, self.post_processor.graph.nodes[node_id])
+        self.MplWidget.canvas.draw()
         self.post_processor.build_KDTree()
         self.main_window.update_cell_counters()
 
-    def edge(self, mode):
+    def add_edge_button_press(self, mode):
         if self.mode == _Mode.ERASER or self.mode == _Mode.EDITOR:
             self.canvas.mpl_disconnect(self._id_pick)
         if self.mode == mode:
@@ -99,10 +136,16 @@ class CustomToolbar(NavigationToolbar2QT):
             a.set_navigate_mode(self.mode._navigate_mode)
         self.set_message(self.mode)
 
+        self._update_buttons_checked()
+        
     def press_edge(self, event):
-        assert(self.building_edge_data is None)
-        self.building_edge_data = {'node_begin': None, 'edge_line': None}
-        self.building_edge_data['node_begin'] = self.post_processor.get_closest_node(event.xdata, event.ydata)
+        assert self.building_edge_data is None
+        node_begin = self.post_processor.get_closest_node(event.xdata, event.ydata)
+        if node_begin is None:
+            return
+
+        self.building_edge_data = {'edge_line': None}
+        self.building_edge_data['node_begin'] = node_begin
         self.canvas.mpl_disconnect(self._id_drag)
         self._id_drag = self.canvas.mpl_connect('motion_notify_event', self.drag_edge)
 
@@ -111,42 +154,60 @@ class CustomToolbar(NavigationToolbar2QT):
         if self.building_edge_data['edge_line'] is not None:
             self.building_edge_data['edge_line'].remove()
             self.building_edge_data['edge_line'] = None
-        type = CELL_CONTACT_EDGE if self.mode == _Mode.CELLCONTACTEDGE else \
-               CELL_TO_SURFACE_EDGE if self.mode == _Mode.CELLTOSURFACEEDGE else \
-               CELL_TO_CELL_EDGE
+        edge_type = CELL_CONTACT_EDGE if self.mode == _Mode.CELLCONTACTEDGE else \
+                    CELL_TO_SURFACE_EDGE if self.mode == _Mode.CELLTOSURFACEEDGE else \
+                    CELL_TO_CELL_EDGE
         if self.building_edge_data['edge_line'] is None:
-            self.building_edge_data['edge_line'] = self.MplWidget.draw_line((node_data['x'], node_data['y']), (event.xdata, event.ydata), type)
+            self.building_edge_data['edge_line'] = self.MplWidget.draw_line((node_data['x'], node_data['y']), (event.xdata, event.ydata), edge_type)
 
-    def release_edge(self, event):
-        if self.building_edge_data['edge_line'] is not None:
-            self.building_edge_data['edge_line'].remove()
-            self.building_edge_data['edge_line'] = None
-            self.canvas.draw()
-        if _Mode.CELLTOSURFACEEDGE == self.mode:
-            node1_id = 0
-            node1_data = {'x': int(event.xdata), 'y': int(event.ydata)}
-        else:
-            node1_id, node1_data = self.post_processor.get_closest_node(event.xdata,event.ydata)
-        node2_id, node2_data = self.building_edge_data['node_begin']
-        if node1_id == node2_id:
-            self.building_edge_data = None
-            self.canvas.mpl_disconnect(self._id_drag)
-            self._id_drag = self.canvas.mpl_connect('motion_notify_event', self.mouse_move)
-            return
-        key = self.post_processor.graph.new_edge_key(node1_id, node2_id)
-        type = CELL_CONTACT_EDGE if self.mode == _Mode.CELLCONTACTEDGE else \
-               CELL_TO_SURFACE_EDGE if self.mode == _Mode.CELLTOSURFACEEDGE else \
-               CELL_TO_CELL_EDGE
-        if _Mode.CELLTOSURFACEEDGE == self.mode:
-            self.post_processor.graph.add_edge(node1_id, node2_id, key=key, edge_type=type, surface_point=node1_data)
-        else:
-            self.post_processor.graph.add_edge(node1_id, node2_id, key=key, edge_type=type)
-        self.MplWidget.draw_edge(node1_id, node2_id, node1_data, node2_data, key, self.post_processor.graph[node1_id][node2_id][key])
+    def exit_from_edge_creation(self):
         self.building_edge_data = None
         self.canvas.mpl_disconnect(self._id_drag)
         self._id_drag = self.canvas.mpl_connect('motion_notify_event', self.mouse_move)
 
-    def editor(self):
+    def release_edge(self, event):
+        if self.building_edge_data is None:
+            return
+
+        if event.xdata is None or event.ydata is None:
+            self.exit_from_edge_creation()
+            return
+
+        if self.building_edge_data['edge_line'] is not None:
+            self.building_edge_data['edge_line'].remove()
+            self.building_edge_data['edge_line'] = None
+            self.canvas.draw()
+        if self.mode == _Mode.CELLTOSURFACEEDGE:
+            node1_id = 0
+            node1_data = {'x': int(event.xdata), 'y': int(event.ydata)}
+        else:
+            node1 = self.post_processor.get_closest_node(event.xdata,event.ydata)
+            if node1 is None:
+                self.exit_from_edge_creation()
+                return
+            node1_id, node1_data = node1
+
+        node2_id, node2_data = self.building_edge_data['node_begin']
+
+        if node1_id == node2_id:
+            self.exit_from_edge_creation()
+            return
+
+        key = self.post_processor.graph.new_edge_key(node1_id, node2_id)
+        edge_type = CELL_CONTACT_EDGE if self.mode == _Mode.CELLCONTACTEDGE else \
+                    CELL_TO_SURFACE_EDGE if self.mode == _Mode.CELLTOSURFACEEDGE else \
+                    CELL_TO_CELL_EDGE
+        if _Mode.CELLTOSURFACEEDGE == self.mode:
+            self.post_processor.graph.add_edge(node1_id, node2_id, key=key, edge_type=edge_type, surface_point=node1_data)
+        else:
+            self.post_processor.graph.add_edge(node1_id, node2_id, key=key, edge_type=edge_type)
+        self.MplWidget.draw_edge(node1_id, node2_id, node1_data, node2_data, key, self.post_processor.graph[node1_id][node2_id][key])
+        self.MplWidget.canvas.draw()
+        self.building_edge_data = None
+        self.canvas.mpl_disconnect(self._id_drag)
+        self._id_drag = self.canvas.mpl_connect('motion_notify_event', self.mouse_move)
+
+    def editor_button_press(self):
         if self.mode == _Mode.ERASER:
             self.canvas.mpl_disconnect(self._id_pick)
         if self.mode == _Mode.EDITOR:
@@ -160,6 +221,8 @@ class CustomToolbar(NavigationToolbar2QT):
         self.canvas.widgetlock.release(self)
         self.set_message(self.mode)
 
+        self._update_buttons_checked()
+        
     def edit_cell_classification(self, event):
         object_data = self.MplWidget.return_artist_data(event.artist._gid)
         if object_data["network_type"] == "edge":
@@ -170,7 +233,7 @@ class CustomToolbar(NavigationToolbar2QT):
         self.MplWidget.update_node_color(event.artist, next_node_type)
         self.main_window.update_cell_counters()
 
-    def eraser(self):
+    def eraser_button_press(self):
         if self.mode == _Mode.EDITOR:
             self.canvas.mpl_disconnect(self._id_pick)
         if self.mode == _Mode.ERASER:
@@ -184,11 +247,13 @@ class CustomToolbar(NavigationToolbar2QT):
         self.canvas.widgetlock.release(self)
         self.set_message(self.mode)
 
+        self._update_buttons_checked()
+        
     def erase_network_object(self, event):
         graph = self.post_processor.graph
         object_data = self.MplWidget.artist_data[event.artist._gid]
         if object_data["network_type"] == "node":
-            graph.remove_node(object_data["node_id"])
+            self.post_processor.graph.remove_node(object_data["node_id"])
             self.main_window.update_cell_counters()
             self.post_processor.build_KDTree()
         elif object_data["network_type"] == "edge" and graph.has_edge(object_data["edge_head"], object_data["edge_tail"], key=object_data["edge_key"]):

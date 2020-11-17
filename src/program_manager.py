@@ -26,7 +26,7 @@ class ProgramManager:
         self.original_image = plt.imread(self.image_path)
         for i in range(len(self.image)):
             count = 0
-            for item in self.image[i]:
+            for item in self.image[i]: # For finding and removing the legend from the input images
                 if 0 < item < 255:
                     count += 1
                     if count > 10:
@@ -40,7 +40,7 @@ class ProgramManager:
         if self.image.shape[0] > TILE_SIZE or self.image.shape[1] > TILE_SIZE:
             self.crop()
 
-    def compute_bounding_boxes(self, update_progress_bar):
+    def compute_bounding_boxes(self, update_progress_bar=None):
         if not self.made_crops:
             image_filename = self.image_path
             slash_index = -1
@@ -94,14 +94,13 @@ class ProgramManager:
         for file in os.listdir(CROP_DIR):
             os.remove(f"{CROP_DIR}/{file}")
 
-        # Get a list of all the image files we're going to crop
-        input_images = [self.image_path[self.image_path.rfind("/") + 1:]]
+        # The image file we're going to crop
+        filename = self.image_path[self.image_path.rfind("/") + 1:]
 
-        # Crop each image, and save all the crops in CROP_DIR
-        for filename in input_images:
-            for tile in make_tiles(Image.open(f"{directory}/{filename}"), filename[:filename.rfind(".")]):
-                tile.save(directory=CROP_DIR)
+        # Crop the image, and save all the crops in CROP_DIR
+        for tile in make_tiles(Image.open(f"{directory}/{filename}"), filename[:filename.rfind(".")]):
+            tile.save(directory=CROP_DIR)
 
-    def compute_cell_network_edges(self, update_progress_bar):
+    def compute_cell_network_edges(self, update_progress_bar=None):
         compute_cell_contact(self.bio_objs, self.image, update_progress_bar)
         compute_nanowire_edges(self.bio_objs, self.image, update_progress_bar)

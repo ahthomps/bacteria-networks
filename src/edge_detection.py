@@ -54,7 +54,8 @@ def compute_cell_contact(bio_objects, image, update_progress_bar):
             compute_contour(obj, image)
 
     for i, cell1 in enumerate(cells):
-        update_progress_bar(int(i / len(bio_objects) * 100))
+        if update_progress_bar is not None:
+            update_progress_bar(int(i / len(bio_objects) * 100))
         for cell2 in cell1.overlapping_bboxes:
             if cell2.id > cell1.id:
                 continue
@@ -73,7 +74,8 @@ def compute_nanowire_edges(bio_objects, image, update_progress_bar):
     nanowires = filter(lambda b: b.is_nanowire(), bio_objects)
 
     for i, nanowire in enumerate(nanowires):
-        update_progress_bar(int((num_cells + i) / len(bio_objects) * 100))
+        if update_progress_bar is not None:
+            update_progress_bar(int((num_cells + i) / len(bio_objects) * 100))
         if len(nanowire.overlapping_bboxes) == 0:
             continue
         elif len(nanowire.overlapping_bboxes) == 2:

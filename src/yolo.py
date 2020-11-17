@@ -34,7 +34,8 @@ def run_yolo_on_images(img_paths, update_progress_bar):
         current_images_processed = current_output.count("Enter Image Path:")
         if current_images_processed != 0:
             total_images_processed += current_images_processed
-            update_progress_bar(min(100, int(total_images_processed / len(img_paths) * 100)))
+            if update_progress_bar is not None:
+                update_progress_bar(min(100, int(total_images_processed / len(img_paths) * 100)))
         # It felt like I should put a sleep in here, but I timed it and it makes no difference.
 
     total_output += "".join(proc.stdout.readlines())
@@ -70,8 +71,5 @@ def parse_yolo_output(yolo_output):
             height = int(tokens[9][:-1]) # Slice because this will have a ')' stuck on the end
             bio_objs[-1].append(BioObject(xmin, ymin, xmin + width, ymin + height, bio_obj_id, classification))
             bio_obj_id += 1
-
-    if len(bio_objs) > 0 and bio_objs[-1] == []:
-        bio_objs.pop()
 
     return bio_objs

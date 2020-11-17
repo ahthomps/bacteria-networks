@@ -93,7 +93,7 @@
        </size>
       </property>
       <property name="value">
-       <number>24</number>
+       <number>0</number>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
@@ -116,9 +116,10 @@
      <string>File</string>
     </property>
     <addaction name="actionOpenImage"/>
+    <addaction name="actionOpenImageDirectory"/>
     <addaction name="separator"/>
-    <addaction name="actionExportToGephi"/>
     <addaction name="actionLoadProject"/>
+    <addaction name="actionExportToGephi"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
@@ -133,6 +134,7 @@
     <addaction name="actionViewBoundingBoxes"/>
     <addaction name="actionViewContour"/>
     <addaction name="actionViewNetworkEdges"/>
+    <addaction name="actionViewLegend"/>
    </widget>
    <widget class="QMenu" name="menuRun">
     <property name="title">
@@ -199,6 +201,19 @@
    </property>
    <property name="text">
     <string>Network Edges</string>
+   </property>
+  </action>
+  <action name="actionViewLegend">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Legend</string>
+   </property>
+  </action>
+  <action name="actionOpenImageDirectory">
+   <property name="text">
+    <string>Open Image Directory</string>
    </property>
   </action>
  </widget>

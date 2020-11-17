@@ -6,12 +6,17 @@ SPHEROPLAST = "spheroplast"
 CURVED = "curved"
 FILAMENT = "filament"
 
+EDGE_RELEASE_DISTANCE_THRESHOLD = 50 # px
+
 class PostProcessingManager:
     def __init__(self, bio_objs=None, graph=None):
         if graph is not None:
             self.graph = graph
         else:
             self.graph = nx.MultiGraph()
+
+            # Note: We tried using a filter below, but for some reason it removed all the edges from the cells.
+            #       We have no idea why this happened.
 
             # add all nodes
             for bio_object in bio_objs:
@@ -26,16 +31,17 @@ class PostProcessingManager:
                         if bio_object.id > edge.head.id:
                             continue
                         key = self.graph.new_edge_key(bio_object.id, edge.head.id)
-                        if edge.type_is_cell_to_surface():
+                        if bio_object.id == 0 or edge.head.id == 0: # If cell-to-surface
                             surface_point = {'x': (edge.nanowire.x1 + edge.nanowire.x2) // 2, 'y': (edge.nanowire.y1 + edge.nanowire.y2) // 2}
                             self.graph.add_edge(bio_object.id, edge.head.id, key=key, edge_type=edge.type, surface_point=surface_point)
                         else:
                             self.graph.add_edge(bio_object.id, edge.head.id, key=key, edge_type=edge.type)
-        self.build_KDTree()
 
+        self.tree = self.build_KDTree()
 
     def build_KDTree(self):
-        self.tree = KDTree([[node[1]['x'], node[1]['y']] for node in self.graph.nodes(data=True)])
+        self.tree = KDTree([(node[1]['x'], node[1]['y']) for node in self.graph.nodes(data=True)])
+        return self.tree
 
     def get_cell_count(self):
         total_count = 0
@@ -58,6 +64,10 @@ class PostProcessingManager:
         return total_count, normal_count, spheroplast_count, filament_count, curved_count
 
     def get_closest_node(self, x, y):
+        if x is None or y is None:
+            return
+
         dist, index = self.tree.query([x,y])
-        nodes = list(self.graph.nodes(data=True))
-        return nodes[int(index)]
+        if dist > EDGE_RELEASE_DISTANCE_THRESHOLD:
+            return
+        return list(self.graph.nodes(data=True))[int(index)]
