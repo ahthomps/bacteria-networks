@@ -40,7 +40,7 @@ class ProgramManager:
         if self.image.shape[0] > TILE_SIZE or self.image.shape[1] > TILE_SIZE:
             self.crop()
 
-    def compute_bounding_boxes(self, update_progress_bar):
+    def compute_bounding_boxes(self, update_progress_bar=None):
         if not self.made_crops:
             image_filename = self.image_path
             slash_index = -1
@@ -102,6 +102,6 @@ class ProgramManager:
             for tile in make_tiles(Image.open(f"{directory}/{filename}"), filename[:filename.rfind(".")]):
                 tile.save(directory=CROP_DIR)
 
-    def compute_cell_network_edges(self, update_progress_bar):
+    def compute_cell_network_edges(self, update_progress_bar=None):
         compute_cell_contact(self.bio_objs, self.image, update_progress_bar)
         compute_nanowire_edges(self.bio_objs, self.image, update_progress_bar)

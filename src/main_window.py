@@ -4,9 +4,10 @@ from PyQt5.QtGui import QKeySequence
 from PyQt5.uic import loadUi
 from toolbar import CustomToolbar
 from program_manager import ProgramManager
-import pickle
+import os
 import networkx as nx
 from post_processing import PostProcessingManager
+from crop_processing import IMAGE_EXTENSIONS
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -70,6 +71,28 @@ class MainWindow(QMainWindow):
         self.removeToolBar(self.toolbar)
         self.set_default_visibilities()
         self.set_default_enablements()
+
+    def batch_processing(self):
+        directory_path = QFileDialog.getExistingDirectory(self, "Select Directory")
+        if not directory_path:
+            return
+        self.progressBar.setFormat("Processing Images...")
+        images = list(filter(lambda path: any(path.endswith(x) for x in IMAGE_EXTENSIONS), os.listdir(directory_path)))
+        for i, path in enumerate(images):
+            image_path = os.path.join(directory_path, path)
+            self.program_manager.open_image_file_and_crop_if_necessary(image_path)
+
+            self.program_manager.compute_bounding_boxes()
+
+            self.program_manager.compute_bbox_overlaps_and_cell_centers()
+
+            self.program_manager.compute_cell_network_edges()
+
+            self.post_processor = PostProcessingManager(self.program_manager.bio_objs)
+            self.export_to_gephi(export_path=image_path[:image_path.rfind(".")] + ".gexf")
+
+            self.progressBar.setValue(i / len(images) * 100)
+        
 
     def open_image_file_and_display(self):
         image_path, _ = QFileDialog.getOpenFileName(None, "Select image", "", "Image Files (*.png *.jpg *.jpeg *.bmp *.tif *.tiff)")
@@ -161,8 +184,14 @@ class MainWindow(QMainWindow):
 
     """------------------ UTILITIES -----------------------------"""
 
-    def export_to_gephi(self):
-        nx.write_gexf(self.post_processor.graph, self.program_manager.image_path + '.gexf')
+    def export_to_gephi(self, export_path=None):
+        if export_path is None:
+            export_path, _ = QFileDialog.getSaveFileName(None, 'Save Graph', '', 'Gephi Files (*.gexf')
+            if export_path == "":
+                return
+            if not export_path.endswith('.gexf'):
+                export_path += '.gexf'
+        nx.write_gexf(self.post_processor.graph, export_path)
 
     def load(self):
         file_path, _ = QFileDialog.getOpenFileName(None, "Select Gephi File", "", "Gephi Files (*.gexf)")
