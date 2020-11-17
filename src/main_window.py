@@ -7,7 +7,7 @@ import os
 import networkx as nx
 
 from post_processing import PostProcessingManager
-from toolbar import CustomToolbar
+from toolbar import CustomToolbar, _Mode
 from program_manager import ProgramManager
 
 class MainWindow(QMainWindow):
@@ -89,6 +89,8 @@ class MainWindow(QMainWindow):
         self.removeToolBar(self.toolbar)
         self.set_default_visibilities()
         self.set_default_enablements()
+        self.toolbar.mode = _Mode.NONE
+        self.toolbar._update_buttons_checked()
 
         self.is_batch_processing = False
         self.image_directory_path = ""
