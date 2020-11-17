@@ -15,6 +15,9 @@ class PostProcessingManager:
         else:
             self.graph = nx.MultiGraph()
 
+            # Note: We tried using a filter below, but for some reason it removed all the edges from the cells.
+            #       We have no idea why this happened.
+
             # add all nodes
             for bio_object in bio_objs:
                 if not bio_object.is_nanowire():

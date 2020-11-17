@@ -17,6 +17,12 @@ class MainWindow(QMainWindow):
         self.program_manager = ProgramManager()
         self.post_processor = None
 
+        # These are for batch processing. It feels wrong to put them in ProgramManager
+        # because they need to persist between different images.
+        # It also feels wrong to put them here.
+        self.is_batch_processing = False
+        self.image_directory_path = ""
+
         loadUi("ui/main.ui", self)
         self.setWindowTitle("JAB Bacteria Network Detector")
 
@@ -29,19 +35,27 @@ class MainWindow(QMainWindow):
         self.actionOpenImage.triggered.connect(self.open_image_file_and_display)
         self.actionExportToGephi.triggered.connect(self.export_to_gephi)
         self.actionLoadProject.triggered.connect(self.load)
+        self.actionOpenImageDirectory.triggered.connect(self.open_image_directory)
+        self.actionViewLegend.triggered.connect(self.handle_legend_view_press)
 
         self.actionViewBoundingBoxes.triggered.connect(self.handle_cell_bounding_boxes_view_press)
         self.actionViewNetworkEdges.triggered.connect(self.handle_network_edges_view_press)
-        self.actionRunAll.triggered.connect(self.run_yolo_and_edge_detection_and_display)
+        self.actionRunAll.triggered.connect(lambda: self.run_batch_processing() \
+                                                    if self.is_batch_processing else \
+                                                    self.run_yolo_and_edge_detection_and_display())
         self.actionManual.triggered.connect(self.allow_manual_labelling)
 
         # Keyboard shortcuts for **__POWER USERS__**
         QShortcut(QKeySequence("Ctrl+S"), self).activated.connect(lambda: self.actionExportToGephi.isEnabled() and \
                                                                           self.export_to_gephi())
         QShortcut(QKeySequence("Ctrl+R"), self).activated.connect(lambda: self.actionRunAll.isEnabled() and \
+                                                                          self.run_batch_processing() \
+                                                                          if self.is_batch_processing else \
                                                                           self.run_yolo_and_edge_detection_and_display())
         QShortcut(QKeySequence("Ctrl+O"), self).activated.connect(lambda: self.actionOpenImage.isEnabled() and \
                                                                           self.open_image_file_and_display())
+        QShortcut(QKeySequence("Ctrl+Shift+O"), self).activated.connect(lambda: self.actionOpenImageDirectory.isEnabled() and \
+                                                                                self.open_image_directory())
 
     def set_default_visibilities(self):
         self.progressBar.setVisible(False)
@@ -55,6 +69,7 @@ class MainWindow(QMainWindow):
         self.actionClear.setEnabled(True)
 
         self.actionOpenImage.setEnabled(True)
+        self.actionOpenImageDirectory.setEnabled(True)
         self.actionRunAll.setEnabled(False)
         self.actionManual.setEnabled(False)
 
@@ -64,6 +79,8 @@ class MainWindow(QMainWindow):
         self.actionViewContour.setChecked(False)
         self.actionViewNetworkEdges.setEnabled(False)
         self.actionViewNetworkEdges.setChecked(False)
+        self.actionViewLegend.setEnabled(False)
+        self.actionViewLegend.setChecked(False)
 
     def clear_all_data_and_reset_window(self):
         self.program_manager = ProgramManager()
@@ -72,27 +89,37 @@ class MainWindow(QMainWindow):
         self.set_default_visibilities()
         self.set_default_enablements()
 
-    def batch_processing(self):
+        self.is_batch_processing = False
+        self.image_directory_path = ""
+
+    def open_image_directory(self):
         directory_path = QFileDialog.getExistingDirectory(self, "Select Directory")
         if not directory_path:
             return
-        self.progressBar.setFormat("Processing Images...")
-        images = list(filter(lambda path: any(path.endswith(x) for x in IMAGE_EXTENSIONS), os.listdir(directory_path)))
+        self.is_batch_processing = True
+        self.image_directory_path = directory_path
+
+        self.actionRunAll.setEnabled(True)
+        self.actionOpenImage.setEnabled(False)
+        self.actionOpenImageDirectory.setEnabled(False)
+
+    def run_batch_processing(self):
+        self.progressBar.setVisible(True)
+        self.actionRunAll.setEnabled(False)
+        images = list(filter(lambda path: any(path.endswith(x) for x in IMAGE_EXTENSIONS), os.listdir(self.image_directory_path)))
         for i, path in enumerate(images):
-            image_path = os.path.join(directory_path, path)
+            self.progressBar.setFormat(f"Processing {path}...")
+            image_path = os.path.join(self.image_directory_path, path)
+            self.program_manager = ProgramManager()
             self.program_manager.open_image_file_and_crop_if_necessary(image_path)
-
             self.program_manager.compute_bounding_boxes()
-
             self.program_manager.compute_bbox_overlaps_and_cell_centers()
-
             self.program_manager.compute_cell_network_edges()
-
-            self.post_processor = PostProcessingManager(self.program_manager.bio_objs)
+            self.post_processor = PostProcessingManager(bio_objs=self.program_manager.bio_objs)
             self.export_to_gephi(export_path=image_path[:image_path.rfind(".")] + ".gexf")
-
-            self.progressBar.setValue(i / len(images) * 100)
-        
+            self.progressBar.setValue((i + 1) / len(images) * 100)
+        self.progressBar.setVisible(False)
+        self.clear_all_data_and_reset_window()
 
     def open_image_file_and_display(self):
         image_path, _ = QFileDialog.getOpenFileName(None, "Select image", "", "Image Files (*.png *.jpg *.jpeg *.bmp *.tif *.tiff)")
@@ -105,6 +132,7 @@ class MainWindow(QMainWindow):
 
         # disable importing new images
         self.actionOpenImage.setEnabled(False)
+        self.actionOpenImageDirectory.setEnabled(False)
         # allow loading of saved project
         self.actionLoadProject.setEnabled(True)
         # enable running automatic network detection
@@ -136,8 +164,10 @@ class MainWindow(QMainWindow):
         self.actionViewNetworkEdges.setEnabled(True)
         self.actionViewNetworkEdges.setChecked(True)
         self.LegendAndCounts.setVisible(True)
-        
-        self.post_processor = PostProcessingManager(self.program_manager.bio_objs)
+        self.actionViewLegend.setEnabled(True)
+        self.actionViewLegend.setChecked(True)
+
+        self.post_processor = PostProcessingManager(bio_objs=self.program_manager.bio_objs)
         self.toolbar.set_post_processor(self.post_processor)
 
         self.update_cell_counters()
@@ -151,7 +181,7 @@ class MainWindow(QMainWindow):
         self.actionLoadProject.setEnabled(False)
         self.actionExportToGephi.setEnabled(True)
 
-        self.post_processor = PostProcessingManager(self.program_manager.bio_objs)
+        self.post_processor = PostProcessingManager(bio_objs=self.program_manager.bio_objs)
         self.toolbar.set_post_processor(self.post_processor)
         self.toolbar.add_network_tools()
 
@@ -172,6 +202,9 @@ class MainWindow(QMainWindow):
             self.MplWidget.draw_network_edges(self.post_processor.graph)
         else:
             self.MplWidget.remove_network_edges()
+
+    def handle_legend_view_press(self):
+        self.LegendAndCounts.setVisible(self.actionViewLegend.isChecked())
 
     def update_cell_counters(self):
         total_count, normal_count, spheroplast_count, filament_count, curved_count = self.post_processor.get_cell_count()

@@ -7,7 +7,10 @@ from copy import deepcopy
 
 TILE_OVERLAP = 3 # 2 -> 50% overlap, 3 -> 33% overlap, etc.
 TILE_SIZE = 416
+CROP_OFFSET = ((TILE_OVERLAP - 1) * TILE_SIZE) // TILE_OVERLAP
+
 IMAGE_EXTENSIONS = (".tiff", ".tif", ".png", ".jpg", ".jpeg", ".gif", ".bmp")
+
 
 class Tile:
     def __init__(self, img, x1, y1, x2, y2, filename_no_ext):
@@ -60,8 +63,8 @@ def make_tiles(img, filename):
     """ img: A PIL.Image to be tiled.
         filename: A filename, usually the filename of img without its extension. """
     tiles = []
-    for r in range(0, img.height, ((TILE_OVERLAP - 1) * TILE_SIZE) // TILE_OVERLAP):
-        for c in range(0, img.width, ((TILE_OVERLAP - 1) * TILE_SIZE) // TILE_OVERLAP):
+    for r in range(0, img.height + CROP_OFFSET, CROP_OFFSET): # We add CROP_OFFSET here to make sure some crop has the edge of the image in its confidence region.
+        for c in range(0, img.width + CROP_OFFSET, CROP_OFFSET):
             x1, y1, x2, y2 = (r, c, r + TILE_SIZE, c + TILE_SIZE)
             tiles.append(Tile(img.crop((x1, y1, x2, y2)), x1, y1, x2, y2, filename))
 
