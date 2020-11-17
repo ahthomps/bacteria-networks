@@ -2,12 +2,13 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QMainWindow, QFileDialog, QShortcut
 from PyQt5.QtGui import QKeySequence
 from PyQt5.uic import loadUi
-from toolbar import CustomToolbar
-from program_manager import ProgramManager
+
 import os
 import networkx as nx
+
 from post_processing import PostProcessingManager
-from crop_processing import IMAGE_EXTENSIONS
+from toolbar import CustomToolbar, _Mode
+from program_manager import ProgramManager
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -34,7 +35,7 @@ class MainWindow(QMainWindow):
         self.actionClear.triggered.connect(self.clear_all_data_and_reset_window)
         self.actionOpenImage.triggered.connect(self.open_image_file_and_display)
         self.actionExportToGephi.triggered.connect(self.export_to_gephi)
-        self.actionLoadProject.triggered.connect(self.load)
+        self.actionImportFromGephi.triggered.connect(self.load)
         self.actionOpenImageDirectory.triggered.connect(self.open_image_directory)
         self.actionViewLegend.triggered.connect(self.handle_legend_view_press)
 
@@ -49,9 +50,9 @@ class MainWindow(QMainWindow):
         QShortcut(QKeySequence("Ctrl+S"), self).activated.connect(lambda: self.actionExportToGephi.isEnabled() and \
                                                                           self.export_to_gephi())
         QShortcut(QKeySequence("Ctrl+R"), self).activated.connect(lambda: self.actionRunAll.isEnabled() and \
-                                                                          self.run_batch_processing() \
+                                                                          (self.run_batch_processing() \
                                                                           if self.is_batch_processing else \
-                                                                          self.run_yolo_and_edge_detection_and_display())
+                                                                          self.run_yolo_and_edge_detection_and_display()))
         QShortcut(QKeySequence("Ctrl+O"), self).activated.connect(lambda: self.actionOpenImage.isEnabled() and \
                                                                           self.open_image_file_and_display())
         QShortcut(QKeySequence("Ctrl+Shift+O"), self).activated.connect(lambda: self.actionOpenImageDirectory.isEnabled() and \
@@ -65,7 +66,7 @@ class MainWindow(QMainWindow):
 
     def set_default_enablements(self):
         self.actionExportToGephi.setEnabled(False)
-        self.actionLoadProject.setEnabled(False)
+        self.actionImportFromGephi.setEnabled(False)
         self.actionClear.setEnabled(True)
 
         self.actionOpenImage.setEnabled(True)
@@ -88,6 +89,8 @@ class MainWindow(QMainWindow):
         self.removeToolBar(self.toolbar)
         self.set_default_visibilities()
         self.set_default_enablements()
+        self.toolbar.mode = _Mode.NONE
+        self.toolbar._update_buttons_checked()
 
         self.is_batch_processing = False
         self.image_directory_path = ""
@@ -134,7 +137,7 @@ class MainWindow(QMainWindow):
         self.actionOpenImage.setEnabled(False)
         self.actionOpenImageDirectory.setEnabled(False)
         # allow loading of saved project
-        self.actionLoadProject.setEnabled(True)
+        self.actionImportFromGephi.setEnabled(True)
         # enable running automatic network detection
         self.actionRunAll.setEnabled(True)
         # enable manual labeling option
@@ -144,7 +147,7 @@ class MainWindow(QMainWindow):
         self.actionRunAll.setEnabled(False)
         self.actionManual.setEnabled(False)
         self.progressBar.setVisible(True)
-        self.actionLoadProject.setEnabled(False)
+        self.actionImportFromGephi.setEnabled(False)
 
         # run yolo
         self.progressBar.setFormat("Computing bounding boxes...")
@@ -178,7 +181,7 @@ class MainWindow(QMainWindow):
     def allow_manual_labelling(self):
         self.actionRunAll.setEnabled(False)
         self.actionManual.setEnabled(False)
-        self.actionLoadProject.setEnabled(False)
+        self.actionImportFromGephi.setEnabled(False)
         self.actionExportToGephi.setEnabled(True)
 
         self.post_processor = PostProcessingManager(bio_objs=self.program_manager.bio_objs)
@@ -232,12 +235,10 @@ class MainWindow(QMainWindow):
         if not file_path:
             return
 
-        image_path = file_path[:-5]
-
-        self.program_manager.open_image_file_and_crop_if_necessary(image_path)
+        self.program_manager.open_image_file_and_crop_if_necessary(self.program_manager.image_path)
         self.MplWidget.draw_image(self.program_manager.image)
         self.actionOpenImage.setEnabled(False)
-        self.actionLoadProject.setEnabled(False)
+        self.actionImportFromGephi.setEnabled(False)
         self.actionRunAll.setEnabled(False)
         self.actionManual.setEnabled(False)
 
