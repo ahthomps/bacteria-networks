@@ -49,9 +49,9 @@ class MainWindow(QMainWindow):
         QShortcut(QKeySequence("Ctrl+S"), self).activated.connect(lambda: self.actionExportToGephi.isEnabled() and \
                                                                           self.export_to_gephi())
         QShortcut(QKeySequence("Ctrl+R"), self).activated.connect(lambda: self.actionRunAll.isEnabled() and \
-                                                                          self.run_batch_processing() \
+                                                                          (self.run_batch_processing() \
                                                                           if self.is_batch_processing else \
-                                                                          self.run_yolo_and_edge_detection_and_display())
+                                                                          self.run_yolo_and_edge_detection_and_display()))
         QShortcut(QKeySequence("Ctrl+O"), self).activated.connect(lambda: self.actionOpenImage.isEnabled() and \
                                                                           self.open_image_file_and_display())
         QShortcut(QKeySequence("Ctrl+Shift+O"), self).activated.connect(lambda: self.actionOpenImageDirectory.isEnabled() and \
