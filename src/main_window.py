@@ -1,3 +1,6 @@
+from sys import path
+path.append("ui")
+
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QMainWindow, QFileDialog, QShortcut
 from PyQt5.QtGui import QKeySequence
@@ -9,6 +12,11 @@ import networkx as nx
 from post_processing import PostProcessingManager
 from toolbar import CustomToolbar, _Mode
 from program_manager import ProgramManager
+from mplwidget import MplWidget
+
+def clear_mainwindow():
+    mainwindow = MainWindow()
+    mainwindow.show()
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -84,16 +92,8 @@ class MainWindow(QMainWindow):
         self.actionViewLegend.setChecked(False)
 
     def clear_all_data_and_reset_window(self):
-        self.program_manager = ProgramManager()
-        self.MplWidget.clear_canvas()
-        self.removeToolBar(self.toolbar)
-        self.set_default_visibilities()
-        self.set_default_enablements()
-        self.toolbar.mode = _Mode.NONE
-        self.toolbar._update_buttons_checked()
-
-        self.is_batch_processing = False
-        self.image_directory_path = ""
+        clear_mainwindow()
+        self.hide()
 
     def open_image_directory(self):
         directory_path = QFileDialog.getExistingDirectory(self, "Select Directory")
