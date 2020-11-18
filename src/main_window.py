@@ -42,7 +42,7 @@ class MainWindow(QMainWindow):
         # Connect the buttons to their corresponding actions
         self.actionClear.triggered.connect(self.clear_all_data_and_reset_window)
         self.actionOpenImage.triggered.connect(self.open_image_file_and_display)
-        self.actionExportToGephi.triggered.connect(self.export_to_gephi)
+        self.actionExportToGephi.triggered.connect(lambda: self.export_to_gephi())
         self.actionImportFromGephi.triggered.connect(self.load)
         self.actionOpenImageDirectory.triggered.connect(self.open_image_directory)
         self.actionViewLegend.triggered.connect(self.handle_legend_view_press)
@@ -220,8 +220,8 @@ class MainWindow(QMainWindow):
 
     """------------------ UTILITIES -----------------------------"""
 
-    def export_to_gephi(self, export_path=None):
-        if export_path is None:
+    def export_to_gephi(self, export_path=""):
+        if export_path == "":
             export_path, _ = QFileDialog.getSaveFileName(None, 'Save Graph', '', 'Gephi Files (*.gexf')
             if export_path == "":
                 return
