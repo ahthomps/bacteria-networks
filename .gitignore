@@ -4,8 +4,9 @@
 *.backup
 predictions.jpg
 bad.list
+backup
+*.gexf
+*.jpg
 *.jpeg
 *.tif
 *.tiff
-backup
-*.gexf

@@ -10,6 +10,7 @@ import os
 import networkx as nx
 
 from post_processing import PostProcessingManager
+from crop_processing import IMAGE_EXTENSIONS
 from toolbar import CustomToolbar, _Mode
 from program_manager import ProgramManager
 from mplwidget import MplWidget
@@ -242,7 +243,7 @@ class MainWindow(QMainWindow):
         self.actionRunAll.setEnabled(False)
         self.actionManual.setEnabled(False)
 
-        graph = nx.read_gexf(file_path)
+        graph = nx.MultiGraph(nx.read_gexf(file_path))
         self.post_processor = PostProcessingManager(graph=graph)
 
         for node1, node2, edge_key, edge_data in self.post_processor.graph.edges(data=True, keys=True):

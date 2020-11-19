@@ -28,7 +28,9 @@ class CustomToolbar(NavigationToolbar2QT):
         self.main_window = parent
         self.post_processor = None
         self.MplWidget = MplWidget
+
         super().__init__(self.MplWidget.canvas, parent)
+
         self.message_display = self.actions()[-1]
         for _ in range(5):
             self.removeAction(self.actions()[-1])
@@ -117,7 +119,7 @@ class CustomToolbar(NavigationToolbar2QT):
             return
 
         node_id = max([int(node) for node in self.post_processor.graph.nodes]) + 1
-        self.post_processor.graph.add_node(node_id,x=int(event.xdata),y=int(event.ydata), node_type=NORMAL)
+        self.post_processor.graph.add_node(node_id, x=int(event.xdata), y=int(event.ydata), node_type=NORMAL)
         self.MplWidget.draw_node(node_id, self.post_processor.graph.nodes[node_id])
         self.MplWidget.canvas.draw()
         self.post_processor.build_KDTree()
@@ -227,6 +229,7 @@ class CustomToolbar(NavigationToolbar2QT):
         object_data = self.MplWidget.return_artist_data(event.artist._gid)
         if object_data["network_type"] == "edge":
             return
+
         current_node_type = self.post_processor.graph.nodes[object_data["node_id"]]['node_type']
         next_node_type = self.cell_classifications[(self.cell_classifications.index(current_node_type) + 1) % len(self.cell_classifications)]
         self.post_processor.graph.nodes[object_data["node_id"]]['node_type'] = next_node_type

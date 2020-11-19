@@ -33,6 +33,10 @@ sed -i "" "s/g++/g++-10/" darknet/Makefile
 sed -i "" "s/OPENMP=0/OPENMP=1/" darknet/Makefile # Enables multicore support for running the neural network.
 sed -i "" "s/AVX=0/AVX=1/" darknet/Makefile # Enables vector instructions for running the neural network.
 
+cd darknet
+make clean && make
+cd ..
+
 # Install our pip dependencies
 pip3 install --user numpy matplotlib scipy scikit-image networkx pyqt5 Pillow
 
