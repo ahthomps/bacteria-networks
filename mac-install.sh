@@ -30,7 +30,8 @@ unzip darknet.zip
 rm darknet.zip
 mv darknet-master darknet
 
-# Because Apple sucks, they symlink gcc to clang. So the version of gcc brew installs has to be installed as gcc-10.
+# Apple symlinks gcc to clang (Why?) so the version of gcc brew installs has to be installed as gcc-10.
+# That means we have to change darknet's makefile.
 # When gcc 11 comes out, this will have to be updated.
 sed -i "" "s/gcc/gcc-10/" darknet/Makefile
 sed -i "" "s/g++/g++-10/" darknet/Makefile
@@ -41,7 +42,7 @@ cd darknet
 make clean && make
 cd ..
 
-# Try to install the pip dependencies. If that doesn't work, then go install python3.8 from brew and use
+# Try to install the pip dependencies. If that doesn't work, then go install python@3.8 from brew and use
 # that instead.
 pip3 install --user $PIP_DEPENDENCIES 2>/dev/null ||
 	brew install python@3.8 &&
@@ -58,6 +59,10 @@ mv model_5.weights ../models/model_5 &&
 cd .. &&
 rm -rf bacteria-networks-model-master
 
+chmod +x ~/bacteria-networks/run.py
+
 touch $SHORTCUT_PATH
-echo -e "#!/bin/bash\nchmod +x ~/bacteria-networks/run.py\n~/bacteria-networks/run.py" > "$SHORTCUT_PATH"
+echo "#!/bin/bash" > "$SHORTCUT_PATH"
+echo "cd ~/bacteria-networks" >> "$SHORTCUT_PATH"
+echo "./run.py" >> "$SHORTCUT_PATH"
 chmod +x "$SHORTCUT_PATH"
