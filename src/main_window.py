@@ -164,7 +164,6 @@ class MainWindow(QMainWindow):
         self.batch_index = index
 
         self.clear_all_data_and_reset_window(reset_batch=False)
-        self.MplWidget.setVisible(False)
 
         image_path = os.path.join(self.image_directory_path, self.batch_image_filenames[self.batch_index])
         self.program_manager.open_image_file(image_path)
@@ -172,7 +171,6 @@ class MainWindow(QMainWindow):
         self.load_gexf(file_path=image_path[:image_path.rfind(".")] + ".gexf")
 
         self.toolbar.add_file_navigation_buttons()
-        self.MplWidget.setVisible(True)
 
     def open_image_file_and_display(self):
         image_path, _ = QFileDialog.getOpenFileName(None, "Select image", "", "Image Files (*.png *.jpg *.jpeg *.bmp *.tif *.tiff)")

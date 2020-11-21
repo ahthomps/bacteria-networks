@@ -60,3 +60,6 @@ cat *.part > model_5.weights &&
 mv model_5.weights ../models/model_5 &&
 cd .. &&
 rm -rf bacteria-networks-model-master
+
+echo -e "#!/bin/bash\nchmod +x ~/bacteria-networks/run.py\n~bacteria-networks/run.py" > "~/Desktop/Start JAB Labeler.sh"
+chmod +x "~/Desktop/Start JAB Labeler.sh"
