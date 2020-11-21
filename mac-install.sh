@@ -63,5 +63,5 @@ cd .. &&
 rm -rf bacteria-networks-model-master
 
 touch $SHORTCUT_PATH
-echo -e "#!/bin/bash\nchmod +x ~/bacteria-networks/run.py\n~bacteria-networks/run.py" > "$SHORTCUT_PATH"
+echo -e "#!/bin/bash\nchmod +x ~/bacteria-networks/run.py\n~/bacteria-networks/run.py" > "$SHORTCUT_PATH"
 chmod +x "$SHORTCUT_PATH"
