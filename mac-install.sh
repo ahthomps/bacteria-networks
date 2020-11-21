@@ -55,5 +55,5 @@ rm bacteria-networks-model.zip &&
 cd bacteria-networks-model-master &&
 cat *.part > model_5.weights &&
 mv model_5.weights ../models/model_5 &&
-rm -rf bacteria-networks-model-master &&
-cd ..
+cd .. &&
+rm -rf bacteria-networks-model-master
