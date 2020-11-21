@@ -5,7 +5,7 @@
 
 # The pip dependencies. If you get a pip error, you might want to add version numbers to these.
 PIP_DEPENDENCIES="scikit-image numpy matplotlib scipy networkx pyqt5 Pillow"
-SHORTCUT_PATH="~/Desktop/Start JAB Labeler.sh"
+SHORTCUT_PATH="~/Desktop/JAB" # they probably don't already have something named JAB on their desktop...
 
 # If homebrew isn't installed, then install it.
 which -s brew || /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
@@ -62,6 +62,6 @@ mv model_5.weights ../models/model_5 &&
 cd .. &&
 rm -rf bacteria-networks-model-master
 
-touch "$SHORTCUT_PATH"
-echo -e "#!/bin/bash\nchmod +x ~/bacteria-networks/run.py\n~bacteria-networks/run.py" > "$SHORTCUT_PATH"
-chmod +x "$SHORTCUT_PATH"
+touch $SHORTCUT_PATH
+echo -e "#!/bin/bash\nchmod +x ~/bacteria-networks/run.py\n~bacteria-networks/run.py" > $SHORTCUT_PATH
+chmod +x $SHORTCUT_PATH
