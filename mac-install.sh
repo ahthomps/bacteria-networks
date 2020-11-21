@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # This script installs the project on a Mac. It has been tested on macOS 10.13, 10.14, and 10.15.
-# It also has no error handling, so if you feel like it, add some.
 
 # The pip dependencies. If you get a pip error, you might want to add version numbers to these.
 PIP_DEPENDENCIES="scikit-image numpy matplotlib scipy networkx pyqt5 Pillow"
@@ -14,6 +13,8 @@ brew upgrade
 # Install our brew dependencies
 brew install gcc libomp
 # Installing brew installs the developer tools, which include python3 (on Catalina and later) and make, so we don't need to get those.
+
+cd ~
 
 # Download the repository
 rm -rf ~/bacteria-networks # Delete any old installs
