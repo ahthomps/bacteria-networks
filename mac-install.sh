@@ -41,14 +41,12 @@ cd darknet &&
 	make &&
 	cd ..
 
-# On macOS <10.15, python3 isn't part of the Xcode tools, so we need to install it with brew.
-which -s python3 ||
+# Try to install the pip dependencies. If that doesn't work, then go install python3.8 from brew and use
+# that instead.
+pip3 install --user numpy matplotlib scipy scikit-image networkx pyqt5 Pillow ||
 	brew install python@3.8 &&
 	/usr/local/opt/python@3.8/bin/pip3 install --user numpy matplotlib scipy scikit-image networkx pyqt5 Pillow &&
 	sed -i "" "1 s/^.*$/#\!\/usr\/local\/opt\/python@3.8\/bin\/python3/" run.py
-
-# Install our pip dependencies, if we didn't already just install them with brew's pip3
-which -s pip3 && pip3 install --user numpy matplotlib scipy scikit-image networkx pyqt5 Pillow
 
 # Grab the model
 curl -L https://github.com/kenballus/bacteria-networks-model/archive/master.zip -o bacteria-networks-model.zip &&
