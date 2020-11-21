@@ -6,20 +6,12 @@ This program employs a neural network to identify nanowire network structure in 
 
 ### Mac
 
-Install `homebrew` by following the instructions [here](https://brew.sh/).
+Open Terminal (it's in Utilities) and run the following command:
 
-`brew install` these packages:
-- `python3`
-- `make`
-- `gcc`
-- `git` (duh)
-- `libomp` (optional; improves performance)
+`/bin/bash -c $(curl -L https://raw.githubusercontent.com/ahthomps/bacteria-networks/master/mac-install.sh)`
 
-Clone this repository by running `git clone --recurse-submodules --depth 1 https://github.com/ahthomps/bacteria-networks.git`.
-
-You'll need to edit `Makefile` in the `darknet` directory of this repository. If your CPU was manufactured after 2011, you should set `AVX=1`. If you installed `libomp`, set `OPENMP=1`. Then, do a find and replace across the file replacing all instances of `gcc` with `gcc-10` and all instances of `g++` with `g++-10`.
-
-`cd` into the `darknet` directory, then run `make`.
+This will install the program to your home directory, and leave shortcut on your desktop called JAB.
+Double click it to run the program.
 
 ### Linux
 
@@ -33,13 +25,21 @@ Use your package manager to install the following packages:
 - `cudnn` (optional; improves performance if you have a modern Nvidia GPU; requires `cuda`)
 - `openmp` (optional; improves performance if you're not using `cuda`)
 
-(Note: Some of these packages will have different names in different repositories. These are their names in the Arch repositories.)
+(Note: Some of these packages will have different names in different package repositories. For example, `openmp` is called `libomp` in Ubuntu's package repositories. The names given match the names in the default Arch Linux package repositories. )
 
 Clone this repository by running `git clone --recurse-submodules --depth 1 https://github.com/ahthomps/bacteria-networks.git`.
 
-You can greatly improve the performance of this application by tweaking Darknet's makefile. If you installed `cuda`, set `GPU=1`. If you installed `cudnn`, set `CUDNN=1`. If you aren't using a GPU, and your CPU was manufactured after 2011, you should set `AVX=1`. If you installed `openmp` (`libomp`), set `OPENMP=1`.
+You can greatly improve the performance of this application by tweaking Darknet's makefile. If you installed `cuda`, set `GPU=1`. If you installed `cudnn`, set `CUDNN=1`. If you aren't using a GPU, and your CPU was manufactured after 2011, you should set `AVX=1`. If you installed `openmp`, set `OPENMP=1`.
 
 `cd` into the `darknet` directory, then run `make`.
+
+`pip3 install` these packages:
+- `matplotlib`
+- `pyqt5`
+- `scikit-image`
+- `networkx`
+- `scipy`
+- `Pillow`
 
 ### Windows
 
@@ -77,12 +77,14 @@ cd bacteria-networks\darknet
 - `pyqt5`
 - `scikit-image`
 - `networkx`
-
-(Note: If you're on Mac or Linux, some of these packages may be available from your package manager. Feel free to use those versions instead of the `pip` ones.)
+- `numpy`
+- `scipy`
+- `Pillow`
+(Note: Some of these packages may be available from your package manager. Feel free to use those versions instead of the `pip` ones.)
 
 ## Downloading the model:
 
-Download `model_4.weights` from [here](https://drive.google.com/drive/folders/1oHpzVVqVL67unqOnrObX49XkeUii3Jg4?usp=sharing), and stick it in `models/model_4`.
+TO DO
 
 If the program never finds any bounding boxes, there's a good chance you forgot this step.
 
