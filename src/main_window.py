@@ -30,6 +30,8 @@ class MainWindow(QMainWindow):
         # It also feels wrong to put them here.
         self.is_batch_processing = False
         self.image_directory_path = ""
+        self.batch_image_filenames = []
+        self.batch_index = 0
         
         loadUi("ui/main.ui", self)
         self.setWindowTitle("JAB Bacteria Network Detector")
@@ -46,19 +48,21 @@ class MainWindow(QMainWindow):
 
     def connect_buttons(self):
         # Connect the buttons to their corresponding actions
-        self.actionClear.triggered.connect(self.clear_all_data_and_reset_window)
-        self.actionOpenImage.triggered.connect(self.open_image_file_and_display)
+        # These are all lambdas because the ones that had keyword args didn't work
+        # when they weren't lambdas.
+        self.actionClear.triggered.connect(lambda: self.clear_all_data_and_reset_window())
+        self.actionOpenImage.triggered.connect(lambda: self.open_image_file_and_display())
         self.actionExportToGephi.triggered.connect(lambda: self.export_to_gephi())
-        self.actionImportFromGephi.triggered.connect(self.load)
-        self.actionOpenImageDirectory.triggered.connect(self.open_image_directory)
-        self.actionViewLegend.triggered.connect(self.handle_legend_view_press)
+        self.actionImportFromGephi.triggered.connect(lambda: self.load_gexf())
+        self.actionOpenImageDirectory.triggered.connect(lambda: self.open_image_directory())
+        self.actionViewLegend.triggered.connect(lambda: self.handle_legend_view_press())
 
-        self.actionViewBoundingBoxes.triggered.connect(self.handle_cell_bounding_boxes_view_press)
-        self.actionViewNetworkEdges.triggered.connect(self.handle_network_edges_view_press)
+        self.actionViewBoundingBoxes.triggered.connect(lambda: self.handle_cell_bounding_boxes_view_press())
+        self.actionViewNetworkEdges.triggered.connect(lambda: self.handle_network_edges_view_press())
         self.actionRunAll.triggered.connect(lambda: self.run_batch_processing() \
                                                     if self.is_batch_processing else \
                                                     self.run_yolo_and_edge_detection_and_display())
-        self.actionManual.triggered.connect(self.allow_manual_labelling)
+        self.actionManual.triggered.connect(lambda: self.allow_manual_labelling())
 
     def enable_shortcuts(self):
         # Keyboard shortcuts for **__POWER USERS__**
@@ -96,12 +100,14 @@ class MainWindow(QMainWindow):
         self.actionViewLegend.setEnabled(False)
         self.actionViewLegend.setChecked(False)
 
-    def clear_all_data_and_reset_window(self):
+    def clear_all_data_and_reset_window(self, reset_batch=True):
         self.program_manager = ProgramManager()
         self.post_processor = None
 
-        self.is_batch_processing = False
-        self.image_directory_path = ""
+        if reset_batch:
+            self.is_batch_processing = False
+            self.image_directory_path = ""
+            self.batch_image_filenames = []
 
         loadUi("ui/main.ui", self)
 
@@ -128,28 +134,52 @@ class MainWindow(QMainWindow):
     def run_batch_processing(self):
         self.progressBar.setVisible(True)
         self.actionRunAll.setEnabled(False)
-        images = list(filter(lambda path: any(path.endswith(x) for x in IMAGE_EXTENSIONS), os.listdir(self.image_directory_path)))
-        for i, path in enumerate(images):
+        
+        self.batch_image_filenames = list(filter(lambda path: any(path.endswith(x) for x in IMAGE_EXTENSIONS),
+                                          os.listdir(self.image_directory_path)))
+
+        if self.batch_image_filenames == []:
+            self.clear_all_data_and_reset_window()
+            return
+
+        for i, path in enumerate(self.batch_image_filenames):
             self.progressBar.setFormat(f"Processing {path}...")
             image_path = os.path.join(self.image_directory_path, path)
             self.program_manager = ProgramManager()
-            self.program_manager.open_image_file_and_crop_if_necessary(image_path)
+            self.program_manager.open_image_file(image_path)
             self.program_manager.compute_bounding_boxes()
             self.program_manager.compute_bbox_overlaps_and_cell_centers()
             self.program_manager.compute_cell_network_edges()
             self.post_processor = PostProcessingManager(bio_objs=self.program_manager.bio_objs)
             self.export_to_gephi(export_path=image_path[:image_path.rfind(".")] + ".gexf")
-            self.progressBar.setValue((i + 1) / len(images) * 100)
+            self.progressBar.setValue((i + 1) / len(self.batch_image_filenames) * 100)
+
         self.progressBar.setVisible(False)
-        self.clear_all_data_and_reset_window()
+        self.load_batch_image(0)
+
+    def load_batch_image(self, index):
+        if index not in range(len(self.batch_image_filenames)):
+            return
+
+        self.batch_index = index
+
+        self.clear_all_data_and_reset_window(reset_batch=False)
+        self.MplWidget.setVisible(False)
+
+        image_path = os.path.join(self.image_directory_path, self.batch_image_filenames[self.batch_index])
+        self.program_manager.open_image_file(image_path)
+        self.MplWidget.draw_image(self.program_manager.image)
+        self.load_gexf(file_path=image_path[:image_path.rfind(".")] + ".gexf")
+
+        self.toolbar.add_file_navigation_buttons()
+        self.MplWidget.setVisible(True)
 
     def open_image_file_and_display(self):
         image_path, _ = QFileDialog.getOpenFileName(None, "Select image", "", "Image Files (*.png *.jpg *.jpeg *.bmp *.tif *.tiff)")
         if not image_path:
             return
 
-        self.program_manager.open_image_file_and_crop_if_necessary(image_path)
-
+        self.program_manager.open_image_file(image_path)
         self.MplWidget.draw_image(self.program_manager.image)
 
         # disable importing new images
@@ -248,14 +278,13 @@ class MainWindow(QMainWindow):
                 export_path += '.gexf'
         nx.write_gexf(self.post_processor.graph, export_path)
 
-    def load(self):
-        file_path, _ = QFileDialog.getOpenFileName(None, "Select Gephi File", "", "Gephi Files (*.gexf)")
+    def load_gexf(self, file_path=None):
+        if file_path is None:
+            file_path, _ = QFileDialog.getOpenFileName(None, "Select Gephi File", "", "Gephi Files (*.gexf)")
 
         if not file_path:
             return
 
-        self.program_manager.open_image_file_and_crop_if_necessary(self.program_manager.image_path)
-        self.MplWidget.draw_image(self.program_manager.image)
         self.actionOpenImage.setEnabled(False)
         self.actionImportFromGephi.setEnabled(False)
         self.actionRunAll.setEnabled(False)

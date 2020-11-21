@@ -39,16 +39,20 @@ class CustomToolbar(NavigationToolbar2QT):
         self.building_edge_data = None
         self.cell_classifications = [NORMAL, SPHEROPLAST, CURVED, FILAMENT]
 
-        self.toolbar_items = ((QIcon("ui/icons/standard_node.svg"), "add_cell", self.add_cell_button_press, "Add a cell", True),
-                              (QIcon("ui/icons/cell_to_cell.svg"), "add_cell_to_cell_edge", lambda: self.add_edge_button_press(_Mode.CELLTOCELLEDGE), "Add cell to cell  edge", True),
-                              (QIcon("ui/icons/cell_to_surface.svg"), "add_cell_to_surface_edge", lambda: self.add_edge_button_press(_Mode.CELLTOSURFACEEDGE), "Add cell to surface edge", True),
-                              (QIcon("ui/icons/cell_contact.svg"), "add_cell_contact_edge", lambda: self.add_edge_button_press(_Mode.CELLCONTACTEDGE), "Add cell contact edge", True),
-                              (QIcon("ui/icons/editor.svg"), "edit_cell_classification", self.editor_button_press, "Edit cell classification", True),
-                              (QIcon("ui/icons/eraser.svg"), "erase", self.eraser_button_press, "Erase node or edge", True))
+    def add_toolbar_items(self, items):
+        # Expects a collection of collections in (icon, name, function, tooltip, checkable) format
+        for icon, name, function, tooltip, checkable in items:
+            action = self.addAction(icon, name, function)
+            action.setToolTip(tooltip)
+            action.setCheckable(checkable)
 
     def add_file_navigation_buttons(self):
         """ Adds back and forward buttons for navigating through images that were just processed in a batch. """
-        pass        
+
+        NAV_ITEMS = ((QIcon("ui/icons/prev.png"), "prev", lambda: self.main_window.load_batch_image(self.main_window.batch_index - 1), "Previous Image", False),
+                     (QIcon("ui/icons/next.png"), "next", lambda: self.main_window.load_batch_image(self.main_window.batch_index + 1), "Next Image", False))
+        
+        self.add_toolbar_items(NAV_ITEMS)
 
     def set_post_processor(self, post_processor):
         self.post_processor = post_processor
@@ -57,10 +61,15 @@ class CustomToolbar(NavigationToolbar2QT):
         self.removeAction(self.actions()[-1])
         self.addSeparator()
 
-        for icon, name, function, tooltip, checkable in self.toolbar_items:
-            action = self.addAction(icon, name, function)
-            action.setToolTip(tooltip)
-            action.setCheckable(checkable)
+        # This should be a global constant but it needs to use methods from this object
+        NETWORK_ITEMS = ((QIcon("ui/icons/standard_node.svg"), "add_cell", self.add_cell_button_press, "Add a cell", True),
+                         (QIcon("ui/icons/cell_to_cell.svg"), "add_cell_to_cell_edge", lambda: self.add_edge_button_press(_Mode.CELLTOCELLEDGE), "Add cell to cell  edge", True),
+                         (QIcon("ui/icons/cell_to_surface.svg"), "add_cell_to_surface_edge", lambda: self.add_edge_button_press(_Mode.CELLTOSURFACEEDGE), "Add cell to surface edge", True),
+                         (QIcon("ui/icons/cell_contact.svg"), "add_cell_contact_edge", lambda: self.add_edge_button_press(_Mode.CELLCONTACTEDGE), "Add cell contact edge", True),
+                         (QIcon("ui/icons/editor.svg"), "edit_cell_classification", self.editor_button_press, "Edit cell classification", True),
+                         (QIcon("ui/icons/eraser.svg"), "erase", self.eraser_button_press, "Erase node or edge", True))
+
+        self.add_toolbar_items(NETWORK_ITEMS)
 
         self.addAction(self.message_display)
         self.addSeparator()

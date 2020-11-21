@@ -20,7 +20,7 @@ class ProgramManager:
         self.made_crops = False
         self.image_path = ""
 
-    def open_image_file_and_crop_if_necessary(self, image_path):
+    def open_image_file(self, image_path):
         self.image_path = image_path
         self.image = rgb2gray(plt.imread(self.image_path)) # In the future, this will be incompatible with greyscale input images.
         self.original_image = plt.imread(self.image_path)
