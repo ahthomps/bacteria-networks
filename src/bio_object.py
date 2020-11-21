@@ -73,7 +73,7 @@ def compute_cell_center(bio_obj, image):
 def compute_subimage_labels_and_region_data(bio_obj, image):
     # creates an np.array image of just the current bbox
     subimage = np.asarray(image[bio_obj.y1:bio_obj.y2 + 1, bio_obj.x1:bio_obj.x2 + 1])
-    plt.imshow(subimage, cmap='gray')
+
     # makes the image binary using li thresholding method
     threshold = filters.threshold_li(subimage) # we should test if li is actually the best method in all lighting environments
     subimage = subimage > threshold

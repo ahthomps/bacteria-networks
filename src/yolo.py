@@ -65,10 +65,14 @@ def parse_yolo_output(yolo_output):
             tokens = line.split()
             classification = tokens[0][:-1] # Slice because this will have a ':' stuck on the end
             confidence = tokens[1] # Not used yet
-            xmin = int(tokens[3])
-            ymin = int(tokens[5])
-            width = int(tokens[7])
-            height = int(tokens[9][:-1]) # Slice because this will have a ')' stuck on the end
+            # For some reason, yolo sometimes gives negative bounding box dimensions.
+            # We've only seen this happen when the images are really busy
+            xmin = int(tokens[3]) if int(tokens[3]) >= 0 else 0
+            ymin = int(tokens[5]) if int(tokens[5]) >= 0 else 0
+            width = int(tokens[7]) if int(tokens[7]) >= 0 else 0
+            # Slice because this will have a ')' stuck on the end
+            height = int(tokens[9][:-1]) if int(tokens[9][:-1]) >= 0 else 0
+
             bio_objs[-1].append(BioObject(xmin, ymin, xmin + width, ymin + height, bio_obj_id, classification))
             bio_obj_id += 1
 

@@ -22,18 +22,8 @@ class ProgramManager:
 
     def open_image_file_and_crop_if_necessary(self, image_path):
         self.image_path = image_path
-        self.image = rgb2gray(plt.imread(self.image_path))
+        self.image = rgb2gray(plt.imread(self.image_path)) # In the future, this will be incompatible with greyscale input images.
         self.original_image = plt.imread(self.image_path)
-        for i in range(len(self.image)):
-            count = 0
-            for item in self.image[i]: # For finding and removing the legend from the input images
-                if 0 < item < 255:
-                    count += 1
-                    if count > 10:
-                        break
-            else:
-                self.image = self.image[:i]
-                break
 
         self.bio_objs.append(BioObject(0, 0, len(self.image[0]), len(self.image), 0, "surface"))
 
