@@ -3,6 +3,9 @@
 # This script installs the project on a Mac. It has been tested on macOS 10.13, 10.14, and 10.15.
 # It also has no error handling, so if you feel like it, add some.
 
+# The pip dependencies. If you get a pip error, you might want to add version numbers to these.
+PIP_DEPENDENCIES="scikit-image numpy matplotlib scipy networkx pyqt5 Pillow"
+
 # If homebrew isn't installed, then install it.
 which -s brew || /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
 brew upgrade
@@ -43,9 +46,9 @@ cd darknet &&
 
 # Try to install the pip dependencies. If that doesn't work, then go install python3.8 from brew and use
 # that instead.
-pip3 install --user numpy matplotlib scipy scikit-image networkx pyqt5 Pillow ||
+pip3 install --user $PIP_DEPENDENCIES ||
 	brew install python@3.8 &&
-	/usr/local/opt/python@3.8/bin/pip3 install --user numpy matplotlib scipy scikit-image networkx pyqt5 Pillow &&
+	/usr/local/opt/python@3.8/bin/pip3 install --user $PIP_DEPENDENCIES &&
 	sed -i "" "1 s/^.*$/#\!\/usr\/local\/opt\/python@3.8\/bin\/python3/" run.py
 
 # Grab the model

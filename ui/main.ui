@@ -13,16 +13,16 @@
   <property name="windowTitle">
    <string>JAB Bacteria Networks</string>
   </property>
-  <widget class="QWidget" name="centralwidget">
+  <widget class="QWidget" name="main_container">
    <property name="layoutDirection">
     <enum>Qt::LeftToRight</enum>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0">
     <item>
-     <widget class="QWidget" name="widget" native="true">
+     <widget class="QWidget" name="mpl_and_legend_container" native="true">
       <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,4">
        <item>
-        <widget class="QWidget" name="widget_2" native="true">
+        <widget class="QWidget" name="legend_container" native="true">
          <property name="maximumSize">
           <size>
            <width>16777215</width>
@@ -85,7 +85,7 @@
      </widget>
     </item>
     <item>
-     <widget class="QWidget" name="widget_3" native="true">
+     <widget class="QWidget" name="progress_bar_container" native="true">
       <property name="minimumSize">
        <size>
         <width>0</width>

@@ -10,7 +10,6 @@ from PyQt5 import QtCore
 from edge_detection import CELL_TO_CELL_EDGE, CELL_TO_SURFACE_EDGE, CELL_CONTACT_EDGE
 from post_processing import NORMAL, SPHEROPLAST, CURVED, FILAMENT
 
-BACKGROUND_COLOR = "#EFEFEF"
 CONTOUR_COLORS = ["red", "orange", "yellow", "green", "blue", "indigo", "violet"]
 NANOWIRE_BBOX_COLOR = "yellow"
 CELL_BBOX_COLOR = "blue"
@@ -31,7 +30,10 @@ class MplWidget(QWidget):
     def __init__(self, parent):
         QWidget.__init__(self, parent)
 
-        self.canvas = FigureCanvas(Figure(facecolor=BACKGROUND_COLOR))
+        figure = Figure()
+        figure.patch.set_facecolor("None")
+        self.canvas = FigureCanvas(figure)
+        self.canvas.setStyleSheet("background-color:transparent;")
 
         vertical_layout = QVBoxLayout()
         vertical_layout.setContentsMargins(0, 0, 0, 0)

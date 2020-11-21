@@ -46,6 +46,10 @@ class CustomToolbar(NavigationToolbar2QT):
                               (QIcon("ui/icons/editor.svg"), "edit_cell_classification", self.editor_button_press, "Edit cell classification", True),
                               (QIcon("ui/icons/eraser.svg"), "erase", self.eraser_button_press, "Erase node or edge", True))
 
+    def add_file_navigation_buttons(self):
+        """ Adds back and forward buttons for navigating through images that were just processed in a batch. """
+        pass        
+
     def set_post_processor(self, post_processor):
         self.post_processor = post_processor
 

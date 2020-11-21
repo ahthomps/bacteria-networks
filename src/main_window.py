@@ -15,9 +15,7 @@ from toolbar import CustomToolbar, _Mode
 from program_manager import ProgramManager
 from mplwidget import MplWidget
 
-def clear_mainwindow():
-    mainwindow = MainWindow()
-    mainwindow.show()
+UI_FILE = "ui/main.ui"
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -32,14 +30,21 @@ class MainWindow(QMainWindow):
         # It also feels wrong to put them here.
         self.is_batch_processing = False
         self.image_directory_path = ""
-
+        
         loadUi("ui/main.ui", self)
         self.setWindowTitle("JAB Bacteria Network Detector")
 
-        # Set some default options
+        # Set the default options
         self.set_default_enablements()
         self.set_default_visibilities()
 
+        self.toolbar = CustomToolbar(self.MplWidget, self)
+        self.addToolBar(self.toolbar)
+
+        self.connect_buttons()
+        self.enable_shortcuts()
+
+    def connect_buttons(self):
         # Connect the buttons to their corresponding actions
         self.actionClear.triggered.connect(self.clear_all_data_and_reset_window)
         self.actionOpenImage.triggered.connect(self.open_image_file_and_display)
@@ -55,6 +60,7 @@ class MainWindow(QMainWindow):
                                                     self.run_yolo_and_edge_detection_and_display())
         self.actionManual.triggered.connect(self.allow_manual_labelling)
 
+    def enable_shortcuts(self):
         # Keyboard shortcuts for **__POWER USERS__**
         QShortcut(QKeySequence("Ctrl+S"), self).activated.connect(lambda: self.actionExportToGephi.isEnabled() and \
                                                                           self.export_to_gephi())
@@ -70,8 +76,6 @@ class MainWindow(QMainWindow):
     def set_default_visibilities(self):
         self.progressBar.setVisible(False)
         self.LegendAndCounts.setVisible(False)
-        self.toolbar = CustomToolbar(self.MplWidget, self)
-        self.addToolBar(self.toolbar)
 
     def set_default_enablements(self):
         self.actionExportToGephi.setEnabled(False)
@@ -93,8 +97,22 @@ class MainWindow(QMainWindow):
         self.actionViewLegend.setChecked(False)
 
     def clear_all_data_and_reset_window(self):
-        clear_mainwindow()
-        self.hide()
+        self.program_manager = ProgramManager()
+        self.post_processor = None
+
+        self.is_batch_processing = False
+        self.image_directory_path = ""
+
+        loadUi("ui/main.ui", self)
+
+        self.set_default_enablements()
+        self.set_default_visibilities()
+
+        self.removeToolBar(self.toolbar)
+        self.toolbar = CustomToolbar(self.MplWidget, self)
+        self.addToolBar(self.toolbar)
+
+        self.connect_buttons()
 
     def open_image_directory(self):
         directory_path = QFileDialog.getExistingDirectory(self, "Select Directory")
