@@ -15,23 +15,20 @@ brew upgrade
 brew install gcc libomp
 # Installing brew installs the developer tools, which include python3 (on Catalina and later) and make, so we don't need to get those.
 
-# If this is being run from within this repo, then great! Otherwise, we should go clone the repo.
-# Maybe we should come up with a better way of checking whether we're in the repo than whether there's a directory called "darknet".
-ls darknet 2>/dev/null ||
-	curl -L https://github.com/ahthomps/bacteria-networks/archive/master.zip -o bacteria-networks.zip &&
-	unzip bacteria-networks.zip > /dev/null &&
-	rm bacteria-networks.zip &&
-	mv bacteria-networks-master bacteria-networks &&
-	cd bacteria-networks
+# Download the repository
+rm -rf ~/bacteria-networks # Delete any old installs
+curl -L https://github.com/ahthomps/bacteria-networks/archive/master.zip -o bacteria-networks.zip &&
+unzip bacteria-networks.zip > /dev/null &&
+rm bacteria-networks.zip &&
+mv bacteria-networks-master bacteria-networks &&
+cd bacteria-networks
 
-# Grab darknet if we need it.
-if [ -z "$(ls darknet)" ]; then
-    rmdir darknet
-    curl -L https://github.com/AlexeyAB/darknet/archive/master.zip -o darknet.zip
-    unzip darknet.zip
-    rm darknet.zip
-    mv darknet-master darknet
-fi
+# Grab darknet.
+rm -rf darknet
+curl -L https://github.com/AlexeyAB/darknet/archive/master.zip -o darknet.zip
+unzip darknet.zip
+rm darknet.zip
+mv darknet-master darknet
 
 # Because Apple sucks, they symlink gcc to clang. So the version of gcc brew installs has to be installed as gcc-10.
 # When gcc 11 comes out, this will have to be updated.
@@ -40,10 +37,9 @@ sed -i "" "s/g++/g++-10/" darknet/Makefile
 sed -i "" "s/OPENMP=0/OPENMP=1/" darknet/Makefile # Enables multicore support for running the neural network.
 sed -i "" "s/AVX=0/AVX=1/" darknet/Makefile # Enables vector instructions for running the neural network.
 
-cd darknet &&
-	make clean &&
-	make &&
-	cd ..
+cd darknet
+make clean && make
+cd ..
 
 # Try to install the pip dependencies. If that doesn't work, then go install python3.8 from brew and use
 # that instead.
