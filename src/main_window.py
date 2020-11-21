@@ -32,9 +32,10 @@ class MainWindow(QMainWindow):
         self.image_directory_path = ""
         self.batch_image_filenames = []
         self.batch_index = 0
-        
+
         loadUi("ui/main.ui", self)
         self.setWindowTitle("JAB Bacteria Network Detector")
+        self.menubar.setNativeMenuBar(False)
 
         # Set the default options
         self.set_default_enablements()
@@ -110,6 +111,7 @@ class MainWindow(QMainWindow):
             self.batch_image_filenames = []
 
         loadUi("ui/main.ui", self)
+        self.menubar.setNativeMenuBar(False)
 
         self.set_default_enablements()
         self.set_default_visibilities()
@@ -134,7 +136,7 @@ class MainWindow(QMainWindow):
     def run_batch_processing(self):
         self.progressBar.setVisible(True)
         self.actionRunAll.setEnabled(False)
-        
+
         self.batch_image_filenames = list(filter(lambda path: any(path.endswith(x) for x in IMAGE_EXTENSIONS),
                                           os.listdir(self.image_directory_path)))
 
