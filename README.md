@@ -8,7 +8,7 @@ This program employs a neural network to identify nanowire network structure in 
 
 Open Terminal (it's in Utilities) and run the following command:
 
-`/bin/bash -c $(curl -L https://raw.githubusercontent.com/ahthomps/bacteria-networks/master/mac-install.sh)`
+`/bin/bash -c "(curl -L https://raw.githubusercontent.com/ahthomps/bacteria-networks/master/mac-install.sh)"`
 
 This will install the program to your home directory and leave shortcut on your desktop called JAB.
 Double click it to run the program.
