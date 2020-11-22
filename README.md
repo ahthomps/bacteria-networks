@@ -10,7 +10,7 @@ Open Terminal (it's in Utilities) and run the following command:
 
 `/bin/bash -c $(curl -L https://raw.githubusercontent.com/ahthomps/bacteria-networks/master/mac-install.sh)`
 
-This will install the program to your home directory, and leave shortcut on your desktop called JAB.
+This will install the program to your home directory and leave shortcut on your desktop called JAB.
 Double click it to run the program.
 
 ### Linux
@@ -20,7 +20,7 @@ Use your package manager to install the following packages:
 - `pip3`
 - `make`
 - `gcc`
-- `git` (duh)
+- `git`
 - `cuda` (optional; improves performance if you have a modern Nvidia GPU)
 - `cudnn` (optional; improves performance if you have a modern Nvidia GPU; requires `cuda`)
 - `openmp` (optional; improves performance if you're not using `cuda`)
@@ -70,8 +70,6 @@ cd bacteria-networks\darknet
 .\build.ps1
 ```
 
-## Installing `pip` dependencies:
-
 `pip3 install` these packages:
 - `matplotlib`
 - `pyqt5`
@@ -80,7 +78,6 @@ cd bacteria-networks\darknet
 - `numpy`
 - `scipy`
 - `Pillow`
-(Note: Some of these packages may be available from your package manager. Feel free to use those versions instead of the `pip` ones.)
 
 ## Downloading the model:
 
@@ -90,7 +87,7 @@ If the program never finds any bounding boxes, there's a good chance you forgot 
 
 ## Using this application:
 
-Run `python3 run.py`.
+Run the program with `python3 run.py` (or double click on the shortcut if you're on a Mac).
 
 File -> Open -> Image, then choose an image.
 
