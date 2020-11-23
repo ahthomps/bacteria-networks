@@ -29,7 +29,7 @@ Use your package manager to install the following packages:
 
 Clone this repository by running `git clone --recurse-submodules --depth 1 https://github.com/ahthomps/bacteria-networks.git`.
 
-You can greatly improve the performance of this application by tweaking Darknet's makefile. If you installed `cuda`, set `GPU=1`. If you installed `cudnn`, set `CUDNN=1`. If you aren't using a GPU, and your CPU was manufactured after 2011, you should set `AVX=1`. If you installed `openmp`, set `OPENMP=1`.
+You can greatly improve the performance of this application by tweaking Darknet's makefile. If you installed `cuda`, set `GPU=1`. If you installed `cudnn`, set `CUDNN=1`. If you aren't using a GPU, and your CPU was manufactured after 2011, you should set `AVX=1`. If you installed `openmp`, set `OPENMP=1`. On Arch Linux, `cuda` gets installed to `/opt/cuda/` instead of the usual place. If you're running Arch, you'll have to change the makefile to reflect that difference.
 
 `cd` into the `darknet` directory, then run `make`.
 
@@ -40,6 +40,8 @@ You can greatly improve the performance of this application by tweaking Darknet'
 - `networkx`
 - `scipy`
 - `Pillow`
+
+`cd` into the `scripts` directory and run `./download_model.sh`.
 
 ### Windows
 
@@ -65,7 +67,7 @@ cd ..
 Once that's done, run these commands:
 
 ```PowerShell
-git clone --recurse-submodules --depth 1 https://github.com/ahthomps/bacteria-networks.git
+git clone --recurse-submodules --depth 1 https://github.com/ahthomps/bacteria-networks
 cd bacteria-networks\darknet
 .\build.ps1
 ```
@@ -79,20 +81,26 @@ cd bacteria-networks\darknet
 - `scipy`
 - `Pillow`
 
-## Downloading the model:
-
-TO DO
-
-If the program never finds any bounding boxes, there's a good chance you forgot this step.
+Then, you'll need to download the model. For now, there's no automated way of doing that on Windows. You'll have to download the files in [this repository](https://github.com/kenballus/bacteria-networks-model) and concatenate them into a file named `model_6.weights`, then stick that in `models/model_6`. This will hopefully be easier when (if) we have a Windows installer up and running.
 
 ## Using this application:
 
 Run the program with `python3 run.py` (or double click on the shortcut if you're on a Mac).
 
-File -> Open -> Image, then choose an image.
+### Running on a single image:
 
-Run -> YOLO
+File -> Open Image, then choose an image.
 
-Run -> Process Image
+Run -> Run All
 
-Run -> Contour
+Once it's done running, you'll be able to manually edit the graph.
+
+File -> Export to Gephi, then choose where to save the graph file.
+
+### Running on a batch of images:
+
+File -> Open Image Directory, then choose the folder with your images.
+
+Run -> Run All
+
+Once it's done running, all the graphs are saved in the same directory as the images. Then, you'll be able to cycle through images with the arrows in the top left corner of the window and manually edit the graphs.
