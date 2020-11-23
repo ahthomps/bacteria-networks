@@ -26,10 +26,10 @@ cd bacteria-networks
 
 # Grab darknet.
 rm -rf darknet
-curl -L https://github.com/AlexeyAB/darknet/archive/master.zip -o darknet.zip
+curl -L https://github.com/AlexeyAB/darknet/archive/8c9c5171891ea92b0cbf5c7fddf935df0b854540.zip -o darknet.zip
 unzip darknet.zip
 rm darknet.zip
-mv darknet-master darknet
+mv darknet-8c9c5171891ea92b0cbf5c7fddf935df0b854540 darknet
 
 # Apple symlinks gcc to clang (Why?) so the version of gcc brew installs has to be installed as gcc-10.
 # That means we have to change darknet's makefile.
