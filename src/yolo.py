@@ -3,13 +3,13 @@ from bio_object import BioObject
 import os
 
 DARKNET_BINARY_PATH = "darknet/darknet"
-DATA_PATH = "models/model_5/obj.data"
-CFG_PATH = "models/model_5/test.cfg"
-WEIGHTS_PATH = "models/model_5/model_5.weights"
+DATA_PATH = "models/model_6/obj.data"
+CFG_PATH = "models/model_6/test.cfg"
+WEIGHTS_PATH = "models/model_6/model_6.weights"
 YOLO_OPTIONS = ["-ext_output", "-dont_show"]
 
 def run_yolo_on_images(img_paths, update_progress_bar):
-    """ img_paths:           A list of image image paths to be run through YOLO.
+    """ img_paths:           A list of image paths to be run through YOLO. These are probably crops
         update_progress_bar: A function to update the progress bar. """
 
     for path in [DARKNET_BINARY_PATH, DATA_PATH, CFG_PATH, WEIGHTS_PATH]:

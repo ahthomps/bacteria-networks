@@ -91,8 +91,7 @@ def compute_nanowire_edges(bio_objects, image, update_progress_bar):
         if update_progress_bar is not None:
             update_progress_bar(int((num_cells + i) / len(bio_objects) * 100))
 
-        found_edge = add_edge_based_on_intersection_set(surface, nanowire, nanowire.overlapping_bboxes)
-        if not found_edge:
+        if not add_edge_based_on_intersection_set(surface, nanowire, nanowire.overlapping_bboxes):
             compute_contour(nanowire, image)
 
             intersections = []

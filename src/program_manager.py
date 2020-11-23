@@ -36,8 +36,6 @@ class ProgramManager:
             slash_index = -1
             if "/" in image_filename:
                 slash_index = image_filename.rfind("/")
-            elif "\\" in image_filename:
-                slash_index = image_filename.rfind("\\")
             image_filename = image_filename[slash_index + 1:]
 
             filenames = [image_filename]
@@ -87,8 +85,18 @@ class ProgramManager:
         # The image file we're going to crop
         filename = self.image_path[self.image_path.rfind("/") + 1:]
 
+        # This assumes the image has the information bar on the bottom
+        image = Image.open(f"{directory}/{filename}")
+        min_row = image.height
+        for row in reversed(range(image.height)):
+            if all(image.getpixel((col, row)) in (0, 255) for col in range(0, image.width, image.width // 10)):
+                min_row = row
+
+        image = image.crop((0, 0, image.width, min_row))
+        image.save("out.jpg")
+
         # Crop the image, and save all the crops in CROP_DIR
-        for tile in make_tiles(Image.open(f"{directory}/{filename}"), filename[:filename.rfind(".")]):
+        for tile in make_tiles(image, filename[:filename.rfind(".")]):
             tile.save(directory=CROP_DIR)
 
     def compute_cell_network_edges(self, update_progress_bar=None):

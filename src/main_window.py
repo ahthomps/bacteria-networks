@@ -45,7 +45,6 @@ class MainWindow(QMainWindow):
         self.addToolBar(self.toolbar)
 
         self.connect_buttons()
-        self.enable_shortcuts()
 
     def connect_buttons(self):
         # Connect the buttons to their corresponding actions
@@ -56,7 +55,6 @@ class MainWindow(QMainWindow):
         self.actionExportToGephi.triggered.connect(lambda: self.export_to_gephi())
         self.actionImportFromGephi.triggered.connect(lambda: self.load_gexf())
         self.actionOpenImageDirectory.triggered.connect(lambda: self.open_image_directory())
-        self.actionViewLegend.triggered.connect(lambda: self.handle_legend_view_press())
 
         self.actionViewBoundingBoxes.triggered.connect(lambda: self.handle_cell_bounding_boxes_view_press())
         self.actionViewNetworkEdges.triggered.connect(lambda: self.handle_network_edges_view_press())
@@ -64,19 +62,6 @@ class MainWindow(QMainWindow):
                                                     if self.is_batch_processing else \
                                                     self.run_yolo_and_edge_detection_and_display())
         self.actionManual.triggered.connect(lambda: self.allow_manual_labelling())
-
-    def enable_shortcuts(self):
-        # Keyboard shortcuts for **__POWER USERS__**
-        QShortcut(QKeySequence("Ctrl+S"), self).activated.connect(lambda: self.actionExportToGephi.isEnabled() and \
-                                                                          self.export_to_gephi())
-        QShortcut(QKeySequence("Ctrl+R"), self).activated.connect(lambda: self.actionRunAll.isEnabled() and \
-                                                                          (self.run_batch_processing() \
-                                                                          if self.is_batch_processing else \
-                                                                          self.run_yolo_and_edge_detection_and_display()))
-        QShortcut(QKeySequence("Ctrl+O"), self).activated.connect(lambda: self.actionOpenImage.isEnabled() and \
-                                                                          self.open_image_file_and_display())
-        QShortcut(QKeySequence("Ctrl+Shift+O"), self).activated.connect(lambda: self.actionOpenImageDirectory.isEnabled() and \
-                                                                                self.open_image_directory())
 
     def set_default_visibilities(self):
         self.progressBar.setVisible(False)
@@ -254,9 +239,6 @@ class MainWindow(QMainWindow):
             self.MplWidget.draw_network_edges(self.post_processor.graph)
         else:
             self.MplWidget.remove_network_edges()
-
-    def handle_legend_view_press(self):
-        self.LegendAndCounts.setVisible(self.actionViewLegend.isChecked())
 
     def update_cell_counters(self):
         total_count, normal_count, spheroplast_count, filament_count, curved_count = self.post_processor.get_cell_count()

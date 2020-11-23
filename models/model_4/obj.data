@@ -1,5 +1,0 @@
-classes = 2
-train = models/model_4/train.txt
-valid = models/model_4/test.txt
-names = models/model_4/obj.names
-backup = models/model_4

@@ -10,7 +10,6 @@ from PyQt5 import QtCore
 from edge_detection import CELL_TO_CELL_EDGE, CELL_TO_SURFACE_EDGE, CELL_CONTACT_EDGE
 from post_processing import NORMAL, SPHEROPLAST, CURVED, FILAMENT
 
-CONTOUR_COLORS = ["red", "orange", "yellow", "green", "blue", "indigo", "violet"]
 NANOWIRE_BBOX_COLOR = "yellow"
 CELL_BBOX_COLOR = "blue"
 CELL_CONTACT_COLOR = "red"
@@ -22,7 +21,6 @@ CURVED_COLOR = "green"
 FILAMENT_COLOR = "blue"
 
 BBOX_GID = "bbox"
-CONTOUR_GID = "contour"
 NETWORK_NODE_GID = "node"
 NETWORK_EDGE_GID = "edge"
 

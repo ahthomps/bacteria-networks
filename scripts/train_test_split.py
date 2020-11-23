@@ -11,7 +11,7 @@ model_directory = sys.argv[1]
 train_txt = open(f"{model_directory}/train.txt", "w")
 test_txt = open(f"{model_directory}/test.txt", "w")
 
-for image_filename in os.listdir(f"{model_directory}/images"):
+for image_filename in filter(lambda s: s.endswith(".jpg"), os.listdir(f"{model_directory}/images")):
     if random.randint(0,9):
         train_txt.write(image_filename + "\n")
     else:
