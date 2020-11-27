@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>JAB Bacteria Networks</string>
+   <string>Graphical Nanowire Network Analysis Tool</string>
   </property>
   <widget class="QWidget" name="main_container">
    <property name="layoutDirection">

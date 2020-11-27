@@ -34,7 +34,6 @@ class MainWindow(QMainWindow):
         self.batch_index = 0
 
         loadUi("ui/main.ui", self)
-        self.setWindowTitle("JAB Bacteria Network Detector")
         self.menubar.setNativeMenuBar(False)
 
         # Set the default options
