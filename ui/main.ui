@@ -126,7 +126,7 @@
      <x>0</x>
      <y>0</y>
      <width>1049</width>
-     <height>22</height>
+     <height>19</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -151,7 +151,6 @@
     </property>
     <addaction name="actionViewBoundingBoxes"/>
     <addaction name="actionViewNetworkEdges"/>
-    <addaction name="actionViewLegend"/>
    </widget>
    <widget class="QMenu" name="menuRun">
     <property name="title">
