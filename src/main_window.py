@@ -34,7 +34,6 @@ class MainWindow(QMainWindow):
         self.batch_index = 0
 
         loadUi("ui/main.ui", self)
-        self.setWindowTitle("JAB Bacteria Network Detector")
         self.menubar.setNativeMenuBar(False)
 
         # Set the default options
@@ -83,8 +82,6 @@ class MainWindow(QMainWindow):
         self.actionViewContour.setChecked(False)
         self.actionViewNetworkEdges.setEnabled(False)
         self.actionViewNetworkEdges.setChecked(False)
-        self.actionViewLegend.setEnabled(False)
-        self.actionViewLegend.setChecked(False)
 
     def clear_all_data_and_reset_window(self, reset_batch=True):
         self.program_manager = ProgramManager()
@@ -201,8 +198,6 @@ class MainWindow(QMainWindow):
         self.actionViewNetworkEdges.setEnabled(True)
         self.actionViewNetworkEdges.setChecked(True)
         self.LegendAndCounts.setVisible(True)
-        self.actionViewLegend.setEnabled(True)
-        self.actionViewLegend.setChecked(True)
 
         self.post_processor = PostProcessingManager(bio_objs=self.program_manager.bio_objs)
         self.toolbar.set_post_processor(self.post_processor)
