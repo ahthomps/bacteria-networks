@@ -248,7 +248,7 @@ class MainWindow(QMainWindow):
 
     def export_to_gephi(self, export_path=""):
         if export_path == "":
-            export_path, _ = QFileDialog.getSaveFileName(None, 'Save Graph', '', 'Gephi Files (*.gexf')
+            export_path, _ = QFileDialog.getSaveFileName(None, 'Save Graph', '', 'Gephi Files (*.gexf)')
             if export_path == "":
                 return
             if not export_path.endswith('.gexf'):
