@@ -6,6 +6,8 @@ from edge_detection import CELL_CONTACT_EDGE, CELL_TO_CELL_EDGE, CELL_TO_SURFACE
 from post_processing import NORMAL, SPHEROPLAST, CURVED, FILAMENT
 
 class _Mode(str, Enum):
+    """ Adapted from matplotlib's backend_bases.py. Contains information on
+        the possible modes of the toolbar. """
     NONE = ""
     PAN = "pan/zoom"
     ZOOM = "zoom rect"
@@ -24,40 +26,53 @@ class _Mode(str, Enum):
         return self.name if self is not _Mode.NONE else None
 
 class CustomToolbar(NavigationToolbar2QT):
+    """ Extends matplotlib's navigation toolbar. Added functionality includes
+        adding nodes to network, adding three types of edges (cell contact,
+        cell-to-cell nanowire, cell-to-surface nanowire) to the network, erase
+        network objects, edit cell classifications, and buttons to navigate in
+        an image directory. """
     def __init__(self, MplWidget, parent):
         self.main_window = parent
+        # post_processor intialized as None because the post processor object
+        # does not get instantiated until network graph can be created
         self.post_processor = None
         self.MplWidget = MplWidget
 
         super().__init__(self.MplWidget.canvas, parent)
 
+        # remove unused buttons from the original toolbar
         self.message_display = self.actions()[-1]
         for _ in range(5):
             self.removeAction(self.actions()[-1])
         self.addAction(self.message_display)
 
         self.building_edge_data = None
-        self.cell_classifications = [NORMAL, SPHEROPLAST, CURVED, FILAMENT]
+        self.cell_classifications = [NORMAL, CURVED, FILAMENT, SPHEROPLAST]
 
     def add_toolbar_items(self, items):
-        # Expects a collection of collections in (icon, name, function, tooltip, checkable) format
+        """ Expects a collection of collections in (icon, name, function,
+            tooltip, checkable) format. Adds the program's custom toolbar actions
+            to the interface. """
+
         for icon, name, function, tooltip, checkable in items:
             action = self.addAction(icon, name, function)
             action.setToolTip(tooltip)
             action.setCheckable(checkable)
 
     def add_file_navigation_buttons(self):
-        """ Adds back and forward buttons for navigating through images that were just processed in a batch. """
+        """ Adds back and forward buttons for navigating through images that
+            were just processed in a batch. """
 
         NAV_ITEMS = ((QIcon("ui/icons/prev.png"), "prev", lambda: self.main_window.load_batch_image(self.main_window.batch_index - 1), "Previous Image", False),
                      (QIcon("ui/icons/next.png"), "next", lambda: self.main_window.load_batch_image(self.main_window.batch_index + 1), "Next Image", False))
-        
         self.add_toolbar_items(NAV_ITEMS)
 
     def set_post_processor(self, post_processor):
         self.post_processor = post_processor
 
     def add_network_tools(self):
+        """ Adds custom network editing tools to the toolbar. """
+
         self.removeAction(self.actions()[-1])
         self.addSeparator()
 
@@ -68,7 +83,6 @@ class CustomToolbar(NavigationToolbar2QT):
                          (QIcon("ui/icons/cell_contact.svg"), "add_cell_contact_edge", lambda: self.add_edge_button_press(_Mode.CELLCONTACTEDGE), "Add cell contact edge", True),
                          (QIcon("ui/icons/editor.svg"), "edit_cell_classification", self.editor_button_press, "Edit cell classification", True),
                          (QIcon("ui/icons/eraser.svg"), "erase", self.eraser_button_press, "Erase node or edge", True))
-
         self.add_toolbar_items(NETWORK_ITEMS)
 
         self.addAction(self.message_display)
@@ -126,7 +140,7 @@ class CustomToolbar(NavigationToolbar2QT):
         self.set_message(self.mode)
 
         self._update_buttons_checked()
-        
+
     def release_cell(self, event):
         if event.xdata is None or event.ydata is None:
             return
@@ -152,7 +166,7 @@ class CustomToolbar(NavigationToolbar2QT):
         self.set_message(self.mode)
 
         self._update_buttons_checked()
-        
+
     def press_edge(self, event):
         assert self.building_edge_data is None
         node_begin = self.post_processor.get_closest_node(event.xdata, event.ydata)
@@ -237,7 +251,7 @@ class CustomToolbar(NavigationToolbar2QT):
         self.set_message(self.mode)
 
         self._update_buttons_checked()
-        
+
     def edit_cell_classification(self, event):
         object_data = self.MplWidget.return_artist_data(event.artist._gid)
         if object_data["network_type"] == "edge":
@@ -264,7 +278,7 @@ class CustomToolbar(NavigationToolbar2QT):
         self.set_message(self.mode)
 
         self._update_buttons_checked()
-        
+
     def erase_network_object(self, event):
         graph = self.post_processor.graph
         object_data = self.MplWidget.artist_data[event.artist._gid]

@@ -7,6 +7,8 @@ from matplotlib.figure import Figure
 from matplotlib.lines import Line2D
 from matplotlib.patches import Rectangle
 from PyQt5 import QtCore
+import numpy as np
+import math
 from edge_detection import CELL_TO_CELL_EDGE, CELL_TO_SURFACE_EDGE, CELL_CONTACT_EDGE
 from post_processing import NORMAL, SPHEROPLAST, CURVED, FILAMENT
 
@@ -113,11 +115,16 @@ class MplWidget(QWidget):
         color = CELL_CONTACT_COLOR if edge_data["edge_type"] == CELL_CONTACT_EDGE \
                 else CELL_TO_CELL_COLOR if edge_data["edge_type"] == CELL_TO_CELL_EDGE \
                 else CELL_TO_SURFACE_COLOR
-        edge_placement_adjustment = -edge_key if edge_key % 2 == 0 else edge_key + 1
-        edge_start = edge_data['surface_point'] if int(node1) == 0 else {'x': node1_data['x'] + edge_placement_adjustment, 'y': node1_data['y'] + edge_placement_adjustment}
-        edge_end = edge_data['surface_point'] if int(node2) == 0 else {'x': node2_data['x'] + edge_placement_adjustment, 'y': node2_data['y'] + edge_placement_adjustment}
+        if int(node1) == 0 or int(node2) == 0:
+            edge_start = edge_data['surface_point'] if int(node1) == 0 else {'x': node1_data['x'], 'y': node1_data['y']}
+            edge_end = edge_data['surface_point'] if int(node2) == 0 else {'x': node2_data['x'], 'y': node2_data['y']}
+            line_obj = Line2D([edge_start['x'], edge_end['x']], [edge_start['y'], edge_end['y']], color=color, linestyle="dashed", gid=str(self.current_gid))
+        else:
+            ellipse_height = 0 if edge_key == 0 else (edge_key + 1) / 2 * 5 if edge_key % 2 else edge_key / 2 * 5
+            x, y = compute_points_on_half_ellipse((node1_data['x'], node1_data['y']), (node2_data['x'], node2_data['y']), ellipse_height, edge_key % 2)
+            line_obj = Line2D(x, y, color=color, linestyle="dashed", gid=str(self.current_gid))
+
         self.artist_data[str(self.current_gid)] = {"network_type": NETWORK_EDGE_GID, "edge_head": node1, "edge_tail": node2, "edge_key": edge_key}
-        line_obj = Line2D([edge_start['x'], edge_end['x']], [edge_start['y'], edge_end['y']], color=color, linestyle="dashed", gid=str(self.current_gid))
         line_obj.set_picker(True)
         self.current_gid += 1
         self.canvas.axes.add_line(line_obj)
@@ -153,3 +160,21 @@ class MplWidget(QWidget):
             if hasattr(child, "_gid") and child._gid is not None and self.artist_data[child._gid]["network_type"] == NETWORK_NODE_GID:
                 child.remove()
         self.canvas.draw()
+
+def compute_points_on_half_ellipse(point1, point2, b, first_half):
+    x1, y1 = point1
+    x2, y2 = point2
+    degrees = np.linspace(0, 180, 10) if first_half else np.linspace(180, 360, 10)
+    degrees_in_radians = np.asarray([math.radians(degree) for degree in degrees])
+    # compute center of line
+    center = ((point1[0] + point2[0]) / 2, (point1[1] + point2[1]) / 2)
+    h, k = center
+    # compute horizontal radius
+    a = math.sqrt((x2 - h) ** 2 + (y2 - k) ** 2)
+    # compute angle
+    alpha = math.atan((y2 - y1) / (x2 - x1)) if x1 != x2 else math.radians(90)
+
+    x = h + a * np.cos(degrees_in_radians) * math.cos(alpha) - b * np.sin(degrees_in_radians) * math.sin(alpha)
+    y = k + a * np.cos(degrees_in_radians) * math.sin(alpha) + b * np.sin(degrees_in_radians) * math.cos(alpha)
+
+    return (x, y)
