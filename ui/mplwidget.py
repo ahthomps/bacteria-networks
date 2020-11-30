@@ -11,14 +11,14 @@ from edge_detection import CELL_TO_CELL_EDGE, CELL_TO_SURFACE_EDGE, CELL_CONTACT
 from post_processing import NORMAL, SPHEROPLAST, CURVED, FILAMENT
 
 NANOWIRE_BBOX_COLOR = "yellow"
-CELL_BBOX_COLOR = "blue"
+CELL_BBOX_COLOR = "cyan"
 CELL_CONTACT_COLOR = "red"
 CELL_TO_CELL_COLOR = "green"
-CELL_TO_SURFACE_COLOR = "blue"
+CELL_TO_SURFACE_COLOR = "cyan"
 NORMAL_COLOR = "red"
 SPHEROPLAST_COLOR = "purple"
 CURVED_COLOR = "green"
-FILAMENT_COLOR = "blue"
+FILAMENT_COLOR = "cyan"
 
 BBOX_GID = "bbox"
 NETWORK_NODE_GID = "node"
@@ -83,6 +83,8 @@ class MplWidget(QWidget):
             bbox = Rectangle((obj.x1, obj.y2), obj.x2 - obj.x1, obj.y1 - obj.y2, edgecolor=color, facecolor='none', linestyle="dashed", gid=str(self.current_gid))
             self.canvas.axes.add_patch(bbox)
             self.current_gid += 1
+            # Uncomment to be able to remove bboxes. Probably not useful for anything.
+            bbox.set_picker(True)
 
         self.canvas.draw()
 
