@@ -1,5 +1,6 @@
 import networkx as nx
 from scipy.spatial import KDTree
+from edge_detection import CELL_TO_CELL_EDGE, CELL_TO_SURFACE_EDGE, CELL_CONTACT_EDGE
 
 NORMAL = "normal"
 SPHEROPLAST = "spheroplast"
@@ -44,7 +45,6 @@ class PostProcessingManager:
         return self.tree
 
     def get_cell_count(self):
-        total_count = 0
         normal_count = 0
         spheroplast_count = 0
         filament_count = 0
@@ -52,7 +52,6 @@ class PostProcessingManager:
         for node_id, node_data in self.graph.nodes(data=True):
             if int(node_id) == 0:
                 continue
-            total_count += 1
             if node_data["node_type"] == NORMAL:
                 normal_count += 1
             elif node_data["node_type"] == SPHEROPLAST:
@@ -61,7 +60,24 @@ class PostProcessingManager:
                 filament_count += 1
             elif node_data["node_type"] == CURVED:
                 curved_count += 1
+
+        total_count = normal_count + spheroplast_count + filament_count + curved_count
         return total_count, normal_count, spheroplast_count, filament_count, curved_count
+
+    def get_edge_count(self):
+        cell_to_cell_count = 0
+        cell_to_surface_count = 0
+        cell_contact_count = 0
+        for _, _, edge_data in self.graph.edges(data=True):
+            if edge_data["edge_type"] == CELL_CONTACT_EDGE:
+                cell_contact_count += 1
+            elif edge_data["edge_type"] == CELL_TO_CELL_EDGE:
+                cell_contact_count += 1
+            elif edge_data["edge_type"] == CELL_TO_SURFACE_EDGE:
+                cell_to_surface_count += 1
+
+        total_edge_count = cell_to_cell_count + cell_to_surface_count + cell_contact_count
+        return total_edge_count, cell_to_cell_count, cell_to_surface_count, cell_contact_count
 
     def get_closest_node(self, x, y):
         if x is None or y is None:

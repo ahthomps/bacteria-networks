@@ -38,7 +38,7 @@
             <property name="minimumSize">
              <size>
               <width>0</width>
-              <height>500</height>
+              <height>550</height>
              </size>
             </property>
             <property name="maximumSize">
@@ -126,7 +126,7 @@
      <x>0</x>
      <y>0</y>
      <width>1049</width>
-     <height>19</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -138,11 +138,7 @@
     <addaction name="separator"/>
     <addaction name="actionImportFromGephi"/>
     <addaction name="actionExportToGephi"/>
-   </widget>
-   <widget class="QMenu" name="menuEdit">
-    <property name="title">
-     <string>Edit</string>
-    </property>
+    <addaction name="separator"/>
     <addaction name="actionClear"/>
    </widget>
    <widget class="QMenu" name="menuView">
@@ -159,10 +155,16 @@
     <addaction name="actionRunAll"/>
     <addaction name="actionManual"/>
    </widget>
+   <widget class="QMenu" name="menuPreferences">
+    <property name="title">
+     <string>Preferences</string>
+    </property>
+    <addaction name="actionEnableSurfaceNode"/>
+   </widget>
    <addaction name="menuFile"/>
-   <addaction name="menuEdit"/>
    <addaction name="menuView"/>
    <addaction name="menuRun"/>
+   <addaction name="menuPreferences"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionOpenImage">
@@ -251,6 +253,14 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+O</string>
+   </property>
+  </action>
+  <action name="actionEnableSurfaceNode">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Export with Surface Node</string>
    </property>
   </action>
  </widget>

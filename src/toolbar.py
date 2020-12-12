@@ -230,6 +230,8 @@ class CustomToolbar(NavigationToolbar2QT):
             self.post_processor.graph.add_edge(node1_id, node2_id, key=key, edge_type=edge_type, surface_point=node1_data)
         else:
             self.post_processor.graph.add_edge(node1_id, node2_id, key=key, edge_type=edge_type)
+
+        self.main_window.update_edge_counters()
         self.MplWidget.draw_edge(node1_id, node2_id, node1_data, node2_data, key, self.post_processor.graph[node1_id][node2_id][key])
         self.MplWidget.canvas.draw()
         self.building_edge_data = None
@@ -288,6 +290,7 @@ class CustomToolbar(NavigationToolbar2QT):
             self.post_processor.build_KDTree()
         elif object_data["network_type"] == "edge" and graph.has_edge(object_data["edge_head"], object_data["edge_tail"], key=object_data["edge_key"]):
             graph.remove_edge(object_data["edge_head"], object_data["edge_tail"], key=object_data["edge_key"])
+            self.main_window.update_edge_counters()
 
         del self.MplWidget.artist_data[event.artist._gid]
         event.artist.remove()

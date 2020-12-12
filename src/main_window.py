@@ -33,6 +33,9 @@ class MainWindow(QMainWindow):
         self.batch_image_filenames = []
         self.batch_index = 0
 
+        # Whether to take into account the surface "node"
+        self.surface_node_is_enabled = True
+
         loadUi("ui/main.ui", self)
         self.menubar.setNativeMenuBar(False)
 
@@ -49,11 +52,11 @@ class MainWindow(QMainWindow):
         # Connect the buttons to their corresponding actions
         # These are all lambdas because the ones that had keyword args didn't work
         # when they weren't lambdas.
-        self.actionClear.triggered.connect(lambda: self.clear_all_data_and_reset_window())
         self.actionOpenImage.triggered.connect(lambda: self.open_image_file_and_display())
         self.actionExportToGephi.triggered.connect(lambda: self.export_to_gephi())
         self.actionImportFromGephi.triggered.connect(lambda: self.load_gexf())
         self.actionOpenImageDirectory.triggered.connect(lambda: self.open_image_directory())
+        self.actionEnableSurfaceNode.triggered.connect(lambda: self.toggle_surface_node())
 
         self.actionViewBoundingBoxes.triggered.connect(lambda: self.handle_cell_bounding_boxes_view_press())
         self.actionViewNetworkEdges.triggered.connect(lambda: self.handle_network_edges_view_press())
@@ -69,10 +72,7 @@ class MainWindow(QMainWindow):
     def set_default_enablements(self):
         self.actionExportToGephi.setEnabled(False)
         self.actionImportFromGephi.setEnabled(False)
-        self.actionClear.setEnabled(True)
 
-        self.actionOpenImage.setEnabled(True)
-        self.actionOpenImageDirectory.setEnabled(True)
         self.actionRunAll.setEnabled(False)
         self.actionManual.setEnabled(False)
 
@@ -82,6 +82,8 @@ class MainWindow(QMainWindow):
         self.actionViewContour.setChecked(False)
         self.actionViewNetworkEdges.setEnabled(False)
         self.actionViewNetworkEdges.setChecked(False)
+        self.actionEnableSurfaceNode.setEnabled(True)
+        self.actionEnableSurfaceNode.setChecked(True)
 
     def clear_all_data_and_reset_window(self, reset_batch=True):
         self.program_manager = ProgramManager()
@@ -105,6 +107,7 @@ class MainWindow(QMainWindow):
         self.connect_buttons()
 
     def open_image_directory(self):
+        self.clear_all_data_and_reset_window()
         directory_path = QFileDialog.getExistingDirectory(self, "Select Directory")
         if not directory_path:
             return
@@ -112,8 +115,6 @@ class MainWindow(QMainWindow):
         self.image_directory_path = directory_path
 
         self.actionRunAll.setEnabled(True)
-        self.actionOpenImage.setEnabled(False)
-        self.actionOpenImageDirectory.setEnabled(False)
 
     def run_batch_processing(self):
         self.progressBar.setVisible(True)
@@ -157,6 +158,7 @@ class MainWindow(QMainWindow):
         self.toolbar.add_file_navigation_buttons()
 
     def open_image_file_and_display(self):
+        self.clear_all_data_and_reset_window()
         image_path, _ = QFileDialog.getOpenFileName(None, "Select image", "", "Image Files (*.png *.jpg *.jpeg *.bmp *.tif *.tiff)")
         if not image_path:
             return
@@ -164,9 +166,6 @@ class MainWindow(QMainWindow):
         self.program_manager.open_image_file(image_path)
         self.MplWidget.draw_image(self.program_manager.image)
 
-        # disable importing new images
-        self.actionOpenImage.setEnabled(False)
-        self.actionOpenImageDirectory.setEnabled(False)
         # allow loading of saved project
         self.actionImportFromGephi.setEnabled(True)
         # enable running automatic network detection
@@ -203,9 +202,10 @@ class MainWindow(QMainWindow):
         self.toolbar.set_post_processor(self.post_processor)
 
         self.update_cell_counters()
+        self.update_edge_counters()
 
         self.MplWidget.draw_network_nodes(self.post_processor.graph)
-        self.MplWidget.draw_network_edges(self.post_processor.graph)
+        self.MplWidget.draw_network_edges(self.post_processor.graph, self.surface_node_is_enabled)
 
     def allow_manual_labelling(self):
         self.actionRunAll.setEnabled(False)
@@ -217,6 +217,7 @@ class MainWindow(QMainWindow):
         self.toolbar.set_post_processor(self.post_processor)
         self.toolbar.add_network_tools()
 
+        self.update_cell_counters()
         self.update_cell_counters()
         self.LegendAndCounts.setVisible(True)
 
@@ -231,7 +232,7 @@ class MainWindow(QMainWindow):
 
     def handle_network_edges_view_press(self):
         if self.actionViewNetworkEdges.isChecked():
-            self.MplWidget.draw_network_edges(self.post_processor.graph)
+            self.MplWidget.draw_network_edges(self.post_processor.graph, self.surface_node_is_enabled)
         else:
             self.MplWidget.remove_network_edges()
 
@@ -244,9 +245,24 @@ class MainWindow(QMainWindow):
         self.LegendAndCounts.update_curved_count(curved_count)
         self.MplWidget.canvas.draw()
 
+    def update_edge_counters(self):
+        total_count, cell_to_cell_count, cell_to_surface_count, cell_contact_count = self.post_processor.get_edge_count()
+        self.LegendAndCounts.update_total_edge_count(total_count)
+        self.LegendAndCounts.update_cell_to_cell_count(cell_to_cell_count)
+        self.LegendAndCounts.update_cell_to_surface_count(cell_to_surface_count)
+        self.LegendAndCounts.update_cell_contact_count(cell_contact_count)
+        self.MplWidget.canvas.draw()
+
+    def toggle_surface_node(self):
+        self.surface_node_is_enabled = not self.surface_node_is_enabled
+        if self.post_processor is not None:
+            self.MplWidget.draw_network_edges(self.post_processor.graph, self.surface_node_is_enabled)
+
     """------------------ UTILITIES -----------------------------"""
 
     def export_to_gephi(self, export_path=""):
+        if not self.surface_node_is_enabled:
+            self.post_processor.graph.remove_node(0)
         if export_path == "":
             export_path, _ = QFileDialog.getSaveFileName(None, 'Save Graph', '', 'Gephi Files (*.gexf)')
             if export_path == "":
@@ -262,8 +278,6 @@ class MainWindow(QMainWindow):
         if not file_path:
             return
 
-        self.actionOpenImage.setEnabled(False)
-        self.actionImportFromGephi.setEnabled(False)
         self.actionRunAll.setEnabled(False)
         self.actionManual.setEnabled(False)
 
@@ -287,8 +301,11 @@ class MainWindow(QMainWindow):
 
         self.actionViewNetworkEdges.setEnabled(True)
         self.actionViewNetworkEdges.setChecked(True)
-        self.MplWidget.draw_network_edges(self.post_processor.graph)
+        self.actionEnableSurfaceNode.setEnabled(True)
+        self.actionEnableSurfaceNode.setChecked(True)
+        self.MplWidget.draw_network_edges(self.post_processor.graph, self.surface_node_is_enabled)
 
         self.update_cell_counters()
+        self.update_edge_counters()
         self.LegendAndCounts.setVisible(True)
         self.actionExportToGephi.setEnabled(True)

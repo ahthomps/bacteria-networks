@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>286</width>
-    <height>557</height>
+    <height>679</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -239,6 +239,19 @@
     </widget>
    </item>
    <item>
+    <spacer name="verticalSpacer_3">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
     <widget class="QWidget" name="cellCountsWidget" native="true">
      <property name="autoFillBackground">
       <bool>true</bool>
@@ -275,13 +288,25 @@
         <layout class="QFormLayout" name="formLayout">
          <item row="0" column="0">
           <widget class="QLabel" name="normalLabel">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>20</height>
+            </size>
+           </property>
            <property name="text">
             <string>Normal Count:</string>
            </property>
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="QLabel" name="normalCount">
+          <widget class="QLabel" name="normal_count">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>20</height>
+            </size>
+           </property>
            <property name="text">
             <string>TextLabel</string>
            </property>
@@ -289,13 +314,25 @@
          </item>
          <item row="1" column="0">
           <widget class="QLabel" name="spheroplastLabel">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>20</height>
+            </size>
+           </property>
            <property name="text">
             <string>Spheroplast Count:</string>
            </property>
           </widget>
          </item>
          <item row="1" column="1">
-          <widget class="QLabel" name="sphereoplastCount">
+          <widget class="QLabel" name="sphereoplast_count">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>20</height>
+            </size>
+           </property>
            <property name="text">
             <string>TextLabel</string>
            </property>
@@ -303,48 +340,77 @@
          </item>
          <item row="2" column="0">
           <widget class="QLabel" name="curvedLabel">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>20</height>
+            </size>
+           </property>
            <property name="text">
             <string>Curved Count:</string>
            </property>
           </widget>
          </item>
+         <item row="2" column="1">
+          <widget class="QLabel" name="curved_count">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>20</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>TextLabel</string>
+           </property>
+          </widget>
+         </item>
          <item row="3" column="0">
           <widget class="QLabel" name="filamentLabel">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>20</height>
+            </size>
+           </property>
            <property name="text">
             <string>Filament Count:</string>
            </property>
           </widget>
          </item>
          <item row="3" column="1">
-          <widget class="QLabel" name="filamentCount">
+          <widget class="QLabel" name="filament_count">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>20</height>
+            </size>
+           </property>
            <property name="text">
             <string>TextLabel</string>
            </property>
           </widget>
          </item>
-         <item row="4" column="0" colspan="2">
-          <widget class="Line" name="countSeparator">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-          </widget>
-         </item>
-         <item row="5" column="0">
+         <item row="4" column="0">
           <widget class="QLabel" name="totalLabel">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>20</height>
+            </size>
+           </property>
            <property name="text">
             <string>Total Count:</string>
            </property>
           </widget>
          </item>
-         <item row="5" column="1">
-          <widget class="QLabel" name="totalCount">
-           <property name="text">
-            <string>TextLabel</string>
+         <item row="4" column="1">
+          <widget class="QLabel" name="total_count">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>20</height>
+            </size>
            </property>
-          </widget>
-         </item>
-         <item row="2" column="1">
-          <widget class="QLabel" name="curvedCount">
            <property name="text">
             <string>TextLabel</string>
            </property>
@@ -354,7 +420,7 @@
        </widget>
       </item>
       <item>
-       <spacer name="verticalSpacer">
+       <spacer name="verticalSpacer_2">
         <property name="orientation">
          <enum>Qt::Vertical</enum>
         </property>
@@ -366,8 +432,154 @@
         </property>
        </spacer>
       </item>
+      <item>
+       <widget class="QLabel" name="cellCountsTitle_2">
+        <property name="text">
+         <string>EDGE COUNTS</string>
+        </property>
+        <property name="scaledContents">
+         <bool>false</bool>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="Line" name="countSeparator_4">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QWidget" name="widget_3" native="true">
+        <property name="autoFillBackground">
+         <bool>false</bool>
+        </property>
+        <layout class="QFormLayout" name="formLayout_6">
+         <item row="0" column="0">
+          <widget class="QLabel" name="cellToCellLabel_2">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>20</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Cell-to-Cell Count:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QLabel" name="cell_to_cell_count">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>20</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>TextLabel</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="cellToSurfaceLabel">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>20</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Cell-to-Surface Count:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QLabel" name="cell_to_surface_count">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>20</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>TextLabel</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="cellContactLabel_2">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>20</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Cell Contact Count:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QLabel" name="cell_contact_count">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>20</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>TextLabel</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="totalLabel_3">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>20</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Total Count:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QLabel" name="edge_count">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>20</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>TextLabel</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
      </layout>
     </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
    </item>
   </layout>
  </widget>
