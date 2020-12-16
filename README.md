@@ -10,7 +10,7 @@ Open Terminal (it's in Utilities) and run the following command:
 
 `/bin/bash -c "$(curl -L https://raw.githubusercontent.com/ahthomps/bacteria-networks/master/mac-install.sh)"`
 
-This will install the program to your home directory and leave a shortcut on your desktop called JAB.
+This will install the program to your home directory and leave a shortcut on your desktop called GNNAT.
 Double click it to run the program.
 
 ### Linux

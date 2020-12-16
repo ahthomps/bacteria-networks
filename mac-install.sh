@@ -11,7 +11,7 @@ which -s brew || /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Ho
 brew upgrade
 
 # Install our brew dependencies
-brew install gcc libomp
+brew install gcc libomp python3
 # Installing brew installs the developer tools, which include python3 (on Catalina and later) and make, so we don't need to get those.
 
 cd ~
@@ -43,12 +43,10 @@ cd darknet
 make clean && make
 cd ..
 
-# Try to install the pip dependencies. If that doesn't work, then go install python@3.8 from brew and use
-# that instead.
+# Try to install the pip dependencies. If that doesn't work, then go install python3 from brew and try again.
 pip3 install --user $PIP_DEPENDENCIES 2>/dev/null ||
-	brew install python@3.8 &&
-	/usr/local/opt/python@3.8/bin/pip3 install --user $PIP_DEPENDENCIES &&
-	sed -i "" "1 s/^.*$/#\!\/usr\/local\/opt\/python@3.8\/bin\/python3/" run.py
+	brew install python3 &&
+	pip3 install --user $PIP_DEPENDENCIES
 
 # Grab the model
 curl -L https://github.com/kenballus/bacteria-networks-model/archive/master.zip -o bacteria-networks-model.zip &&
