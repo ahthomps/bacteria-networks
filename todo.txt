@@ -1,0 +1,2 @@
+edge count is wrong for some reason
+change readme to mention that if make doesn't work, use cmake

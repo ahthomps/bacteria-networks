@@ -5,6 +5,7 @@ from bio_object import compute_contour, compute_cell_center
 CELL_CONTACT_EDGE = "cell_contact"
 CELL_TO_CELL_EDGE = "cell_to_cell"
 CELL_TO_SURFACE_EDGE = "cell_to_surface"
+CELL_TO_SURFACE_CONECT = "cell_to_surface_contact" # for mccormick's extra request
 
 class NetworkEdge:
     def __init__(self, tail, head, nanowire=None):

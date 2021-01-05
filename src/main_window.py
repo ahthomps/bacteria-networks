@@ -261,15 +261,23 @@ class MainWindow(QMainWindow):
     """------------------ UTILITIES -----------------------------"""
 
     def export_to_gephi(self, export_path=""):
-        if not self.surface_node_is_enabled:
-            self.post_processor.graph.remove_node(0)
         if export_path == "":
             export_path, _ = QFileDialog.getSaveFileName(None, 'Save Graph', '', 'Gephi Files (*.gexf)')
-            if export_path == "":
+            if not export_path:
                 return
             if not export_path.endswith('.gexf'):
                 export_path += '.gexf'
-        nx.write_gexf(self.post_processor.graph, export_path)
+
+        to_export = self.post_processor.graph.copy()
+        if self.surface_node_is_enabled:
+            for node in to_export.nodes():
+                if node != 0:
+                    to_export.add_edge(0, node, edge_type="cell_to_surface_contact")
+        else:
+            to_export.remove_node(0)
+
+
+        nx.write_gexf(to_export, export_path)
 
     def load_gexf(self, file_path=None):
         if file_path is None:
